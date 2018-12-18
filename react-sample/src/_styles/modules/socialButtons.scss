@@ -1,15 +1,25 @@
+$facebookColor: #3E5895;
+
 .facebook-login-btn {
   padding: 10px 24px 10px 12px;
-  background-color: #3E5895;
+  background-color: $facebookColor;
   color: #fff;
   font-family: 'Roboto';
   font-size: 14px;
   font-weight: 500;
   letter-spacing: 0.25px;
   border-radius: 5px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-   img {
-     width: 14px;
-     margin-right: 12px;
-   }
+  box-shadow: 0 4px 12px rgba(darken($facebookColor, 10), 0.25);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: lighten($facebookColor, 10);
+    transform: translateY(-1px);
+    box-shadow: 0 5px 12px rgba(darken($facebookColor, 5), 0.25);
+  }
+ 
+  img {
+    width: 14px;
+    margin-right: 12px;
+  }
 }

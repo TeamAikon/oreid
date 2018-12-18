@@ -52,7 +52,7 @@ class App extends Component {
           <div className="login-buttons-wrapper">
             {!isLoggedIn &&
               // React inline style button
-              <button style={facebookLoginStyle} className="facebook-login-btn" onClick={this.handleLoginClick}>
+              <button style={facebookLoginStyle} onClick={this.handleLoginClick}>
                 <img style={facebookLogoStyle} src={facebookLogo} />Log in with Facebook
               </button>
             }
