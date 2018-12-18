@@ -10,9 +10,9 @@ let BACKGROUND_COLOR = process.env.REACT_APP_BACKGROUND_COLOR;  // Background co
 /*
   Returns a fully formed url that you can redirect a user's browser to to start the OAuth login flow
   This function internally calls the ORE ID /app-token API endpoint to get an app_access_token that is required when calling the OAuth login flow
-  ...the app app_access_token has your appId in it. It lets the ORE ID web app which app the user is logging-into
+  ...the app_access_token has your appId in it. It lets the ORE ID web app know which app the user is logging-into
 */
-export async function getOreIDUrl(loginType) {
+export async function getOreIdUrl(loginType) {
     const response = await fetch(`${OREID_URI}/api/app-token`, {
       headers: {
         'api-key' : API_KEY
