@@ -1,0 +1,34 @@
+# See https://help.github.com/ignore-files/ for more about ignoring files.
+
+# dependencies
+**/node_modules
+/bower_components
+
+# testing
+/coverage
+
+# development
+/tmp
+
+# production
+/build
+/dist
+
+# Typescript v1 declaration files
+typings/
+
+# misc
+.idea/
+.DS_Store
+
+# generated content
+web/src/_styles/css/*
+.sass-cache
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
