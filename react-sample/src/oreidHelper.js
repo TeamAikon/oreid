@@ -1,6 +1,4 @@
-import dotenv from 'dotenv';
-import fetch from 'node-fetch';
-dotenv.config();
+const fetch = require('node-fetch');
 
 let API_KEY = process.env.REACT_APP_API_KEY;                    // Provided when you register your app
 let CALLBACK = process.env.REACT_APP_CALLBACK;                  // The url called by the server when login flow is finished - must match one of the callback strings listed in the App Registration
@@ -12,15 +10,16 @@ let BACKGROUND_COLOR = process.env.REACT_APP_BACKGROUND_COLOR;  // Background co
   This function internally calls the ORE ID /app-token API endpoint to get an app_access_token that is required when calling the OAuth login flow
   ...the app_access_token has your appId in it. It lets the ORE ID web app know which app the user is logging-into
 */
-export async function getOreIdUrl(loginType) {
-    const response = await fetch(`${OREID_URI}/api/app-token`, {
-      headers: {
-        'api-key' : API_KEY
-      }
-    });
 
-    const { appAccessToken } = await response.json();
-    return `${OREID_URI}/auth#app_access_token=${appAccessToken}?provider=${loginType}?callback_url=${encodeURIComponent(CALLBACK)}?background_color=${BACKGROUND_COLOR}`;
+export async function getOreIdUrl(loginType) {
+      const response = await fetch(`${OREID_URI}/api/app-token`, {
+        headers: {
+          'api-key' : API_KEY
+        }
+      });
+
+      const { appAccessToken } = await response.json();
+      return `${OREID_URI}/auth#app_access_token=${appAccessToken}?provider=${loginType}?callback_url=${encodeURIComponent(CALLBACK)}?background_color=${BACKGROUND_COLOR}`;
 }
 
 /*
