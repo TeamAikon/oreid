@@ -58,7 +58,7 @@ class App extends Component {
             }
             {!isLoggedIn &&
               // SCSS Button
-              <button className="facebook-login-btn" onClick={this.handleLoginClick}>
+              <button className="social-login-btn--facebook" onClick={this.handleLoginClick}>
                 <img src={facebookLogo} />Log in with Facebook
               </button>
             }
