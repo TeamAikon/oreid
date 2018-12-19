@@ -12,7 +12,7 @@ ORE ID also serves as a blockchain wallet for your your users. Your app can requ
 
 ORE ID removes the friction between your app and your future users. 
 
-<img src="./docs/images/oreid-steps-graphic.png" width="1000" >
+<img src="./docs/images/oreid-steps-graphic.png">
 
 # Usage
 
