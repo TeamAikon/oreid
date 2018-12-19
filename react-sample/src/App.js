@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {Button} from 'react-bootstrap';
 import * as oreidHelper from './oreidHelper.js';
 import './App.css';
-import facebookLogo from '../src/_images/logo-facebook.png';
+import facebookLogo from '../src/_images/logo-facebook.svg';
 
 require('dotenv').config();
 
