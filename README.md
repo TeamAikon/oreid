@@ -23,14 +23,13 @@ ORE ID removes the friction between your app and your future users.
 
 Apply [here](https://aikon.typeform.com/to/YQ5d5r) for early access 
 
-### Step 2 - Install and configure
+### Step 2 - Install library
 
 For Javascript apps, install the npm client module
 
 ```
 npm install @apimarket/oreid-js 
 
-// Populate .env file with api key (see .env.example)
 ```
 
 ### Step 3 - Keep User Account and Data  
@@ -41,7 +40,7 @@ After a login, your app will receive the user's blockchain account name (which m
 
 The account is a blockchain account that can be easily viewed on the public blockchain using a block explorer.
 
-The user's account's private key can be transferred to an offline wallet if desired.
+The user's account's private key can be transferred to his offline wallet when requested.
 
 Search for chain for the account details and token balances like this - [http://explorer.openrights.exchange/accounts/1p4sr4shbfdt](http://explorer.openrights.exchange/accounts/1p4sr4shbfdt)
 
