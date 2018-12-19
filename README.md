@@ -1,6 +1,8 @@
+<img src="https://en.gravatar.com/userimage/137186280/decf387e98fa3847f8d28208dd673bca.png" width="70" height="70">
+
 # ORE ID - OAuth for Blockchain
 
-[](https://en.gravatar.com/userimage/137186280/decf387e98fa3847f8d28208dd673bca.png?size=200)
+
 
 ORE ID allows anyone to access your dApp with one-click sign up and blockchain account creation - using a login flow that they are already familiar with. ORE ID supports Google, Facebook, Github, Linkedin, Twitter, Twitch, and practically any other OAuth-enabled login provider.
 
