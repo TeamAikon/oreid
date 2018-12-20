@@ -37,12 +37,13 @@ class App extends Component {
       fontSize: '14px',
       fontWeight: '500',
       letterSpacing: '0.25px',
+      border: 'none',
       borderRadius: '5px',
       boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
     }
 
     const facebookLogoStyle = {
-      width: '14px',
+      width: '16px',
       marginRight: '12px'
     }
 
@@ -59,7 +60,7 @@ class App extends Component {
             {!isLoggedIn &&
               // SCSS Button
               <button className="social-login-btn--facebook" onClick={this.handleLoginClick}>
-                <img src={facebookLogo} />Log in with Facebook
+                Log in with Facebook
               </button>
             }
           </div>

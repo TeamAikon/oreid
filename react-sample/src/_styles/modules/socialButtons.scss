@@ -12,25 +12,55 @@ $twitterColor: rgb(85, 172, 238);
   font-weight: 500;
   letter-spacing: 0.25px;
   padding: 10px 24px 10px 12px;
+  border: none;
   border-radius: 5px;
-  background-color: $socialColor;
-  box-shadow: 0 4px 12px rgba(darken($socialColor, 10), 0.25);
+  border: none;
   transition: all 0.2s ease;
+
+  background-color: $socialColor;
+  box-shadow: 0 4px 12px rgba(#000, 0.25);
+
   &:hover {
     transform: translateY(-1px);
     background-color: lighten($socialColor, 10);
-    box-shadow: 0 5px 12px rgba(darken($socialColor, 5), 0.25);
+    box-shadow: 0 5px 20px rgba(#000, 0.25);
   }
 
-  img {
-    width: 14px;
+  &:before {
+    content: '';
+    background-size: 16px;
+    padding-left: 16px;
     margin-right: 12px;
   }
 }
 
-.social-login-btn--facebook { @include social-login-btn($facebookColor) }
-.social-login-btn--github   { @include social-login-btn($githubColor) }
-.social-login-btn--google   { @include social-login-btn($googleColor) }
-.social-login-btn--linkedin { @include social-login-btn($linkedinColor) }
-.social-login-btn--twitch   { @include social-login-btn($twitchColor) }
-.social-login-btn--twitter  { @include social-login-btn($twitterColor) }
+.social-login-btn--facebook {
+  @include social-login-btn($facebookColor);
+  &:before { background: url('../_images/logo-facebook.svg') no-repeat; }
+}
+
+.social-login-btn--github {
+  @include social-login-btn($githubColor);
+  &:before { background: url('../_images/logo-github.svg') no-repeat; }
+}
+
+.social-login-btn--google {
+  @include social-login-btn($googleColor);
+  color: #333;
+  &:before { background: url('../_images/logo-google.svg') no-repeat; }
+}
+
+.social-login-btn--linkedin {
+  @include social-login-btn($linkedinColor);
+  &:before { background: url('../_images/logo-linkedin.svg') no-repeat; }
+}
+
+.social-login-btn--twitch {
+  @include social-login-btn($twitchColor);
+  &:before { background: url('../_images/logo-twitch.svg') no-repeat; }
+}
+
+.social-login-btn--twitter {
+  @include social-login-btn($twitterColor);
+  &:before { background: url('../_images/logo-twitter.svg') no-repeat; }
+}
