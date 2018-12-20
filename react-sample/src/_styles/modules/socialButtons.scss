@@ -29,8 +29,8 @@ $twitterColor: rgb(85, 172, 238);
 }
 
 .social-login-btn--facebook { @include social-login-btn($facebookColor) }
-.social-login-btn--github { @include social-login-btn($githubColor) }
-.social-login-btn--google { @include social-login-btn($googleColor) }
+.social-login-btn--github   { @include social-login-btn($githubColor) }
+.social-login-btn--google   { @include social-login-btn($googleColor) }
 .social-login-btn--linkedin { @include social-login-btn($linkedinColor) }
-.social-login-btn--twitch { @include social-login-btn($twitchColor) }
-.social-login-btn--twitter { @include social-login-btn($twitterColor) }
+.social-login-btn--twitch   { @include social-login-btn($twitchColor) }
+.social-login-btn--twitter  { @include social-login-btn($twitterColor) }
