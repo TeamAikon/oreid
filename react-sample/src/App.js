@@ -1,10 +1,7 @@
 import React, { Component } from 'react';
-import {Button} from 'react-bootstrap';
-import * as oreidHelper from './oreidHelper.js';
 import './App.css';
+import * as oreIdHelper from "../src/oreidHelper.js"
 import facebookLogo from '../src/_images/logo-facebook.png';
-
-require('dotenv').config();
 
 class App extends Component {
   constructor(props) {
@@ -17,13 +14,8 @@ class App extends Component {
     this.handleLoginClick = this.handleLoginClick.bind(this);
   }
 
-  handleLoginClick(event) {
-    event.preventDefault();
-    const id = oreidHelper.getOreIdUrl("facebook");
-    this.setState(state => ({
-      isLoggedIn: !state.isLoggedIn,
-      fbId: id,
-    }));
+  handleLoginClick(loginType) {
+    oreIdHelper.getOreIdAuthUrl(loginType);
   }
 
   render() {
