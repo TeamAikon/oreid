@@ -47,6 +47,11 @@ class SocialLoginButton extends Component {
         <button style={facebookLoginStyle} onClick={this.handleLoginClick}>
           <img style={facebookLogoStyle} src={facebookLogo} />Log in with Facebook
         </button>
+
+        {/* // SCSS Button */}
+        <button className="social-login-btn--facebook" onClick={this.handleLoginClick}>
+          Log in with Facebook
+        </button>
       </div>
     );
   }
