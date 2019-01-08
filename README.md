@@ -1,4 +1,4 @@
-<img src="https://en.gravatar.com/userimage/137186280/decf387e98fa3847f8d28208dd673bca.png" width="70" height="70">
+<img src="https://en.gravatar.com/userimage/137186280/281fbdfb8df941e941b3ad68c925c3c7.png" width="70" height="70">
 
 # ORE ID - OAuth for Blockchain
 
@@ -12,7 +12,7 @@ ORE ID also serves as a blockchain wallet for your your users. Your app can requ
 
 ORE ID removes the friction between your app and your future users. 
 
-<img src="./docs/images/oreid-steps-graphic.png">
+<img src="./docs/images/OREID-GitHub-diagram-01.png">
 
 # Usage
 
@@ -21,7 +21,7 @@ ORE ID removes the friction between your app and your future users.
 
 ### Step 1 - Register your app and logo
 
-Apply [here](https://aikon.typeform.com/to/YQ5d5r) for early access 
+Apply [here](https://aikon.com/ore-id) for early access 
 
 ### Step 2 - Install library
 
