@@ -42,7 +42,7 @@ The account is a blockchain account that can be easily viewed on the public bloc
 
 The user's account's private key can be transferred to his offline wallet when requested.
 
-Search for chain for the account details and token balances like this - [http://explorer.openrights.exchange/accounts/1p4sr4shbfdt](http://explorer.openrights.exchange/accounts/1p4sr4shbfdt)
+Search for chain for the account details and token balances like this - [http://explorer.openrights.exchange/accounts/1pxnubvyqceu](http://explorer.openrights.exchange/accounts/1pxnubvyqceu)
 
 
 ## Example code
