@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import './App.css';
-import facebookLogo from '../src/_images/logo-facebook.png';
-const { OreId } = require('@apimarket/oreid-js');
 import { Router, Route } from 'react-router';
+import facebookLogo from '../src/_images/logo-facebook.svg';
+const { OreId } = require('@apimarket/oreid-js');
 
 const { 
   REACT_APP_OREID_API_KEY:apiKey,             // Provided when you register your app
@@ -64,12 +64,13 @@ async handleAuthCallback() {
       fontSize: '14px',
       fontWeight: '500',
       letterSpacing: '0.25px',
+      border: 'none',
       borderRadius: '5px',
       boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
     }
 
     const facebookLogoStyle = {
-      width: '14px',
+      width: '16px',
       marginRight: '12px'
     }
 
@@ -78,7 +79,8 @@ async handleAuthCallback() {
         <div className="login-container">
           <div className="login-buttons-wrapper">
             {!isLoggedIn &&
-              <button style={facebookLoginStyle} className="facebook-login-btn" onClick={()=>this.handleLoginClick("facebook")}>
+              // React inline style button
+              <button style={facebookLoginStyle} onClick={()=>this.handleLoginClick("facebook")}>
                 <img style={facebookLogoStyle} src={facebookLogo} />Log in with Facebook
               </button>
             }
