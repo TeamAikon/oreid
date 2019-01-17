@@ -1,0 +1,9 @@
+{
+    "buttonStyle":{
+        "backgroundColor": "#fff"
+
+    },
+    "logoStyle":{
+    },
+    "text":"Login with Google"
+}

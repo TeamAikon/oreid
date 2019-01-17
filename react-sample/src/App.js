@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import React, { Component } from 'react';
 import { Router, Route } from 'react-router';
-import SocialLoginButton from '../src/components/SocialLoginButton';
+import LoginButton from './components/loginButton';
 import { OreId } from '@apimarket/oreid-js';
 import './App.css';
 
@@ -38,7 +38,6 @@ async handleLoginClick(loginType) {
    Handle the authCallback coming back from ORE-ID with an "account" parameter indicating that a user has logged in
 */
 async handleAuthCallback() {
-
   if (/account/.test(window.location.href)) {
     const url = window.location.href;
     if (!url) {
@@ -56,9 +55,9 @@ async handleAuthCallback() {
     return (
       <div className="login-wrapper">
         <div className="login-container">
-          <div className="login-buttons-wrapper">
-            {!isLoggedIn &&
-              <SocialLoginButton onClick={()=>this.handleLoginClick("facebook")}/>
+          <div className="login-buttons-wrapper"> 
+            {!this.state.isLoggedIn &&
+              <LoginButton provider='facebook' buttonStyle={{width:250}} logoStyle={{marginLeft:0}} onClick={()=>this.handleLoginClick("facebook")} text='Login with Facebook'/>
             }
           </div>
         </div>
