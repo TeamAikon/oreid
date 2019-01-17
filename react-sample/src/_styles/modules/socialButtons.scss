@@ -1,9 +1,3 @@
-$facebookColor: #3E5895;
-$githubColor: #222;
-$googleColor: #fff;
-$linkedinColor: rgb(18, 124, 180);
-$twitchColor: #6441A4;
-$twitterColor: rgb(85, 172, 238);
 
 @mixin social-login-btn($socialColor) {
   color: #fff;
@@ -32,35 +26,4 @@ $twitterColor: rgb(85, 172, 238);
     padding-left: 16px;
     margin-right: 12px;
   }
-}
-
-.social-login-btn--facebook {
-  @include social-login-btn($facebookColor);
-  &:before { background: url('../_images/logo-facebook.svg') no-repeat; }
-}
-
-.social-login-btn--github {
-  @include social-login-btn($githubColor);
-  &:before { background: url('../_images/logo-github.svg') no-repeat; }
-}
-
-.social-login-btn--google {
-  @include social-login-btn($googleColor);
-  color: #333;
-  &:before { background: url('../_images/logo-google.svg') no-repeat; }
-}
-
-.social-login-btn--linkedin {
-  @include social-login-btn($linkedinColor);
-  &:before { background: url('../_images/logo-linkedin.svg') no-repeat; }
-}
-
-.social-login-btn--twitch {
-  @include social-login-btn($twitchColor);
-  &:before { background: url('../_images/logo-twitch.svg') no-repeat; }
-}
-
-.social-login-btn--twitter {
-  @include social-login-btn($twitterColor);
-  &:before { background: url('../_images/logo-twitter.svg') no-repeat; }
 }
