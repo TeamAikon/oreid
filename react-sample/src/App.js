@@ -1,14 +1,17 @@
+import dotenv from 'dotenv';
 import React, { Component } from 'react';
-import './App.css';
 import { Router, Route } from 'react-router';
 import facebookLogo from '../src/_images/logo-facebook.svg';
-const { OreId } = require('@apimarket/oreid-js');
+import { OreId } from '@apimarket/oreid-js';
+import './App.css';
+
+dotenv.config();
 
 const { 
   REACT_APP_OREID_API_KEY:apiKey,             // Provided when you register your app
   REACT_APP_AUTH_CALLBACK:authCallbackUrl,    // The url called by the server when login flow is finished - must match one of the callback strings listed in the App Registration
   REACT_APP_OREID_URI:oreIdUrl,               // HTTPS Address of OREID server
-  REACT_APP_BACKGROUND_COLOR:backgroundColor   // Background color shown during login flow
+  REACT_APP_BACKGROUND_COLOR:backgroundColor  // Background color shown during login flow
 } = process.env;
 
 let oreId = new OreId({ apiKey, oreIdUrl });
@@ -24,20 +27,15 @@ class App extends Component {
     this.handleLoginClick = this.handleLoginClick.bind(this);
   }
 
-
-/*
-  Returns a fully formed url that you can redirect a user's browser to to start the OAuth login flow
-  This function internally calls the ORE ID /app-token API endpoint to get an app_access_token that is required when calling the OAuth login flow
-  ...the app_access_token has your appId in it. It lets the ORE ID web app know which app the user is logging-into
-*/
-
 async handleLoginClick(loginType) {
-  await oreId.getOreIdAuthUrl({ loginType, callbackUrl:authCallbackUrl, backgroundColor });
+  // getOreIdAuthUrl returns a fully formed url that you can redirect a user's browser to to start the OAuth login flow
+  let oreIdAuthUrl = await oreId.getOreIdAuthUrl({ loginType, callbackUrl:authCallbackUrl, backgroundColor });
+  console.log(`To start the OREID login flow, redirect the user's browser to: ${oreIdAuthUrl}`)
 }
 
-/**
-   * Handle the authCallback coming back from ORE-ID with an "account" parameter indicating that a user has logged in
-   */
+/*
+   Handle the authCallback coming back from ORE-ID with an "account" parameter indicating that a user has logged in
+*/
 async handleAuthCallback() {
 
   if (/account/.test(window.location.href)) {
