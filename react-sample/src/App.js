@@ -30,7 +30,9 @@ class App extends Component {
 async handleLoginClick(loginType) {
   // getOreIdAuthUrl returns a fully formed url that you can redirect a user's browser to to start the OAuth login flow
   let oreIdAuthUrl = await oreId.getOreIdAuthUrl({ loginType, callbackUrl:authCallbackUrl, backgroundColor });
-  console.log(`To start the OREID login flow, redirect the user's browser to: ${oreIdAuthUrl}`)
+  const message = `To start the OREID login flow, redirect the user's browser to: ${oreIdAuthUrl}`;
+  console.log(message);
+  alert(message);
 }
 
 /*
