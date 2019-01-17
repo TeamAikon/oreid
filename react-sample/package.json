@@ -1,11 +1,12 @@
 {
   "name": "react-sample",
-  "version": "0.1.0",
+  "version": "0.9.0",
   "private": true,
   "dependencies": {
+    "@apimarket/oreid-js": "^1.0.0",
     "react": "^16.6.3",
-    "react-bootstrap": "^0.32.4",
     "react-dom": "^16.6.3",
+    "react-router": "^4.3.1",
     "react-scripts": "2.1.1"
   },
   "scripts": {
@@ -24,6 +25,7 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "dotenv": "^6.2.0"
+    "dotenv": "^6.2.0",
+    "node-sass": "^4.11.0"
   }
 }
