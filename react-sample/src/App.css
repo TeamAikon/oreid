@@ -30,3 +30,8 @@
     transform: rotate(360deg);
   }
 }
+
+.login-wrapper {
+  height: 100%;
+  display: grid;
+}
