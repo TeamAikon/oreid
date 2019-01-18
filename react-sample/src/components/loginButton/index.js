@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import Roboto from './resources/Roboto-Medium.ttf'
 
 let validProviders=[
   'facebook',
@@ -6,25 +7,31 @@ let validProviders=[
   'google',
   'linkedin',
   'twitch',
-  'twitter'
+  'twitter',
+  'wechat',
+  'kakao',
+  'line'
 ]
 
 var defaultButtonStyle = {
-  padding: '10px 24px 10px 12px',
+  padding: '10px 24px 10px 14px',
   backgroundColor: '#3E5895',
   color: '#ffffff',
-  fontFamily: 'Roboto',
-  fontSize: '18px',
+  fontFamily: Roboto + 'sans-serif',
   fontWeight: '500',
-  letterSpacing: '0.25px',
+  fontSize: '14px',
+  lineHeight: '22px',
+  letterSpacing: '1px',
+  textAlign: 'left',
   border: 'none',
   borderRadius: '5px',
   boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
 }
 
 const defaultLogoStyle = {
-  width: '20px',
-  marginRight: '12px'
+  width: '24px',
+  marginRight: '14px',
+  verticalAlign: 'bottom'
 }
 
 class SocialLoginButton extends Component {
