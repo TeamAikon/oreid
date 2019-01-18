@@ -57,7 +57,50 @@ async handleAuthCallback() {
         <div className="login-container">
           <div className="login-buttons-wrapper"> 
             {!this.state.isLoggedIn &&
-              <LoginButton provider='facebook' buttonStyle={{width:250}} logoStyle={{marginLeft:0}} onClick={()=>this.handleLoginClick("facebook")} text='Login with Facebook'/>
+              <div>
+                <LoginButton provider='facebook'
+                            buttonStyle={{width:250}}
+                            logoStyle={{marginLeft:0}}
+                            onClick={()=>this.handleLoginClick("facebook")}
+                            //  text='Log in with Facebook'
+                />
+                <LoginButton provider='twitter'
+                            buttonStyle={{width:250, marginTop:'24px'}}
+                            logoStyle={{marginLeft:0}}
+                            onClick={()=>this.handleLoginClick("facebook")}
+                            //  text='Log in with Facebook'
+                />
+                <LoginButton provider='kakao'
+                            buttonStyle={{width:250, marginTop:'24px'}}
+                            logoStyle={{marginLeft:0}}
+                            onClick={()=>this.handleLoginClick("facebook")}
+                            //  text='Log in with Facebook'
+                />
+                <LoginButton provider='wechat'
+                            buttonStyle={{width:250, marginTop:'24px'}}
+                            logoStyle={{marginLeft:0}}
+                            onClick={()=>this.handleLoginClick("facebook")}
+                            //  text='Log in with Facebook'
+                />
+                <LoginButton provider='line'
+                            buttonStyle={{width:250, marginTop:'24px'}}
+                            logoStyle={{marginLeft:0}}
+                            onClick={()=>this.handleLoginClick("facebook")}
+                            //  text='Log in with Facebook'
+                />
+                <LoginButton provider='linkedin'
+                            buttonStyle={{width:250, marginTop:'24px'}}
+                            logoStyle={{marginLeft:0}}
+                            onClick={()=>this.handleLoginClick("facebook")}
+                            //  text='Log in with Facebook'
+                />
+                <LoginButton provider='google'
+                            buttonStyle={{width:250, marginTop:'24px'}}
+                            logoStyle={{marginLeft:0}}
+                            onClick={()=>this.handleLoginClick("facebook")}
+                            //  text='Log in with Facebook'
+                />
+              </div>
             }
           </div>
         </div>
