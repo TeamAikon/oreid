@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "sdkVersion": "27.0.0"
+  },
+  "ios": {
+    "infoPlist": {
+      "CFBundleIdentifier": "com.aikon.oreid.sample.reactnative",
+      "CFBundleURLTypes": [ {
+        "CFBundleURLName" : "com.aikon.oreid.sample.reactnative",
+        "CFBundleURLSchemes" : [
+          "oreidreactnativesample"
+        ]
+      }]
+    }
+  }
+}
