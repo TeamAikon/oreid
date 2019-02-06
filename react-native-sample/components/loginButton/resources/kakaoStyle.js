@@ -3,13 +3,14 @@ import { StyleSheet } from 'react-native';
 export let style = StyleSheet.create({
 
     ButtonStyle:{
-        backgroundColor: "#3E5895"
+        backgroundColor: "#FFEB00"
     },
 
     LogoStyle:{
     },
 
     TextStyle:{
+        color: "#3C1F1E",
     },
 
     SeparatorLineStyle:{

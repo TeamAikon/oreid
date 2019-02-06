@@ -1,42 +1,23 @@
 import React, {Component} from 'react';
 import { Button, Image, Text, TouchableOpacity, StyleSheet, View } from 'react-native';
-import Roboto from './resources/Roboto-Medium.ttf'
+import Roboto from './resources/RobotoMedium.ttf'
+import { baseStyle } from './resources/_baseStyle';
 import { isNullOrEmpty } from '../../utils';
 
 let validProviders=[
-  {name:'facebook', style:require('./resources/facebookStyle.js').styles, logo:require('./resources/facebookLogo.svg')},
-  // {name:'github', style:require('./resources/github-style.json'), logo:require('./resources/github-logo.svg')},
-  // {name:'google', style:require('./resources/google-style.json'), logo:require('./resources/google-logo.svg')},
-  // {name:'linkedin', style:require('./resources/linkedin-style.json'), logo:require('./resources/linkedin-logo.svg')},
-  // {name:'twitch', style:require('./resources/twitch-style.json'), logo:require('./resources/twitch-logo.svg')},
-  // {name:'twitter', style:require('./resources/twitterStyle.js').styles, logo:require('./resources/twitterLogo.svg')},
-  // {name:'wechat', style:require('./resources/wechat-style.json'), logo:require('./resources/wechat-logo.svg')},
-  // {name:'kakao', style:require('./resources/kakao-style.json'), logo:require('./resources/kakao-logo.svg')},
-  // {name:'line', style:require('./resources/line-style.json'), logo:require('./resources/line-logo.svg')},
+  {name:'facebook', style:require('./resources/facebookStyle.js').style, logo:require('./resources/facebookLogo.png')},
+  {name:'github', style:require('./resources/githubStyle.js').style, logo:require('./resources/githubLogo.png')},
+  {name:'google', style:require('./resources/googleStyle.js').style, logo:require('./resources/googleLogo.png')},
+  {name:'linkedin', style:require('./resources/linkedinStyle.js').style, logo:require('./resources/linkedinLogo.png')},
+  {name:'twitch', style:require('./resources/twitchStyle.js').style, logo:require('./resources/twitchLogo.png')},
+  {name:'twitter', style:require('./resources/twitterStyle.js').style, logo:require('./resources/twitterLogo.png')},
+  {name:'wechat', style:require('./resources/wechatStyle.js').style, logo:require('./resources/wechatLogo.png')},
+  {name:'kakao', style:require('./resources/kakaoStyle.js').style, logo:require('./resources/kakaoLogo.png')},
+  {name:'line', style:require('./resources/lineStyle.js').style, logo:require('./resources/lineLogo.png')},
 ]
 
-// var defaultButtonStyle = {
-//   padding: '10px 24px 10px 14px',
-//   backgroundColor: '#3E5895',
-//   color: '#ffffff',
-//   fontFamily: Roboto + 'sans-serif',
-//   fontWeight: '500',
-//   fontSize: '14px',
-//   lineHeight: '22px',
-//   letterSpacing: '1px',
-//   textAlign: 'left',
-//   border: 'none',
-//   borderRadius: '5px',
-//   boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
-// }
-
-// const defaultLogoStyle = {
-//   width: '24px',
-//   marginRight: '14px',
-//   verticalAlign: 'bottom'
-// }
-
-const containerStyle = StyleSheet.create({main:{
+const containerStyle = StyleSheet.create({
+  main:{
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
@@ -46,7 +27,6 @@ const containerStyle = StyleSheet.create({main:{
 class SocialLoginButton extends Component {
   constructor(props) {
     super(props)
-    this.providerInfo = this.getProviderInfo(this.props.provider);
     this.state = {
       provider: this.props.provider,
       onPressCallback: this.props.onPress,
@@ -55,12 +35,14 @@ class SocialLoginButton extends Component {
   }
 
   componentDidMount() {
-    let providerStyle = this.providerInfo.style || {}; //get the style for this provider
-    let buttonStyle = [providerStyle.ButtonStyle, StyleSheet.create(this.props.buttonStyle)];
-    let logoStyle = [providerStyle.LogoStyle, StyleSheet.create(this.props.logoStyle)];
-    let textStyle = [providerStyle.TextStyle, StyleSheet.create(this.props.textStyle)];
-    let separatorLineStyle = [providerStyle.SeparatorLineStyle, StyleSheet.create(this.props.separatorLineStyle)];
-    this.setState({buttonStyle, logoStyle, textStyle, separatorLineStyle});
+    this.providerInfo = this.getProviderInfo(this.props.provider);
+    let providerStyle = (this.providerInfo || {}).style; //get the style for this provider
+    let providerLogo = (this.providerInfo || {}).logo; //get the style for this provider
+    let logoStyle = StyleSheet.create(this.props.logoStyle || {});
+    let buttonStyle = StyleSheet.create(this.props.buttonStyle || {});
+    let textStyle = StyleSheet.create(this.props.textStyle || {});
+    let separatorLineStyle = StyleSheet.create(this.props.separatorLineStyle || {});
+    this.setState({baseStyle, providerStyle, providerLogo, logoStyle, buttonStyle, textStyle, separatorLineStyle});
   }
 
   getProviderInfo(provider) {
@@ -72,18 +54,19 @@ class SocialLoginButton extends Component {
   }
 
   render () {
-    //TODO: Check that provider is one of the valid types
-    let { provider, onPressCallback, buttonStyle, logoStyle, textStyle, text, separatorLineStyle} = this.state;
-    let { style, logo } = this.providerInfo;
+    let { baseStyle, buttonStyle, logoStyle, onPressCallback, providerLogo, providerStyle, separatorLineStyle, text, textStyle } = this.state;
+    providerStyle = providerStyle || {};
+    providerLogo = providerLogo || {};
+    baseStyle = baseStyle || {};
     return (
       <View style={containerStyle.main}>
-        <TouchableOpacity style={buttonStyle} onPress={() => {onPressCallback(provider)}} activeOpacity={0.5}>
+        <TouchableOpacity style={[baseStyle.ButtonStyle, providerStyle.ButtonStyle, buttonStyle]} onPress={onPressCallback} activeOpacity={0.5}>
           <Image 
-            source={logo}
-            style={logoStyle}
+            source={providerLogo}
+            style={[baseStyle.LogoStyle, providerStyle.LogoStyle, logoStyle]}
           />
-          <View style={separatorLineStyle} />
-          <Text style={textStyle}>{text}</Text>
+          <View style={[baseStyle.SeparatorLineStyle, providerStyle.SeparatorLineStyle, separatorLineStyle]} />
+          <Text style={[baseStyle.TextStyle, providerStyle.TextStyle, textStyle]}>{text}</Text>
         </TouchableOpacity>
       </View>
     );

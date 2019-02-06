@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 export let style = StyleSheet.create({
 
     ButtonStyle:{
-        backgroundColor: "#3E5895"
+        backgroundColor: "#6441A4"
     },
 
     LogoStyle:{

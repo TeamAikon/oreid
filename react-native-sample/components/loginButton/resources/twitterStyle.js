@@ -1,7 +1,6 @@
 import { StyleSheet } from 'react-native';
-import { baseStyle } from './_baseStyle';
 
-let style =  {
+export let style = StyleSheet.create({
 
     ButtonStyle:{
         backgroundColor: "#55acee"
@@ -16,6 +15,4 @@ let style =  {
     SeparatorLineStyle:{
     }
 
-}
-
-export let styles = {...baseStyle, ...style};
+});
