@@ -17,5 +17,6 @@ Open [http://localhost:3000](http://localhost:3000) to view the running app.
 
 The code to review is in App.js
 
-The LoginButton React Component simplifies styling of common OAuth providers
+The LoginButton React Component simplifies styling of common OAuth providers</br>
 
+If you use the callback handler, it stores the basic user info in a cookie (or local app storage). Local user info can be retrieved by calling getUser() and can be cleared by calling logout()
