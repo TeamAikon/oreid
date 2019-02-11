@@ -12,7 +12,7 @@ To run sample code:
     npm install
     ```
 
-### `npm start`
+#### `npm start`
 
 Opens your app in the [Expo app](https://expo.io) on your phone.
 
