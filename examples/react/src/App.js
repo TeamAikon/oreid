@@ -8,7 +8,7 @@ const {
   REACT_APP_OREID_APP_ID: appId,              // Provided when you register your app
   REACT_APP_OREID_API_KEY:apiKey,             // Provided when you register your app
   REACT_APP_AUTH_CALLBACK:authCallbackUrl,    // The url called by the server when login flow is finished - must match one of the callback strings listed in the App Registration
-  REACT_APP_OREID_URI:oreIdUrl,               // HTTPS Address of OREID server
+  REACT_APP_OREID_URL:oreIdUrl,               // HTTPS Address of OREID server
   REACT_APP_BACKGROUND_COLOR:backgroundColor  // Background color shown during login flow
 } = process.env;
 
