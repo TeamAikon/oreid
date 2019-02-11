@@ -1,0 +1,21 @@
+{
+  "name": "oreid-js-example",
+  "version": "1.1.0",
+  "description": "oreid-js example",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@apimarket/oreid-js": "^1.1.1",
+    "body-parser": "^1.18.3",
+    "dotenv": "^6.2.0",
+    "express": "^4.16.4",
+    "js-cookie": "^2.2.0"
+  },
+  "devDependencies": {
+    "esm": "^3.2.3"
+  }
+}
