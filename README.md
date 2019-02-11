@@ -59,6 +59,27 @@ let userInfo = await oreId.getUserInfo(account);
 
 ```
 
+## Example projects
+
+Refer to the examples folder for the following sample projects
+
+- ReactJS - A simple ReactJS website that includes React Login button component
+
+- React Native - A React Native app that includes a React OAuth flow modal component
+
+- Express Server - A simple Express server that includes the use of middleware to automate handling of callbacks
+
+## Express Middleware
+
+This library includes Express middleware that you can use to simplify handling the callbacks from the ORE ID service. It extracts the results from the /auth and /sign callbacks and attaches info to the request object (e.g. req.user)
+
+```
+// authCallbackHandler middleware handles callback response from ORE ID and extracts results
+
+app.use('/authcallback', authCallbackHandler(oreId) );
+```
+
+Take a look at examples/express for a complete example of use.
 
 [Frequently Asked Questions](https://drive.google.com/open?id=1Nx6qm7z8TQRM8S-onmcP0H--21z-gzYDBVEzzfcgE9g)
 
