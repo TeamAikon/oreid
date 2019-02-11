@@ -29,7 +29,6 @@ For Javascript apps, install the npm client module
 
 ```
 npm install @apimarket/oreid-js 
-
 ```
 
 ### Step 3 - Keep User Account and Data  
