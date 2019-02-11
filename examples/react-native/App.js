@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Modal, StyleSheet, View } from 'react-native';
+import { Button, Modal, StyleSheet, Text, View } from 'react-native';
 import { createStackNavigator } from 'react-navigation';
 import UserProfile from './UserProfile';
 import LoginWebView from './LoginWebView';
@@ -9,14 +9,16 @@ import {observer, inject} from 'mobx-react';
 var settings = require('./.env.json');
 
 const { 
-  REACT_APP_OREID_API_KEY:apiKey,             // Provided when you register your app
-  REACT_APP_BACKGROUND_COLOR:backgroundColor  // Background color shown during login flow
+  OREID_APP_ID:appId,               // Provided when you register your app
+  OREID_API_KEY:apiKey,             // Provided when you register your app
+  OREID_URL: oreIdUrl,              // HTTPS Address of OREID server - refer to .env.example.json 
+  BACKGROUND_COLOR:backgroundColor  // Background color shown during login flow
 } = settings;
 
 let callbackUrl = 'https://callback.sampleapp.com';
 
 //intialize oreId
-let oreId = new OreId({ apiKey, oreIdUrl:'https://staging.oreid.io' });
+let oreId = new OreId({ appId, apiKey, oreIdUrl });
 
 export default class App extends React.Component {
   render() {
@@ -29,12 +31,19 @@ class HomeScreen extends React.Component {
   async handleLogin(loginType) {
     navigation = this.props.navigation;
     // getOreIdAuthUrl returns a fully formed url that you can redirect a user's browser to to start the OAuth login flow
-    console.log(`handleLogin ${loginType}`);
     let oreIdAuthUrl = await oreId.getOreIdAuthUrl({ loginType, callbackUrl, backgroundColor });
-    this.setState({oreIdAuthUrl, showLoginWebView:true});
-    //open webview to oreIdAuthUrl
-    // navigation.navigate('LoginWebView', {webviewUrl:oreIdAuthUrl, callbackUrl, redirectToPage:'UserProfile', oreIdAuthUrl});
+    //show login flow in webview
+    this.setState({oreIdAuthUrl, showLoginState:'showWeb'});
   }
+
+  async handleCompletedCallback(loginResults) {
+    let {account} = loginResults;
+    let userInfo = {};
+    if(account) {
+      userInfo = await oreId.getUserInfoFromApi(account);
+    }
+    this.setState({userInfo, showLoginState:'webComplete'});
+  };
 
   renderLoginMenu() {
     return (
@@ -51,14 +60,6 @@ class HomeScreen extends React.Component {
               onPress={()=> this.handleLogin("google")}
               text='Log in with Google'
           />
-          <LoginButton provider='kakao'
-              onPress={()=> this.handleLogin("kakao")}
-              text='Log in with Kakao'
-          />
-          <LoginButton provider='line'
-              onPress={()=> this.handleLogin("line")}
-              text='Log in with Line'
-          />
           <LoginButton provider='linkedin'
               onPress={()=> this.handleLogin("linkedin")}
               text='Log in with Linkedin'
@@ -67,34 +68,45 @@ class HomeScreen extends React.Component {
               onPress={()=> this.handleLogin("twitch")}
               text='Log in with Twitch'
           />
-          <LoginButton provider='wechat'
-              onPress={()=> this.handleLogin("wechat")}
-              text='Log in with WeChat'
-          />
         </View>
     )
   }
 
   renderLoginWebView() {
-    let { callbackUrl, oreIdAuthUrl } = this.state || {};
-    console.log('this.state:',this.state)
+    let { oreIdAuthUrl } = this.state || {};
     return (
-      <View>
-        <Modal>
-        </Modal>
-        <LoginWebView webviewUrl={oreIdAuthUrl} callbackUrl={callbackUrl} oreIdAuthUrl={oreIdAuthUrl}/>
+      <View style={{flex:1}}>
+        <LoginWebView completedCallback={(values) => {this.handleCompletedCallback(values)}} webviewUrl={oreIdAuthUrl} callbackUrl={callbackUrl} oreIdAuthUrl={oreIdAuthUrl} />
+      </View>
+    )
+  }
+
+  renderUserView() {
+    let { userInfo } = this.state || {};
+    let { email, name, picture, username} = userInfo;
+    return (
+      <View style={{flex:1}}>
+        <Text>
+          name: {`${name}\n`}
+          email: {`${email}\n`}
+          username: {`${username}\n`}
+        </Text>
       </View>
     )
   }
 
   render() {
-    let { showLoginWebView } = this.state || {};
+    let { showLoginState } = this.state || {};
     return (
       <View style={styles.page}>
-      {(showLoginWebView === true) ? 
-        (this.renderLoginWebView())
-        :
-        (this.renderLoginMenu()) 
+      {(showLoginState === 'login' || !showLoginState) && 
+        this.renderLoginMenu()
+      }
+      {(showLoginState === 'showWeb') && 
+        this.renderLoginWebView()
+      }
+      {(showLoginState === 'webComplete') && 
+        this.renderUserView()
       }
       </View>
     );

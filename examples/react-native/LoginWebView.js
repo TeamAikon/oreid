@@ -8,21 +8,18 @@ class LoginWebView extends React.Component {
 
     state = {
         key: 1,
-        isWebViewUrlChanged: false
+        isWebViewUrlChanged: false,
+        showWebView: true
     };
 
     constructor(props, context) {
       super(props);
-      const {webviewUrl, callbackUrl, redirectToPage, oreIdAuthUrl} = this.props;
-      console.log('this.props:',this.props);
+      const {completedCallback, callbackUrl, oreIdAuthUrl, webviewUrl} = this.props;
+      this.completedCallback = completedCallback; //called when OAuth flow is done
       this.callbackUrl = callbackUrl;
-      this.redirectToPage = redirectToPage;
       this.webviewUrl = webviewUrl;
       this.oreIdAuthUrl = oreIdAuthUrl; //used to pass on to the user page so it know how to get to the logout url
       this.goBack = this.goBack.bind(this);
-    }
-
-    componentWillMount() {
     }
 
     resetWebViewToInitialUrl = () => {
@@ -38,30 +35,31 @@ class LoginWebView extends React.Component {
         this.props.navigation.goBack();
     }
 
+    //triggered every time web page is redirected or modified
     setWebViewUrlChanged = webviewState => {
-        console.log("webviewUrlChanged:", webviewState.url);
         if (webviewState && webviewState.url && webviewState.url.startsWith(this.callbackUrl)) {
+            this.setState({showWebView:false}); //hide webview so that failed redirect isnt visible
             params = urlParamsToArray(webviewState.url);
-            //redirectToPage is the page name to navigate to after the callback url is detected as having been called
-            //Send whatever values were included on the callback's query parameters (urlParams) to the new page
-            this.props.navigation.replace(this.redirectToPage, {params, webviewUrl:this.webviewUrl, callbackUrl:this.callbackUrl, oreIdAuthUrl:this.oreIdAuthUrl});
+            this.completedCallback(params);
         }
         if (webviewState && webviewState.url !== this.webviewUrl) {
           this.setState({ isWebViewUrlChanged: true });
         }
     };
 
+    //todo: provide a 'cancel' button above the webview to allow a user to back out
     render() {
-        console.log("Render:", this.webviewUrl);
+        const {showWebView} = this.state;
         return (
-            <View style={{flex: 1}}>
+            <View style={{flex: 1, backgroundColor: this.backgroundColor}}>
+            {showWebView && (
                 <WebView
                     ref={(ref) => {this.webview = ref;}}
-                    style={{flex: 1}}
                     startInLoadingState={true}
                     source={{uri: this.webviewUrl}}
                     onNavigationStateChange={ this.setWebViewUrlChanged }
                 />
+            )}
             </View>
         );
     }
