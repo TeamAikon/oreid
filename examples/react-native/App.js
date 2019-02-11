@@ -1,11 +1,9 @@
 import React from 'react';
-import { Button, Modal, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { createStackNavigator } from 'react-navigation';
-import UserProfile from './UserProfile';
 import LoginWebView from './LoginWebView';
 import LoginButton from './components/loginButton';
 import { OreId } from '@apimarket/oreid-js';
-import {observer, inject} from 'mobx-react';
 var settings = require('./.env.json');
 
 const { 
@@ -116,9 +114,7 @@ class HomeScreen extends React.Component {
 //Navigation
 const RootStack = createStackNavigator(
   {
-    Home: HomeScreen,
-    LoginWebView: LoginWebView,
-    UserProfile: UserProfile,
+    Home: HomeScreen
   },
   {
     initialRouteName: 'Home',

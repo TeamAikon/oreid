@@ -12,6 +12,8 @@ typings/
 
 # misc
 .DS_Store
+**/.vscode
+**/.expo
 
 # Logs
 logs
