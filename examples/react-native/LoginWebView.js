@@ -2,7 +2,7 @@ import React from 'react';
 import { View, WebView } from 'react-native';
 import {urlParamsToArray} from './utils';
 
-class WebViewWrapper extends React.Component {
+class LoginWebView extends React.Component {
     webviewUrl = null;
     callbackUrl = null;
 
@@ -13,7 +13,8 @@ class WebViewWrapper extends React.Component {
 
     constructor(props, context) {
       super(props);
-      const {webviewUrl, callbackUrl, redirectToPage, oreIdAuthUrl} = props.navigation.state.params;
+      const {webviewUrl, callbackUrl, redirectToPage, oreIdAuthUrl} = this.props;
+      console.log('this.props:',this.props);
       this.callbackUrl = callbackUrl;
       this.redirectToPage = redirectToPage;
       this.webviewUrl = webviewUrl;
@@ -66,4 +67,4 @@ class WebViewWrapper extends React.Component {
     }
   }
 
-  export default WebViewWrapper;
+  export default LoginWebView;

@@ -1,8 +1,8 @@
 import React from 'react';
-import { Button, StyleSheet, View } from 'react-native';
+import { Button, Modal, StyleSheet, View } from 'react-native';
 import { createStackNavigator } from 'react-navigation';
 import UserProfile from './UserProfile';
-import WebViewWrapper from './WebViewWrapper';
+import LoginWebView from './LoginWebView';
 import LoginButton from './components/loginButton';
 import { OreId } from '@apimarket/oreid-js';
 import {observer, inject} from 'mobx-react';
@@ -31,14 +31,14 @@ class HomeScreen extends React.Component {
     // getOreIdAuthUrl returns a fully formed url that you can redirect a user's browser to to start the OAuth login flow
     console.log(`handleLogin ${loginType}`);
     let oreIdAuthUrl = await oreId.getOreIdAuthUrl({ loginType, callbackUrl, backgroundColor });
+    this.setState({oreIdAuthUrl, showLoginWebView:true});
     //open webview to oreIdAuthUrl
-    navigation.navigate('LoginWebView', {webviewUrl:oreIdAuthUrl, callbackUrl, redirectToPage:'UserProfile', oreIdAuthUrl});
+    // navigation.navigate('LoginWebView', {webviewUrl:oreIdAuthUrl, callbackUrl, redirectToPage:'UserProfile', oreIdAuthUrl});
   }
 
-  render() {
+  renderLoginMenu() {
     return (
-      <View style={styles.page}>
-        <View style={styles.container}>
+      <View style={styles.container}>
           <LoginButton provider='facebook'
               onPress={() => this.handleLogin("facebook")}
               text='Log in with Facebook'
@@ -72,6 +72,30 @@ class HomeScreen extends React.Component {
               text='Log in with WeChat'
           />
         </View>
+    )
+  }
+
+  renderLoginWebView() {
+    let { callbackUrl, oreIdAuthUrl } = this.state || {};
+    console.log('this.state:',this.state)
+    return (
+      <View>
+        <Modal>
+        </Modal>
+        <LoginWebView webviewUrl={oreIdAuthUrl} callbackUrl={callbackUrl} oreIdAuthUrl={oreIdAuthUrl}/>
+      </View>
+    )
+  }
+
+  render() {
+    let { showLoginWebView } = this.state || {};
+    return (
+      <View style={styles.page}>
+      {(showLoginWebView === true) ? 
+        (this.renderLoginWebView())
+        :
+        (this.renderLoginMenu()) 
+      }
       </View>
     );
   }
@@ -81,7 +105,7 @@ class HomeScreen extends React.Component {
 const RootStack = createStackNavigator(
   {
     Home: HomeScreen,
-    LoginWebView: WebViewWrapper,
+    LoginWebView: LoginWebView,
     UserProfile: UserProfile,
   },
   {
