@@ -4,7 +4,8 @@ A complete Express server example that demonstrates use of the oreid-js middlewa
 
 To run sample code:
 
-First, populate .env file in root of project directory (copy .env.example to examples/express/.env)
+- You'll need your App ID and API Key - you get them when you register your app with ORE ID
+- Populate .env file in root of project directory (copy .env.example to examples/express/.env)
 
 ```
 cd examples/express
