@@ -63,8 +63,6 @@ let userInfo = await oreId.getUserInfo(account);
 This library includes Express middleware that you can use to simplify handling the callbacks from the ORE ID service. It extracts the results from the /auth and /sign callbacks and attaches info to the request object (e.g. req.user)
 
 ```
-// authCallbackHandler middleware handles callback response from ORE ID and extracts results
-
 app.use('/authcallback', authCallbackHandler(oreId) );
 ```
 
