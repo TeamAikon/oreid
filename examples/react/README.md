@@ -15,4 +15,7 @@ To run sample code:
 
 Open [http://localhost:3000](http://localhost:3000) to view the running app.
 
+The code to review is in App.js
+
+The LoginButton React Component simplifies styling of common OAuth providers
 

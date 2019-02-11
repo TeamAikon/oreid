@@ -2,8 +2,6 @@ import dotenv from 'dotenv';
 import React, { Component } from 'react';
 import LoginButton from './components/loginButton';
 import { OreId } from '@apimarket/oreid-js';
-import './App.css';
-
 dotenv.config();
 
 const { 
@@ -26,8 +24,17 @@ class App extends Component {
     this.handleLogout = this.handleLogout.bind(this);
   }
 
-componentWillMount() {
+async componentWillMount() {
+  this.loadUserFromLocalState();
   this.handleAuthCallback();
+}
+
+async loadUserFromLocalState() {
+  const userInfo = await oreId.getUser();
+  console.log(userInfo)
+  if((userInfo ||{}).accountName) {
+    this.setState({userInfo, isLoggedIn:true});
+  }
 }
 
 async handleLogin(loginType) {
@@ -52,6 +59,7 @@ async handleAuthCallback() {
 
 handleLogout() {
   this.setState({userInfo:{}, isLoggedIn:false});
+  oreId.logout(); //clears local user state (stored in local storage or cookie)
 }
 
 render() {
