@@ -28,6 +28,7 @@ const accessContext = initAccessContext({
       apiKey,
       oreIdUrl,
       authCallback,
+      loginType: 'facebook',
       signCallback: authCallback, // TODO: Make unique
       backgroundColor
     }),
@@ -55,32 +56,34 @@ async componentWillMount() {
   console.log("State:", this.state);
   console.log("Wallet: Oreid:", wallet_oreid);
   console.log("Wallet: Scatter:", wallet_scatter);
-  this.handleAuthCallback();
+
+  console.log("Connecting to wallets...");
+  try { await wallet_oreid.connect(); } catch(error) { console.log("Failed to connect to OreId:", error) }
+  try { await wallet_scatter.connect(); } catch(error) { console.log("Failed to connect to Scatter:", error) }
+  console.log("Connected wallets: OreId:", wallet_oreid.connected, "Scatter:", wallet_scatter.connected);
 }
 
 async handleLogin(loginType) {
   console.log(`Logging into ${loginType}...`);
-  if (loginType === 'scatter') {
-    const accountInfo = await wallet_scatter.login();
-    console.log("Setting state:", accountInfo);
-    this.setState({ accountInfo });
-    console.log("Logged in!", wallet_scatter.authenticated);
-  } else {
-    await wallet_oreid.login(loginType);
-    console.log("Logged in!", wallet_oreid.authenticated);
+  try {
+    if (loginType === 'scatter') {
+      if (wallet_scatter.connected) {
+        const accountInfo = await wallet_scatter.login();
+        this.setState({ accountInfo });
+        console.log("Logged in!", wallet_scatter.authenticated);
+      } else {
+        throw(new Error("Scatter not connected!"));
+      }
+    } else {
+      if (wallet_oreid.connected) {
+        await wallet_oreid.login();
+      } else {
+        throw(new Error("OreId not connected!"));
+      }
+    }
+  } catch(error) {
+    console.log("Failed to login:", error);
   }
-}
-
-/*
-   Handle the authCallback coming back from ORE-ID with an "account" parameter indicating that a user has logged in
-*/
-async handleAuthCallback() {
-  console.log("Connecting to wallets...");
-  const userInfo = await wallet_oreid.connect();
-  console.log("Setting state:", userInfo);
-  this.setState({ userInfo });
-  await wallet_scatter.connect();
-  console.log("Connected wallets: OreId:", wallet_oreid.connected, "Scatter:", wallet_scatter.connected);
 }
 
 handleLogout() {
