@@ -114,9 +114,9 @@ class App extends Component {
     if (/authcallback/i.test(url)) {
       const {account, errors} = await oreId.handleAuthResponse(url);
       if(!errors && wallet_oreid.connected) {
-        const {account_name} = await wallet_oreid.login(account);
+        const {account_name, permissions} = await wallet_oreid.login(account);
         const userInfo = await oreId.getUserInfoFromApi(account);
-        this.setState({userInfo, accountInfo: {account_name}, isLoggedIn:true});
+        this.setState({userInfo, accountInfo: {account_name, permissions}, isLoggedIn:true});
       }
     }
   }
@@ -126,11 +126,11 @@ class App extends Component {
     try {
       if (loginType === 'scatter') {
         if (wallet_scatter.connected) {
-          const {account_name} = await wallet_scatter.login();
+          const {account_name, permissions} = await wallet_scatter.login();
           console.log("Setting accountinfo:", account_name);
           if (wallet_scatter.authenticated) {
             console.log("Logged in!", wallet_scatter);
-            this.setState({ accountInfo: {account_name}, isLoggedIn: true });
+            this.setState({ accountInfo: {account_name, permissions}, isLoggedIn: true });
           }
         } else {
           throw(new Error("Scatter not connected!"));
@@ -166,6 +166,7 @@ class App extends Component {
     if (this.state.userInfo) {
       const {accountName, email, name, picture, username} = this.state.userInfo;
       const {account_name, permissions} = this.state.accountInfo;
+      const permission_info = permissions.map(perm => { return perm.perm_name }).join(", ")
       return (
         <div>
           <img src={picture} style={{width:50,height:50}} alt="avatar" /><br/>
@@ -173,6 +174,7 @@ class App extends Component {
           name: {name}<br/>
           username: {username}<br/>
           email: {email}<br/>
+          permissions: {permission_info}<br/>
           <button onClick={this.handleLogout}  style={{ padding: '10px', backgroundColor: '#FFFBE6', borderRadius: '5px'}}>
             Logout
           </button>
