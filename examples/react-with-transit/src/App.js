@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import React, { Component } from 'react';
 import LoginButton from './components/loginButton';
+import { OreId } from '@apimarket/oreid-js';
 import { initAccessContext } from 'eos-transit';
 import scatter from 'eos-transit-scatter-provider';
 import oreid from 'eos-transit-oreid-provider';
@@ -13,6 +14,8 @@ const {
   REACT_APP_OREID_URL:oreIdUrl,               // HTTPS Address of OREID server
   REACT_APP_BACKGROUND_COLOR:backgroundColor  // Background color shown during login flow
 } = process.env;
+
+let oreId = new OreId({ appId, apiKey, oreIdUrl });
 
 const PROVIDERS = [
   'facebook',
@@ -55,7 +58,7 @@ function getProvider(loginType) {
   });
 }
 
-function getContext(loginType) {
+function getContextOre(loginType) {
   return initAccessContext({
     appName: 'OreID',
     network: NETWORK_ORE,
@@ -65,8 +68,8 @@ function getContext(loginType) {
   });
 }
 
-function getWallet(loginType) {
-  const context = getContext(loginType);
+function getWallet(loginType = 'facebook') {
+  const context = getContextOre(loginType);
   const providers = context.getWalletProviders();
   return context.initWallet(providers[0]);
 }
@@ -82,6 +85,8 @@ const accessContextEos = initAccessContext({
 const providersEos = accessContextEos.getWalletProviders();
 const wallet_scatter = accessContextEos.initWallet(providersEos[0]);
 
+const wallet_oreid = getWallet();
+
 class App extends Component {
   constructor(props) {
     super(props)
@@ -91,15 +96,29 @@ class App extends Component {
       accountInfo: undefined,
     };
     this.handleLogin = this.handleLogin.bind(this);
+    this.handleLogout = this.handleLogout.bind(this);
   }
 
   async componentWillMount() {
     console.log("State:", this.state);
     console.log("Wallet: Scatter:", wallet_scatter);
+    console.log("Wallet: OreID:", wallet_oreid);
 
     console.log("Connecting to wallets...");
-    try { await wallet_scatter.connect(); } catch(error) { console.log("Failed to connect to Scatter:", error) }
-    console.log("Connected wallets: Scatter:", wallet_scatter.connected);
+    try { wallet_scatter.connect(); } catch(error) { console.log("Failed to connect to Scatter:", error) }
+    try { await wallet_oreid.connect(); } catch(error) { console.log("Failed to connect to OreID:", error) }
+
+    console.log("Connected wallets: Scatter:", wallet_scatter.connected, "OreID:", wallet_oreid.connected);
+
+    const url = window.location.href;
+    if (/authcallback/i.test(url)) {
+      const {account, errors} = await oreId.handleAuthResponse(url);
+      if(!errors && wallet_oreid.connected) {
+        const {account_name} = await wallet_oreid.login(account);
+        const userInfo = await oreId.getUserInfoFromApi(account);
+        this.setState({userInfo, accountInfo: {account_name}, isLoggedIn:true});
+      }
+    }
   }
 
   async handleLogin(loginType) {
@@ -107,20 +126,27 @@ class App extends Component {
     try {
       if (loginType === 'scatter') {
         if (wallet_scatter.connected) {
-          const accountInfo = await wallet_scatter.login();
-          this.setState({ accountInfo });
-          console.log("Logged in!", wallet_scatter.authenticated);
+          const {account_name} = await wallet_scatter.login();
+          console.log("Setting accountinfo:", account_name);
+          if (wallet_scatter.authenticated) {
+            console.log("Logged in!", wallet_scatter);
+            this.setState({ accountInfo: {account_name}, isLoggedIn: true });
+          }
         } else {
           throw(new Error("Scatter not connected!"));
         }
       } else { // facebook, github, etc...
         const wallet = getWallet(loginType);
-        //wallet.login('1pafyyzw1ujv');
         wallet.login();
       }
     } catch(error) {
       console.log("Failed to login:", error);
     }
+  }
+
+  handleLogout() {
+    this.setState({userInfo:{}, isLoggedIn:false});
+    oreId.logout(); //clears local user state (stored in local storage or cookie)
   }
 
   render() {
@@ -139,23 +165,14 @@ class App extends Component {
   renderUserInfo() {
     if (this.state.userInfo) {
       const {accountName, email, name, picture, username} = this.state.userInfo;
+      const {account_name, permissions} = this.state.accountInfo;
       return (
         <div>
           <img src={picture} style={{width:50,height:50}} alt="avatar" /><br/>
-          accountName: {accountName}<br/>
+          accountName: {account_name}<br/>
           name: {name}<br/>
           username: {username}<br/>
           email: {email}<br/>
-          <button onClick={this.handleLogout}  style={{ padding: '10px', backgroundColor: '#FFFBE6', borderRadius: '5px'}}>
-            Logout
-          </button>
-        </div>
-      );
-    } else if (this.state.accountInfo) {
-      const {accountName} = this.state.accountInfo;
-      return (
-        <div>
-          accountName: {accountName}<br/>
           <button onClick={this.handleLogout}  style={{ padding: '10px', backgroundColor: '#FFFBE6', borderRadius: '5px'}}>
             Logout
           </button>
