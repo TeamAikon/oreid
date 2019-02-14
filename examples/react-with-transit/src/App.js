@@ -74,6 +74,25 @@ function getWallet(loginType = 'facebook') {
   return context.initWallet(providers[0]);
 }
 
+function getTransaction(actor, permission = 'active') {
+  const transaction = {
+    account: "eosio.token",
+    name: "transfer",
+    authorization: [{
+      actor,
+      permission,
+    }],
+    data: {
+      from: actor,
+      to: actor,
+      quantity: "1.0000 CPU",
+      memo: `random number: ${Math.random()}`
+    }
+  };
+
+  return Buffer.from(JSON.stringify(transaction)).toString('base64');
+}
+
 const accessContextEos = initAccessContext({
   appName: 'OreID',
   network: NETWORK_EOS,
@@ -96,6 +115,7 @@ class App extends Component {
       accountInfo: undefined,
     };
     this.handleLogin = this.handleLogin.bind(this);
+    this.handleTransaction = this.handleTransaction.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
   }
 
@@ -144,6 +164,20 @@ class App extends Component {
     }
   }
 
+  handleTransaction() {
+    const {account_name} = this.state.accountInfo;
+    const transaction = getTransaction(account_name);
+    console.log("handleTx:", account_name, transaction, wallet_oreid);
+    wallet_oreid.eosApi.transact({
+        actions: [transaction]
+      }, {
+        broadcast: true,
+        blocksBehind: 3,
+        expireSeconds: 60
+      }
+    )
+  }
+
   handleLogout() {
     this.setState({userInfo:{}, isLoggedIn:false});
     oreId.logout(); //clears local user state (stored in local storage or cookie)
@@ -175,6 +209,9 @@ class App extends Component {
           username: {username}<br/>
           email: {email}<br/>
           permissions: {permission_info}<br/>
+          <button onClick={this.handleTransaction}  style={{ padding: '10px', backgroundColor: '#FFFBE6', borderRadius: '5px'}}>
+            Sign Transaction
+          </button>
           <button onClick={this.handleLogout}  style={{ padding: '10px', backgroundColor: '#FFFBE6', borderRadius: '5px'}}>
             Logout
           </button>
