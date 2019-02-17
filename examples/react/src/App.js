@@ -119,6 +119,18 @@ renderLoginButtons() {
                   onClick={()=>this.handleLogin("twitch")}
                   //  text='Log in with Twitch'
       />
+      <LoginButton provider='line'
+                  buttonStyle={{width:250, marginTop:'24px'}}
+                  logoStyle={{marginLeft:0}}
+                  onClick={()=>this.handleLogin("line")}
+                  //  text='Log in with Line'
+      />
+      <LoginButton provider='kakao'
+                  buttonStyle={{width:250, marginTop:'24px'}}
+                  logoStyle={{marginLeft:0}}
+                  onClick={()=>this.handleLogin("kakao")}
+                  //  text='Log in with Kakao'
+      />
       <LoginButton provider='linkedin'
                   buttonStyle={{width:250, marginTop:'24px'}}
                   logoStyle={{marginLeft:0}}

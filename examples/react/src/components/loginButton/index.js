@@ -5,12 +5,12 @@ let validProviders=[
   'facebook',
   'github',
   'google',
+  'kakao',
+  'line',
   'linkedin',
   'twitch',
   'twitter',
   'wechat',
-  'kakao',
-  'line'
 ]
 
 var defaultButtonStyle = {

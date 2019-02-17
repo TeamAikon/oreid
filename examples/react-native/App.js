@@ -58,9 +58,17 @@ class HomeScreen extends React.Component {
               onPress={()=> this.handleLogin("google")}
               text='Log in with Google'
           />
+          <LoginButton provider='kakao'
+              onPress={()=> this.handleLogin("kakao")}
+              text='Log in with Kakao'
+          />
           <LoginButton provider='linkedin'
               onPress={()=> this.handleLogin("linkedin")}
               text='Log in with Linkedin'
+          />
+          <LoginButton provider='line'
+              onPress={()=> this.handleLogin("line")}
+              text='Log in with Line'
           />
           <LoginButton provider='twitch'
               onPress={()=> this.handleLogin("twitch")}
