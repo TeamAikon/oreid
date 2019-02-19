@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@apimarket/oreid-js": "^1.1.3",
+    "@apimarket/oreid-js": "^1.1.4",
     "body-parser": "^1.18.3",
     "dotenv": "^6.2.0",
     "express": "^4.16.4",
