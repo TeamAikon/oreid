@@ -2,6 +2,8 @@ import React, {Component} from 'react';
 import Roboto from './resources/Roboto-Medium.ttf'
 
 let validProviders=[
+  'oreid',
+  'scatter',
   'facebook',
   'github',
   'google',
