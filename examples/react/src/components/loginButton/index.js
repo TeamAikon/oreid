@@ -7,13 +7,13 @@ let validProviders=[
   'facebook',
   'github',
   'google',
+  'kakao',
+  'line',
   'linkedin',
   'twitch',
   'twitter',
   'wechat',
-  'kakao',
-  'ledger',
-  'line'
+  'ledger'
 ]
 
 var defaultButtonStyle = {
@@ -63,7 +63,7 @@ class SocialLoginButton extends Component {
     return (
       <div>
         <button style={buttonStyle} onClick={() => {onClickCallback(provider)}}> 
-          <img style={logoStyle} src={require(`./resources/${provider}-logo.svg`)} alt={text}/>{text}
+          <img style={logoStyle} src={require(`./resources/${provider}-logo.png`)} alt={text}/>{text}
         </button>
       </div>
     );

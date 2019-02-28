@@ -5,15 +5,15 @@ import { baseStyle } from './resources/_baseStyle';
 import { isNullOrEmpty } from '../../utils';
 
 let validProviders=[
-  {name:'facebook', style:require('./resources/facebookStyle.js').style, logo:require('./resources/facebookLogo.png')},
-  {name:'github', style:require('./resources/githubStyle.js').style, logo:require('./resources/githubLogo.png')},
-  {name:'google', style:require('./resources/googleStyle.js').style, logo:require('./resources/googleLogo.png')},
-  {name:'linkedin', style:require('./resources/linkedinStyle.js').style, logo:require('./resources/linkedinLogo.png')},
-  {name:'twitch', style:require('./resources/twitchStyle.js').style, logo:require('./resources/twitchLogo.png')},
-  {name:'twitter', style:require('./resources/twitterStyle.js').style, logo:require('./resources/twitterLogo.png')},
-  {name:'wechat', style:require('./resources/wechatStyle.js').style, logo:require('./resources/wechatLogo.png')},
-  {name:'kakao', style:require('./resources/kakaoStyle.js').style, logo:require('./resources/kakaoLogo.png')},
-  {name:'line', style:require('./resources/lineStyle.js').style, logo:require('./resources/lineLogo.png')},
+  {name:'facebook', style:require('./resources/facebookStyle.js').style, logo:require('./resources/facebook-logo.png')},
+  {name:'github', style:require('./resources/githubStyle.js').style, logo:require('./resources/github-logo.png')},
+  {name:'google', style:require('./resources/googleStyle.js').style, logo:require('./resources/google-logo.png')},
+  {name:'linkedin', style:require('./resources/linkedinStyle.js').style, logo:require('./resources/linkedin-logo.png')},
+  {name:'twitch', style:require('./resources/twitchStyle.js').style, logo:require('./resources/twitch-logo.png')},
+  {name:'twitter', style:require('./resources/twitterStyle.js').style, logo:require('./resources/twitter-logo.png')},
+  {name:'wechat', style:require('./resources/wechatStyle.js').style, logo:require('./resources/wechat-logo.png')},
+  {name:'kakao', style:require('./resources/kakaoStyle.js').style, logo:require('./resources/kakao-logo.png')},
+  {name:'line', style:require('./resources/lineStyle.js').style, logo:require('./resources/line-logo.png')},
 ]
 
 const containerStyle = StyleSheet.create({
