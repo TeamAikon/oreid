@@ -12,6 +12,7 @@ let validProviders=[
   'twitter',
   'wechat',
   'kakao',
+  'ledger',
   'line'
 ]
 

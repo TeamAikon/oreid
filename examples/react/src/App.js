@@ -80,7 +80,7 @@ async handleSignSampleTransaction(walletType, account, chainAccount, chainNetwor
     }
     let signResponse = await oreId.sign(signOptions);
     //if the sign responds with a signUrl, then redirect the browser to it to call the signing flow
-    let { signUrl, signedTransaction } = signResponse;
+    let { signUrl, signedTransaction } = signResponse || {};
     if(signUrl) {
       //redirect browser to signUrl
       window.location = signUrl;
@@ -203,6 +203,7 @@ renderSigningOptions() {
   this.permissionsToRender = permissions.slice(0); //copy
   console.log(`permissionsToRender`,this.permissionsToRender)
   this.permissionsToRender.push({walletType:'scatter', chainNetwork:'eos_main'});
+  this.permissionsToRender.push({walletType:'ledger', chainNetwork:'eos_main'});
   return (
     <div>
         <div style={{marginTop:50}}>
