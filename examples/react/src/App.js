@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import React, { Component } from 'react';
 import LoginButton from './components/loginButton';
-import { OreId } from '@apimarket/oreid-js';
+import { OreId } from 'eos-auth';
 dotenv.config();
 
 const { 
@@ -35,7 +35,6 @@ async componentWillMount() {
 
 async loadUserFromLocalState() {
   const userInfo = await oreId.getUser();
-  console.log(userInfo);
   if((userInfo ||{}).accountName) {
     this.setState({userInfo, isLoggedIn:true});
   }
@@ -45,31 +44,28 @@ clearErrors() {
   this.setState({errorMessage:null});
 }
 
-async handleLogin(loginType) {
+async handleLogin(provider) {
   try {
     this.clearErrors();
-    let loginResponse = await oreId.login({ loginType });
-    console.log(`loginResponse:`, loginResponse);
+    let loginResponse = await oreId.login({ provider });
     //if the login responds with a loginUrl, then redirect the browser to it to start the user's OAuth login flow
-    let { isLoggedIn, account, loginUrl, wallet} = loginResponse;
+    let { isLoggedIn, account, loginUrl } = loginResponse;
     if(loginUrl) {
       //redirect browser to loginURL
       window.location = loginUrl;
     }
     this.setState({userInfo: {accountName:account}, isLoggedIn:isLoggedIn});
-    console.log(`Logged into transit wallet:`, wallet)
   } catch (error) {
     this.setState({errorMessage:error.message});
   }
 }
 
-async handleSignSampleTransaction(walletType, account, chainAccount, chainNetwork, permission) {
+async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork, permission) {
   try {
     this.clearErrors();
-    const transaction = this.getSampleTransaction(account, permission);
-    console.log("handleTx:", walletType, account, chainAccount, chainNetwork, permission, transaction);
+    const transaction = this.createSampleTransaction(account, permission);
     let signOptions = {
-      walletType:walletType || '',
+      provider:provider || '',  //wallet type (e.g. 'scatter' or 'oreid')
       account:account || '',
       broadcast:false,  //if broadcast=true, ore id will broadcast the transaction to the chain network for you 
       chainAccount:chainAccount || '',
@@ -93,6 +89,25 @@ async handleSignSampleTransaction(walletType, account, chainAccount, chainNetwor
   }
 }
 
+createSampleTransaction(actor, permission = 'active') {
+  const transaction = {
+    account: "eosio.token",
+    name: "transfer",
+    authorization: [{
+      actor,
+      permission,
+    }],
+    data: {
+      from: actor,
+      to: actor,
+      quantity: "0.0001 EOS",
+      memo: `random number: ${Math.random()}`
+    }
+  };
+  return transaction;
+}
+
+
 /*
    Handle the authCallback coming back from ORE-ID with an "account" parameter indicating that a user has logged in
 */
@@ -101,10 +116,14 @@ async handleAuthCallback() {
   if (/authcallback/i.test(url)) {
     const {account, errors, state} = await oreId.handleAuthResponse(url);
     if(!errors) {
-      const userInfo = await oreId.getUserInfoFromApi(account);
-      this.setState({userInfo, isLoggedIn:true});
+      this.loadUser(account);
     }
   }
+}
+
+async loadUser(account) {
+  const userInfo = await oreId.getUserInfoFromApi(account);
+  this.setState({userInfo, isLoggedIn:true});
 }
 
 /*
@@ -125,34 +144,28 @@ async handleSignCallback() {
 }
 
 handleLogout() {
+  this.clearErrors();
   this.setState({userInfo:{}, isLoggedIn:false});
   oreId.logout(); //clears local user state (stored in local storage or cookie)
 }
 
 handleSelectPermission(permissionIndex) {
-  let {chainAccount, chainNetwork, permission, walletType} = this.permissionsToRender[permissionIndex] || {};
+  let {chainAccount, chainNetwork, permission, externalWalletType:provider} = this.permissionsToRender[permissionIndex] || {};
   let {accountName} = this.state.userInfo;
-  walletType = walletType || 'oreid';  //default to ore id
-  this.handleSignSampleTransaction(walletType, accountName, chainAccount, chainNetwork, permission);
+  provider = provider || 'oreid';  //default to ore id
+  this.handleSignSampleTransaction(provider, accountName, chainAccount, chainNetwork, permission);
 }
 
-getSampleTransaction(actor, permission = 'active') {
-  actor = 'traylewineos';
-  const transaction = {
-    account: "eosio.token",
-    name: "transfer",
-    authorization: [{
-      actor,
-      permission,
-    }],
-    data: {
-      from: actor,
-      to: actor,
-      quantity: "0.0001 EOS",
-      memo: `random number: ${Math.random()}`
-    }
-  };
-  return transaction;
+async handleWalletButton(permissionIndex) {
+  try {
+    this.clearErrors();
+    let {provider} = this.walletButtons[permissionIndex] || {};
+    await oreId.discover(provider);
+    console.log(`userInfo:`,this.state.userInfo);
+    this.loadUser(this.state.userInfo.accountName); //show new keys discovered
+  } catch (error) {
+    this.setState({errorMessage:error.message});
+  }
 }
 
 render() {
@@ -183,7 +196,7 @@ renderUserInfo() {
   console.log(`this.state.userInfo:`,this.state.userInfo);
   const {accountName, email, name, picture, username} = this.state.userInfo;
   return (
-    <div>
+    <div style={{marginTop:50, marginLeft:40}}>
       <h3>User Info</h3>
       <img src={picture} style={{width:50,height:50}}/><br/>
       accountName: {accountName}<br/>
@@ -200,78 +213,95 @@ renderUserInfo() {
 renderSigningOptions() {
   let {accountName, email, name, picture, username, permissions} = this.state.userInfo;
   let chainNetworks = (permissions || []).map(p => p.chainNetwork);
-  this.permissionsToRender = permissions.slice(0); //copy
-  console.log(`permissionsToRender`,this.permissionsToRender)
-  this.permissionsToRender.push({walletType:'scatter', chainNetwork:'eos_main'});
-  this.permissionsToRender.push({walletType:'ledger', chainNetwork:'eos_main'});
+  this.permissionsToRender = (permissions ||[]).slice(0);
+  this.walletButtons = [
+    {provider:'scatter', chainNetwork:'eos_main'},
+    {provider:'ledger', chainNetwork:'eos_main'}
+  ];
+
   return (
     <div>
-        <div style={{marginTop:50}}>
-          <h3>Choose an option to try signing a transaction</h3>
-          <ul>
-            {this.signButtons(this.permissionsToRender)}
-          </ul>
+        <div style={{marginTop:50, marginLeft:20}}>
+            <h3>Sign transaction with one of your keys</h3>
+            <ul>
+              {this.renderSignButtons(this.permissionsToRender)}
+            </ul>
+            <h3 style={{marginTop:50}}>Or discover a key in your wallet</h3>
+            <ul>
+              {this.renderWalletButtons(this.walletButtons)}
+            </ul>
         </div>
     </div>
   );
 }
 
 //render one sign transaction button for each chain
-signButtons = (permissions) => 
+renderSignButtons = (permissions) => 
   permissions.map((permission, index) =>  {
-    let walletType = permission.walletType || 'oreid';
+    let provider = permission.externalWalletType || 'oreid';
     return (
-    <div style={{alignContent:'center'}}>
-      <LoginButton provider={walletType} data-tag={index} buttonStyle={{width:225, marginLeft:-20, marginTop:20, marginBottom:10}} text={`Sign with ${walletType}`} onClick={() => {this.handleSelectPermission(index)}}>{`Sign Transaction with ${walletType}`}</LoginButton>
-      {`Chain:${permission.chainNetwork} ---- Account:${permission.chainAccount} ---- Permission:${permission.permission}`}
-    </div>
+      <div style={{alignContent:'center'}}>
+        <LoginButton provider={provider} data-tag={index} buttonStyle={{width:225, marginLeft:-20, marginTop:20, marginBottom:10}} text={`Sign with ${provider}`} onClick={() => {this.handleSelectPermission(index)}}>{`Sign Transaction with ${provider}`}</LoginButton>
+        {`Chain:${permission.chainNetwork} ---- Account:${permission.chainAccount} ---- Permission:${permission.permission}`}
+      </div>
     )
   });
+
+  //render one sign transaction button for each chain
+renderWalletButtons = (walletButtons) =>
+  walletButtons.map((wallet, index) =>  {
+    let provider = wallet.provider;
+    return (
+      <div style={{alignContent:'center'}}>
+        <LoginButton provider={provider} data-tag={index} buttonStyle={{width:80, marginLeft:-20, marginTop:20, marginBottom:10}} text={`${provider}`} onClick={() => {this.handleWalletButton(index)}}>{`${provider}`}</LoginButton>
+      </div>
+    )
+});
 
 renderLoginButtons() {
   return (
     <div>
-      <LoginButton provider='scatter'
-                    buttonStyle={{width:250}}
-                    logoStyle={{marginLeft:0}}
-                    onClick={()=>this.handleLogin("scatter")}
-                    //  text='Log in with Scatter'
-      />
       <LoginButton provider='facebook'
-                  buttonStyle={{width:250, marginTop:'24px'}}
-                  logoStyle={{marginLeft:0}}
-                  onClick={()=>this.handleLogin("facebook")}
-                  //  text='Log in with Facebook'
+          buttonStyle={{width:250, marginTop:'24px'}}
+          logoStyle={{marginLeft:0}}
+          onClick={()=>this.handleLogin("facebook")}
+          //  text='Log in with Facebook'
       />
       <LoginButton provider='twitter'
-                  buttonStyle={{width:250, marginTop:'24px'}}
-                  logoStyle={{marginLeft:0}}
-                  onClick={()=>this.handleLogin("twitter")}
-                  //  text='Log in with Twitter'
+          buttonStyle={{width:250, marginTop:'24px'}}
+          logoStyle={{marginLeft:0}}
+          onClick={()=>this.handleLogin("twitter")}
+          //  text='Log in with Twitter'
       />
       <LoginButton provider='github'
-                  buttonStyle={{width:250, marginTop:'24px'}}
-                  logoStyle={{marginLeft:0}}
-                  onClick={()=>this.handleLogin("github")}
-                  //  text='Log in with Github'
+          buttonStyle={{width:250, marginTop:'24px'}}
+          logoStyle={{marginLeft:0}}
+          onClick={()=>this.handleLogin("github")}
+          //  text='Log in with Github'
       />
       <LoginButton provider='twitch'
-                  buttonStyle={{width:250, marginTop:'24px'}}
-                  logoStyle={{marginLeft:0}}
-                  onClick={()=>this.handleLogin("twitch")}
-                  //  text='Log in with Twitch'
+          buttonStyle={{width:250, marginTop:'24px'}}
+          logoStyle={{marginLeft:0}}
+          onClick={()=>this.handleLogin("twitch")}
+          //  text='Log in with Twitch'
       />
       <LoginButton provider='linkedin'
-                  buttonStyle={{width:250, marginTop:'24px'}}
-                  logoStyle={{marginLeft:0}}
-                  onClick={()=>this.handleLogin("linkedin")}
-                  //  text='Log in with LinkedIn'
+          buttonStyle={{width:250, marginTop:'24px'}}
+          logoStyle={{marginLeft:0}}
+          onClick={()=>this.handleLogin("linkedin")}
+          //  text='Log in with LinkedIn'
       />
       <LoginButton provider='google'
-                  buttonStyle={{width:250, marginTop:'24px'}}
-                  logoStyle={{marginLeft:0}}
-                  onClick={()=>this.handleLogin("google")}
-                  //  text='Log in with Google'
+          buttonStyle={{width:250, marginTop:'24px'}}
+          logoStyle={{marginLeft:0}}
+          onClick={()=>this.handleLogin("google")}
+          //  text='Log in with Google'
+      />
+      <LoginButton provider='scatter'
+          buttonStyle={{width:250, marginTop:'24px'}}
+          logoStyle={{marginLeft:0}}
+          onClick={()=>this.handleLogin("scatter")}
+          //  text='Log in with Scatter'
       />
     </div>
   )
