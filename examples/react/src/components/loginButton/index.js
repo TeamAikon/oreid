@@ -2,6 +2,8 @@ import React, {Component} from 'react';
 import Roboto from './resources/Roboto-Medium.ttf'
 
 let validProviders=[
+  'oreid',
+  'scatter',
   'facebook',
   'github',
   'google',
@@ -11,6 +13,7 @@ let validProviders=[
   'twitch',
   'twitter',
   'wechat',
+  'ledger'
 ]
 
 var defaultButtonStyle = {
