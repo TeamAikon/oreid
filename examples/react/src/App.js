@@ -24,7 +24,7 @@ class App extends Component {
     };
     this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
-    this.handleSelectPermission = this.handleSelectPermission.bind(this);
+    this.handleSignButton = this.handleSignButton.bind(this);
   }
 
 async componentWillMount() {
@@ -40,8 +40,43 @@ async loadUserFromLocalState() {
   }
 }
 
+async loadUserFromApi(account) {
+  try {
+    const userInfo = await oreId.getUserInfoFromApi(account);
+    this.setState({userInfo, isLoggedIn:true});
+  } catch (error) {
+    this.setState({errorMessage:error.message});
+  }
+}
+
 clearErrors() {
   this.setState({errorMessage:null});
+  this.setState({signedTransaction:null});
+}
+
+handleLogout() {
+  this.clearErrors();
+  this.setState({userInfo:{}, isLoggedIn:false});
+  oreId.logout(); //clears local user state (stored in local storage or cookie)
+}
+
+async handleSignButton(permissionIndex) {
+  this.clearErrors();
+  let {chainAccount, chainNetwork, permission, externalWalletType:provider} = this.permissionsToRender[permissionIndex] || {};
+  let {accountName} = this.state.userInfo;
+  provider = provider || 'oreid';  //default to ore id
+  await this.handleSignSampleTransaction(provider, accountName, chainAccount, chainNetwork, permission);
+}
+
+async handleWalletButton(permissionIndex) {
+  try {
+    this.clearErrors();
+    let {provider} = this.walletButtons[permissionIndex] || {};
+    await oreId.discover(provider);
+    this.loadUserFromApi(this.state.userInfo.accountName); //show new keys discovered
+  } catch (error) {
+    this.setState({errorMessage:error.message});
+  }
 }
 
 async handleLogin(provider) {
@@ -63,7 +98,7 @@ async handleLogin(provider) {
 async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork, permission) {
   try {
     this.clearErrors();
-    const transaction = this.createSampleTransaction(account, permission);
+    const transaction = this.createSampleTransaction(chainAccount, permission);
     let signOptions = {
       provider:provider || '',  //wallet type (e.g. 'scatter' or 'oreid')
       account:account || '',
@@ -116,14 +151,9 @@ async handleAuthCallback() {
   if (/authcallback/i.test(url)) {
     const {account, errors, state} = await oreId.handleAuthResponse(url);
     if(!errors) {
-      this.loadUser(account);
+      this.loadUserFromApi(account);
     }
   }
-}
-
-async loadUser(account) {
-  const userInfo = await oreId.getUserInfoFromApi(account);
-  this.setState({userInfo, isLoggedIn:true});
 }
 
 /*
@@ -132,7 +162,6 @@ async loadUser(account) {
 async handleSignCallback() {
   const url = window.location.href;
   if (/signcallback/i.test(url)) {
-    console.log(`got to handleSignCallback`);
     const {signedTransaction, state, errors} = await oreId.handleSignResponse(url);
     if(!errors && signedTransaction) {
       this.setState({signedTransaction:JSON.stringify(signedTransaction)});
@@ -140,31 +169,6 @@ async handleSignCallback() {
     else {
       this.setState({errorMessage:errors.join(", ")});
     }
-  }
-}
-
-handleLogout() {
-  this.clearErrors();
-  this.setState({userInfo:{}, isLoggedIn:false});
-  oreId.logout(); //clears local user state (stored in local storage or cookie)
-}
-
-handleSelectPermission(permissionIndex) {
-  let {chainAccount, chainNetwork, permission, externalWalletType:provider} = this.permissionsToRender[permissionIndex] || {};
-  let {accountName} = this.state.userInfo;
-  provider = provider || 'oreid';  //default to ore id
-  this.handleSignSampleTransaction(provider, accountName, chainAccount, chainNetwork, permission);
-}
-
-async handleWalletButton(permissionIndex) {
-  try {
-    this.clearErrors();
-    let {provider} = this.walletButtons[permissionIndex] || {};
-    await oreId.discover(provider);
-    console.log(`userInfo:`,this.state.userInfo);
-    this.loadUser(this.state.userInfo.accountName); //show new keys discovered
-  } catch (error) {
-    this.setState({errorMessage:error.message});
   }
 }
 
@@ -193,12 +197,11 @@ render() {
 }
 
 renderUserInfo() {
-  console.log(`this.state.userInfo:`,this.state.userInfo);
   const {accountName, email, name, picture, username} = this.state.userInfo;
   return (
     <div style={{marginTop:50, marginLeft:40}}>
       <h3>User Info</h3>
-      <img src={picture} style={{width:50,height:50}}/><br/>
+      <img src={picture} style={{width:50,height:50}} alt={'user'}/><br/>
       accountName: {accountName}<br/>
       name: {name}<br/>
       username: {username}<br/>
@@ -210,15 +213,14 @@ renderUserInfo() {
   );
 }
 
+
 renderSigningOptions() {
-  let {accountName, email, name, picture, username, permissions} = this.state.userInfo;
-  let chainNetworks = (permissions || []).map(p => p.chainNetwork);
+  let {permissions} = this.state.userInfo;
   this.permissionsToRender = (permissions ||[]).slice(0);
   this.walletButtons = [
     {provider:'scatter', chainNetwork:'eos_main'},
     {provider:'ledger', chainNetwork:'eos_main'}
   ];
-
   return (
     <div>
         <div style={{marginTop:50, marginLeft:20}}>
@@ -241,7 +243,7 @@ renderSignButtons = (permissions) =>
     let provider = permission.externalWalletType || 'oreid';
     return (
       <div style={{alignContent:'center'}}>
-        <LoginButton provider={provider} data-tag={index} buttonStyle={{width:225, marginLeft:-20, marginTop:20, marginBottom:10}} text={`Sign with ${provider}`} onClick={() => {this.handleSelectPermission(index)}}>{`Sign Transaction with ${provider}`}</LoginButton>
+        <LoginButton provider={provider} data-tag={index} buttonStyle={{width:225, marginLeft:-20, marginTop:20, marginBottom:10}} text={`Sign with ${provider}`} onClick={() => {this.handleSignButton(index)}}>{`Sign Transaction with ${provider}`}</LoginButton>
         {`Chain:${permission.chainNetwork} ---- Account:${permission.chainAccount} ---- Permission:${permission.permission}`}
       </div>
     )
