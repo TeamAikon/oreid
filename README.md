@@ -4,11 +4,13 @@
 
 
 
-ORE ID allows anyone to access your dApp with one-click sign up and blockchain account creation - using a login flow that they are already familiar with. ORE ID supports Google, Facebook, Github, Kakao, Line, Linkedin, Twitter, Twitch, and practically any other OAuth-enabled login provider.
+ORE ID allows anyone to access your dApp with one-click sign up and blockchain account creation - using a login flow that they are already familiar with. ORE ID supports Google, Facebook, Github, Linkedin, Twitter, Twitch, and practically any other OAuth-enabled login provider.
 
 With ORE ID, users of your web or mobile app get an on-chain account upon first sign-in. Their private key is encrypted with a PIN of their choosing and stored for them so they don't have to remember their blockchain accounts or keys.
 
-ORE ID also serves as a blockchain wallet for your your users. Your app can request a user to sign a transaction using their PIN (to decrypt their keys and sign the transaction).
+ORE ID also serves as a blockchain wallet for your your users. Your app can request a user to sign a transaction using their PIN to decrypt their keys.
+
+ORE ID is the easiest way to add support for Scatter, Ledger Nano S, Metro and every other EOS wallet that supports the new eos-transit standard. Just add our eos-auth library and your app instantly supports these popular wallets.
 
 ORE ID removes the friction between your app and your future users. 
 
@@ -28,46 +30,54 @@ Apply [here](https://aikon.com/ore-id) for early access
 For Javascript apps, install the npm client module
 
 ```
-npm install @apimarket/oreid-js 
+npm install eos-auth
 ```
 
-### Step 3 - Keep User Account and Data  
+### Step 3 - Call Login
 
-After a login, your app will receive the user's blockchain account name (which maps to public/private keys). Store this account to identify your user. You can also call the user endpoint to get the user's basic identity info (e.g. name, email, avatar picture). If your app is a web app or React Native app, this library will automatically store the user's basic info in local storage. You can retrieve it by calling getUser().
+Call login and specify a provider (facebook, scatter, etc.) After login, your app will receive the user's blockchain account name (which maps to public/private keys). The user's info will automatically be stored in local state (cookie, etc.) and will be restored the next time the user uses your app. You can also call the user endpoint at any time to get the user's basic identity info (e.g. name, email, avatar picture)
 
-### Step 4 - User can view and control account on the blockchain  
+### Step 4 - Call Sign
+
+When your app needs the user to sign a blockchain transaction, you just specify the chain name (e.g. eos_main) and chain account if you know it. If you don't know which EOS blockchain accounts the user has or in which wallet they are stored, you can call the discover function that will prompt the user to unlock their wallet. Public keys stored in the wallet will be automatically remembered so you can help the user find the right wallet and keys quickly the next time they need to repeat a transaction. Awesome!
+
+### Step 5 - User can view and control account on the blockchain  
 
 The account is a blockchain account that can be easily viewed on the public blockchain using a block explorer.
 
 The user's account's private key can be transferred to his offline wallet when requested.
 
-Search the chain for the account details and token balances like this - [http://explorer.openrights.exchange/accounts/1pxnubvyqceu](http://explorer.openrights.exchange/accounts/1pxnubvyqceu)
+Search the chain for account details and token balances like this - [http://explorer.openrights.exchange/accounts/1pxnubvyqceu](http://explorer.openrights.exchange/accounts/1pxnubvyqceu)
 
 
 ## Example code
-```
+```javascript
 //Initialize the library
+let oreId = new OreId({ appName:"My App", appId, apiKey, ... })
 
-let oreId = new OreId({ apiKey, oreIdUrl });
-
-//Start the OAuth flow by setting the user's browser to this URL
-let authUrl = await oreId.getOreIdAuthUrl({ loginType, callbackUrl, backgroundColor });
+//Start the OAuth flow by setting browser to URL returned by login
+let loginResponse = await oreId.login({provider:'facebook'});
+window.location = loginResponse.loginUrl
 
 //Get the user's info given a blockchain account
-let userInfo = await oreId.getUserInfoFromApi(account);
+let userInfo = await oreId.getUserInfoFromApi(account)
+
+//Start the ORE ID signing process
+let signResponse = await oreId.sign(signOptions)
+window.location = signResponse.signUrl
 
 OR
 
-//Get the logged-in user's info (automatically saved in local storage)
-let userInfo = await oreId.getUser();
-
+//Start the signing process using local wallet app
+let signResponse = await oreId.sign({provider:'scatter', chainNetwork:'eos_main', transaction, ...})
+console.log(signResponse.signedTransaction)
 ```
 
 ## Express Middleware
 
 This library includes Express middleware that you can use to simplify handling the callbacks from the ORE ID service. It extracts the results from the /auth and /sign callbacks and attaches info to the request object (e.g. req.user)
 
-```
+```javascript
 app.use('/authcallback', authCallbackHandler(oreId) );
 ```
 
@@ -86,3 +96,4 @@ Refer to the examples folder for the following sample projects
 
 [Frequently Asked Questions](https://drive.google.com/open?id=1Nx6qm7z8TQRM8S-onmcP0H--21z-gzYDBVEzzfcgE9g)
 
+[How ORE ID Works](https://docs.google.com/document/d/1n09swvocpR2WkP5iFc_VMrmmlnx3S1j72Zy6yDvcuYw/edit?usp=sharing)
