@@ -16,6 +16,7 @@ ORE ID removes the friction between your app and your future users.
 
 <img src="./docs/images/OREID-GitHub-diagram-01.png">
 
+
 # Usage
 
 
@@ -97,3 +98,5 @@ Refer to the examples folder for the following sample projects
 [Frequently Asked Questions](https://drive.google.com/open?id=1Nx6qm7z8TQRM8S-onmcP0H--21z-gzYDBVEzzfcgE9g)
 
 [How ORE ID Works](https://docs.google.com/document/d/1n09swvocpR2WkP5iFc_VMrmmlnx3S1j72Zy6yDvcuYw/edit?usp=sharing)
+
+<img src="./docs/images/eos-transit-logo.png">
