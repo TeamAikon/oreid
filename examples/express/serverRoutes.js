@@ -24,6 +24,13 @@ export function displayUser() {
     }
 }
 
+export function helpPrompt() {
+    return function(req, res, next) {
+        let message = 'Start login flow using /login route. Try it like this: {http://yourserver:port}/login/facebook';
+        return res.status(200).send(message);
+    }
+}
+
 //Generic async handler for Express Middleware
 export const asyncHandler = fn => (req, res, next) => {
     Promise

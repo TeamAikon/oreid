@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-import {displayUser, loginHandler} from './serverRoutes'
+import {displayUser, helpPrompt, loginHandler} from './serverRoutes'
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -21,5 +21,7 @@ app.use('/login/:logintype', loginHandler(oreId));
 
 app.use('/authcallback', authCallbackHandler(oreId), displayUser());
 app.use('/signcallback', signCallbackHandler(oreId));
+
+app.use('/', helpPrompt());
 
 app.listen(PORT, () => console.log(`Server listening on port: ${PORT}`));
