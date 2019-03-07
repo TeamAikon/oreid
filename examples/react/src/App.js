@@ -21,6 +21,7 @@ class App extends Component {
     super(props)
     this.state = {
       isLoggedIn: false,
+      userInfo: {}
     };
     this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
@@ -34,7 +35,7 @@ async componentWillMount() {
 }
 
 async loadUserFromLocalState() {
-  const userInfo = await oreId.getUser();
+  const userInfo = await oreId.getUser() || {};
   if((userInfo ||{}).accountName) {
     this.setState({userInfo, isLoggedIn:true});
   }
@@ -42,7 +43,7 @@ async loadUserFromLocalState() {
 
 async loadUserFromApi(account) {
   try {
-    const userInfo = await oreId.getUserInfoFromApi(account);
+    const userInfo = await oreId.getUserInfoFromApi(account) || {};
     this.setState({userInfo, isLoggedIn:true});
   } catch (error) {
     this.setState({errorMessage:error.message});
@@ -73,7 +74,9 @@ async handleWalletButton(permissionIndex) {
     this.clearErrors();
     let {provider} = this.walletButtons[permissionIndex] || {};
     await oreId.discover(provider);
-    this.loadUserFromApi(this.state.userInfo.accountName); //show new keys discovered
+    if(provider === 'oreid') {
+      this.loadUserFromApi(this.state.userInfo.accountName); //reload user from ore id api - to show new keys discovered
+    }
   } catch (error) {
     this.setState({errorMessage:error.message});
   }
