@@ -4,6 +4,7 @@
 
     },
     "logoStyle":{
+        "marginLeft":12
     },
     "text":"Sign with Ledger"
 }

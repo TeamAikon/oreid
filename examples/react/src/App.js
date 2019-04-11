@@ -51,8 +51,11 @@ async loadUserFromApi(account) {
 }
 
 clearErrors() {
-  this.setState({errorMessage:null});
-  this.setState({signedTransaction:null});
+  this.setState({
+    errorMessage:null,
+    signedTransaction:null,
+    signState:null
+  });
 }
 
 handleLogout() {
@@ -167,7 +170,10 @@ async handleSignCallback() {
   if (/signcallback/i.test(url)) {
     const {signedTransaction, state, errors} = await oreId.handleSignResponse(url);
     if(!errors && signedTransaction) {
-      this.setState({signedTransaction:JSON.stringify(signedTransaction)});
+      this.setState({
+        signedTransaction:JSON.stringify(signedTransaction),
+        signState:state
+      });
     }
     else {
       this.setState({errorMessage:errors.join(", ")});
@@ -176,24 +182,28 @@ async handleSignCallback() {
 }
 
 render() {
+  let {errorMessage, isLoggedIn, signedTransaction, signState} = this.state;
   return (
     <div>
       <div>
-        {!this.state.isLoggedIn &&
+        {!isLoggedIn &&
           this.renderLoginButtons()
         }
-        {this.state.isLoggedIn &&
+        {isLoggedIn &&
           this.renderUserInfo()
         }
-        {this.state.isLoggedIn &&
+        {isLoggedIn &&
           this.renderSigningOptions()
         }
       </div>
       <div style={{color:'red', margin:'50px'}}>
-        {(this.state.errorMessage) && this.state.errorMessage}
+        {(errorMessage) && errorMessage}
       </div>
-      <div style={{color:'blue', margin:'50px'}}>
-        {(this.state.signedTransaction) && this.state.signedTransaction}
+      <div style={{color:'blue', marginLeft:'50px', marginTop:'50px'}}>
+        {(signedTransaction) && `Returned signed transaction: ${signedTransaction}`}
+      </div>
+      <div style={{color:'blue', marginLeft:'50px',marginTop:'10px'}}>
+        {(signState) && `Returned state param: ${signState}`}
       </div>
     </div>
   );
@@ -222,7 +232,10 @@ renderSigningOptions() {
   this.permissionsToRender = (permissions ||[]).slice(0);
   this.walletButtons = [
     {provider:'scatter', chainNetwork:'eos_main'},
-    {provider:'ledger', chainNetwork:'eos_main'}
+    {provider:'ledger', chainNetwork:'eos_main'},
+    {provider:'lynx', chainNetwork:'eos_main'},
+    {provider:'meetone', chainNetwork:'eos_main'},
+    {provider:'tokenpocket', chainNetwork:'eos_main'}
   ];
   return (
     <div>

@@ -1,0 +1,11 @@
+{
+    "buttonStyle":{
+        "backgroundColor": "#808080"
+    },
+    "logoStyle":{
+        "width":40,
+        "height":40,
+        "marginLeft":5
+    },
+    "text":"Sign with MeetOne"
+}

@@ -13,7 +13,10 @@ let validProviders=[
   'twitch',
   'twitter',
   'wechat',
-  'ledger'
+  'ledger',
+  'lynx',
+  'meetone',
+  'tokenpocket'
 ]
 
 var defaultButtonStyle = {
@@ -33,7 +36,8 @@ var defaultButtonStyle = {
 
 const defaultLogoStyle = {
   width: '24px',
-  marginRight: '14px',
+  marginLeft: '10px',
+  marginRight: '10px',
   verticalAlign: 'bottom'
 }
 
