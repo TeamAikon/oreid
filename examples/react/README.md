@@ -13,7 +13,6 @@ To run sample code:
     npm start
     ```
 
-
 Open [http://localhost:3000](http://localhost:3000) to view the running app.
 
 The code to review is in App.js
@@ -21,3 +20,14 @@ The code to review is in App.js
 The LoginButton React Component simplifies styling of common OAuth providers</br>
 
 If you use the callback handler, it stores the basic user info in a cookie (or local app storage). Local user info can be retrieved by calling getUser() and can be cleared by calling logout()
+
+
+### Testing with Ledger Nano S
+
+To test this sample app with a Ledger Nano S, this app must be hosting using HTTPS. Start the app with the following command:
+
+```
+HTTPS=true npm start
+```
+
+You must also be using the latest Ledger BIOS, Ledger EOS App, and Google Chrome (73.0.3683.103 or higher)
