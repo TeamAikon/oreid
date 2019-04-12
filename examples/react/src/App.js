@@ -2,7 +2,14 @@ import dotenv from 'dotenv';
 import React, { Component } from 'react';
 import LoginButton from './components/loginButton';
 import { OreId } from 'eos-auth';
+import scatterProvider from 'eos-transit-scatter-provider';
+import ledgerProvider from 'eos-transit-ledger-provider'
+import lynxProvider from 'eos-transit-lynx-provider';
+import meetoneProvider from 'eos-transit-meetone-provider';
+import tokenpocketProvider from 'eos-transit-tokenpocket-provider';
 dotenv.config();
+
+let chainNetworkForExample = 'eos_kylin';
 
 const { 
   REACT_APP_OREID_APP_ID: appId,              // Provided when you register your app
@@ -13,8 +20,17 @@ const {
   REACT_APP_BACKGROUND_COLOR:backgroundColor  // Background color shown during login flow
 } = process.env;
 
+let eosTransitWalletProviders = [
+  scatterProvider(),
+  // ledgerProvider(), 
+  ledgerProvider({ pathIndexList: [ 0, 1, 2, 35 ] }),
+  lynxProvider(),
+  meetoneProvider(),
+  tokenpocketProvider(),
+]
+
 //intialize oreId
-let oreId = new OreId({ appName:"ORE ID Sample App", appId, apiKey, oreIdUrl, authCallbackUrl, signCallbackUrl, backgroundColor });
+let oreId = new OreId({ appName:"ORE ID Sample App", appId, apiKey, oreIdUrl, authCallbackUrl, signCallbackUrl, backgroundColor, eosTransitWalletProviders });
 
 class App extends Component {
   constructor(props) {
@@ -72,23 +88,28 @@ async handleSignButton(permissionIndex) {
   await this.handleSignSampleTransaction(provider, accountName, chainAccount, chainNetwork, permission);
 }
 
-async handleWalletButton(permissionIndex) {
+async handleWalletDiscoverButton(permissionIndex) {
+  let chainNetwork = chainNetworkForExample;
   try {
     this.clearErrors();
     let {provider} = this.walletButtons[permissionIndex] || {};
-    await oreId.discover(provider);
-    if(provider === 'oreid') {
-      this.loadUserFromApi(this.state.userInfo.accountName); //reload user from ore id api - to show new keys discovered
+    if(oreId.canDiscover(provider)) {
+      let accountsAndPermissions = await oreId.discover(provider, chainNetwork);
+    } else {
+      console.log(`Provider doesn't support discover, so we'll call login instead`);
+      await oreId.login({ provider, chainNetwork });
     }
+    this.loadUserFromApi(this.state.userInfo.accountName); //reload user from ore id api - to show new keys discovered
   } catch (error) {
     this.setState({errorMessage:error.message});
   }
 }
 
 async handleLogin(provider) {
+  let chainNetwork = chainNetworkForExample;
   try {
     this.clearErrors();
-    let loginResponse = await oreId.login({ provider });
+    let loginResponse = await oreId.login({ provider, chainNetwork });
     //if the login responds with a loginUrl, then redirect the browser to it to start the user's OAuth login flow
     let { isLoggedIn, account, loginUrl } = loginResponse;
     if(loginUrl) {
@@ -205,6 +226,9 @@ render() {
       <div style={{color:'blue', marginLeft:'50px',marginTop:'10px'}}>
         {(signState) && `Returned state param: ${signState}`}
       </div>
+      {isLoggedIn &&
+          this.renderDiscoverOptions()
+      }
     </div>
   );
 }
@@ -230,13 +254,7 @@ renderUserInfo() {
 renderSigningOptions() {
   let {permissions} = this.state.userInfo;
   this.permissionsToRender = (permissions ||[]).slice(0);
-  this.walletButtons = [
-    {provider:'scatter', chainNetwork:'eos_main'},
-    {provider:'ledger', chainNetwork:'eos_main'},
-    {provider:'lynx', chainNetwork:'eos_main'},
-    {provider:'meetone', chainNetwork:'eos_main'},
-    {provider:'tokenpocket', chainNetwork:'eos_main'}
-  ];
+
   return (
     <div>
         <div style={{marginTop:50, marginLeft:20}}>
@@ -244,9 +262,26 @@ renderSigningOptions() {
             <ul>
               {this.renderSignButtons(this.permissionsToRender)}
             </ul>
+        </div>
+    </div>
+  );
+}
+
+renderDiscoverOptions() {
+  let chainNetwork = chainNetworkForExample;
+  this.walletButtons = [
+    {provider:'scatter', chainNetwork},
+    {provider:'ledger', chainNetwork},
+    {provider:'lynx', chainNetwork},
+    {provider:'meetone', chainNetwork},
+    {provider:'tokenpocket', chainNetwork}
+  ];
+  return (
+    <div>
+        <div style={{marginTop:50, marginLeft:20}}>
             <h3 style={{marginTop:50}}>Or discover a key in your wallet</h3>
             <ul>
-              {this.renderWalletButtons(this.walletButtons)}
+              {this.renderWalletDiscoverButtons(this.walletButtons)}
             </ul>
         </div>
     </div>
@@ -266,12 +301,12 @@ renderSignButtons = (permissions) =>
   });
 
   //render one sign transaction button for each chain
-renderWalletButtons = (walletButtons) =>
+  renderWalletDiscoverButtons = (walletButtons) =>
   walletButtons.map((wallet, index) =>  {
     let provider = wallet.provider;
     return (
       <div style={{alignContent:'center'}}>
-        <LoginButton provider={provider} data-tag={index} buttonStyle={{width:80, marginLeft:-20, marginTop:20, marginBottom:10}} text={`${provider}`} onClick={() => {this.handleWalletButton(index)}}>{`${provider}`}</LoginButton>
+        <LoginButton provider={provider} data-tag={index} buttonStyle={{width:80, marginLeft:-20, marginTop:20, marginBottom:10}} text={`${provider}`} onClick={() => {this.handleWalletDiscoverButton(index)}}>{`${provider}`}</LoginButton>
       </div>
     )
 });

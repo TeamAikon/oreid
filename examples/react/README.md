@@ -9,6 +9,7 @@ To run sample code:
 
     ```
     cd examples/react
+    cp .env.example .env
     npm install
     npm start
     ```

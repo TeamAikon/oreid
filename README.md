@@ -70,7 +70,7 @@ window.location = signResponse.signUrl
 OR
 
 //Start the signing process using local wallet app
-let signResponse = await oreId.sign({provider:'scatter', chainNetwork:'eos_main', transaction, ...})
+let signResponse = await oreId.sign({provider:'scatter', chainNetwork:'eos_kylin', transaction, ...})
 console.log(signResponse.signedTransaction)
 ```
 
