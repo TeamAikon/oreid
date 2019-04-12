@@ -29,9 +29,6 @@ let eosTransitWalletProviders = [
   tokenpocketProvider(),
 ]
 
-//intialize oreId
-let oreId = new OreId({ appName:"ORE ID Sample App", appId, apiKey, oreIdUrl, authCallbackUrl, signCallbackUrl, backgroundColor, eosTransitWalletProviders });
-
 class App extends Component {
   constructor(props) {
     super(props)
@@ -44,6 +41,12 @@ class App extends Component {
     this.handleSignButton = this.handleSignButton.bind(this);
   }
 
+//called by library to set local busy state
+setBusyCallback = (isBusy) => {this.setState({isBusy})};
+
+//intialize oreId
+oreId = new OreId({ appName:"ORE ID Sample App", appId, apiKey, oreIdUrl, authCallbackUrl, signCallbackUrl, backgroundColor, eosTransitWalletProviders, setBusyCallback:this.setBusyCallback});
+
 async componentWillMount() {
   this.loadUserFromLocalState();
   this.handleAuthCallback();
@@ -51,7 +54,7 @@ async componentWillMount() {
 }
 
 async loadUserFromLocalState() {
-  const userInfo = await oreId.getUser() || {};
+  const userInfo = await this.oreId.getUser() || {};
   if((userInfo ||{}).accountName) {
     this.setState({userInfo, isLoggedIn:true});
   }
@@ -59,7 +62,7 @@ async loadUserFromLocalState() {
 
 async loadUserFromApi(account) {
   try {
-    const userInfo = await oreId.getUserInfoFromApi(account) || {};
+    const userInfo = await this.oreId.getUserInfoFromApi(account) || {};
     this.setState({userInfo, isLoggedIn:true});
   } catch (error) {
     this.setState({errorMessage:error.message});
@@ -77,7 +80,7 @@ clearErrors() {
 handleLogout() {
   this.clearErrors();
   this.setState({userInfo:{}, isLoggedIn:false});
-  oreId.logout(); //clears local user state (stored in local storage or cookie)
+  this.oreId.logout(); //clears local user state (stored in local storage or cookie)
 }
 
 async handleSignButton(permissionIndex) {
@@ -93,11 +96,11 @@ async handleWalletDiscoverButton(permissionIndex) {
   try {
     this.clearErrors();
     let {provider} = this.walletButtons[permissionIndex] || {};
-    if(oreId.canDiscover(provider)) {
-      let accountsAndPermissions = await oreId.discover(provider, chainNetwork);
+    if(this.oreId.canDiscover(provider)) {
+      await this.oreId.discover(provider, chainNetwork);
     } else {
       console.log(`Provider doesn't support discover, so we'll call login instead`);
-      await oreId.login({ provider, chainNetwork });
+      await this.oreId.login({ provider, chainNetwork });
     }
     this.loadUserFromApi(this.state.userInfo.accountName); //reload user from ore id api - to show new keys discovered
   } catch (error) {
@@ -109,7 +112,7 @@ async handleLogin(provider) {
   let chainNetwork = chainNetworkForExample;
   try {
     this.clearErrors();
-    let loginResponse = await oreId.login({ provider, chainNetwork });
+    let loginResponse = await this.oreId.login({ provider, chainNetwork });
     //if the login responds with a loginUrl, then redirect the browser to it to start the user's OAuth login flow
     let { isLoggedIn, account, loginUrl } = loginResponse;
     if(loginUrl) {
@@ -136,7 +139,7 @@ async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork,
       transaction,
       accountIsTransactionPermission:false
     }
-    let signResponse = await oreId.sign(signOptions);
+    let signResponse = await this.oreId.sign(signOptions);
     //if the sign responds with a signUrl, then redirect the browser to it to call the signing flow
     let { signUrl, signedTransaction } = signResponse || {};
     if(signUrl) {
@@ -176,7 +179,7 @@ createSampleTransaction(actor, permission = 'active') {
 async handleAuthCallback() {
   const url = window.location.href;
   if (/authcallback/i.test(url)) {
-    const {account, errors, state} = await oreId.handleAuthResponse(url);
+    const {account, errors, state} = await this.oreId.handleAuthResponse(url);
     if(!errors) {
       this.loadUserFromApi(account);
     }
@@ -189,7 +192,7 @@ async handleAuthCallback() {
 async handleSignCallback() {
   const url = window.location.href;
   if (/signcallback/i.test(url)) {
-    const {signedTransaction, state, errors} = await oreId.handleSignResponse(url);
+    const {signedTransaction, state, errors} = await this.oreId.handleSignResponse(url);
     if(!errors && signedTransaction) {
       this.setState({
         signedTransaction:JSON.stringify(signedTransaction),
@@ -203,7 +206,7 @@ async handleSignCallback() {
 }
 
 render() {
-  let {errorMessage, isLoggedIn, signedTransaction, signState} = this.state;
+  let {errorMessage, isBusy, isLoggedIn, signedTransaction, signState} = this.state;
   return (
     <div>
       <div>
@@ -217,6 +220,9 @@ render() {
           this.renderSigningOptions()
         }
       </div>
+      <h3 style={{color:'green', margin:'50px'}}>
+        {(isBusy) && 'working...'}
+      </h3>
       <div style={{color:'red', margin:'50px'}}>
         {(errorMessage) && errorMessage}
       </div>
