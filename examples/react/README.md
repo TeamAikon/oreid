@@ -4,12 +4,11 @@ A simple ReactJS example that demonstrates use of the oreid-js and provides a fe
 
 To run sample code:
 
-- You'll need your App ID and API Key - you get them when you register your app with ORE ID (Note:  .env.example includes an app ID and key for a demo app you can use until you register your own app)
-- Populate .env file in root of project directory (copy .env.example to examples/react/.env)
+- You'll need your App ID and API Key - you get them when you register your app with ORE ID
+- Populate .env file in root of project directory with your appId and apiKey (it will start with keys for a demo app)
 
     ```
     cd examples/react
-    cp .env.example .env
     npm install
     npm start
     ```
