@@ -1,7 +1,7 @@
 {
     "buttonStyle":{
-        "backgroundColor": "#39C5AB"
-
+        "backgroundColor": "#FFFFFF",
+        "color": "#142533"
     },
     "logoStyle":{
         "marginLeft":12
