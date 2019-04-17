@@ -35,10 +35,10 @@ var defaultButtonStyle = {
 }
 
 const defaultLogoStyle = {
-  width: '24px',
+  width: '18px',
   marginLeft: '10px',
   marginRight: '10px',
-  verticalAlign: 'bottom'
+  verticalAlign: 'text-bottom'
 }
 
 class SocialLoginButton extends Component {
@@ -64,10 +64,16 @@ class SocialLoginButton extends Component {
   render () {
     //TODO: Check that provider is one of the valid types
     let { provider, onClickCallback, buttonStyle, logoStyle, text} = this.state;
+    const smallLogo = require(`./resources/${provider}-logo.png`);
+    const mediumLogo = require(`./resources/${provider}-logo@2x.png`);
+    const largeLogo = require(`./resources/${provider}-logo@3x.png`);
     return (
       <div>
-        <button style={buttonStyle} onClick={() => {onClickCallback(provider)}}> 
-          <img style={logoStyle} src={require(`./resources/${provider}-logo.png`)} alt={text}/>{text}
+        <button style={buttonStyle} onClick={() => {onClickCallback(provider)}}>
+          <img style={logoStyle} src={smallLogo}
+               srcset={`${smallLogo} 1x, ${mediumLogo} 2x, ${largeLogo} 3x`}
+               alt={text}/>
+          {text}
         </button>
       </div>
     );
