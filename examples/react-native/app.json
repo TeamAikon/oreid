@@ -10,9 +10,7 @@
       "CFBundleURLTypes": [
         {
           "CFBundleURLName": "com.aikon.oreid.sample.reactnative",
-          "CFBundleURLSchemes": [
-            "oreidreactnativesample"
-          ]
+          "CFBundleURLSchemes": ["oreidreactnativesample"]
         }
       ]
     }

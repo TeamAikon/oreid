@@ -1,6 +1,6 @@
 # Express Server Example
 
-A complete Express server example that demonstrates use of the oreid-js middleware. 
+A complete Express server example that demonstrates use of the oreid-js middleware.
 
 To run sample code:
 
@@ -14,9 +14,10 @@ npm install
 node index.js
 
 //to trigger login flow
-http://localhost:8888/login/facebook 
+http://localhost:8888/login/facebook
 
 ```
+
 Note: When the callback is handled by handleAuthResponse middleware, it adds the new user state to the request object (e.g. req.user).
 
 # Express Middleware
@@ -28,7 +29,3 @@ oreid-js includes Express middleware that you can use to simplify handling the c
 
 app.use('/authcallback', authCallbackHandler(oreId) );
 ```
-
-
-
-
