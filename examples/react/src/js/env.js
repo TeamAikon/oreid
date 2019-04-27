@@ -9,6 +9,7 @@ const {
   REACT_APP_SIGN_CALLBACK: signCallbackUrl, // The url called by the server when transaction signing flow is finished - must match one of the callback strings listed in the App Registration
   REACT_APP_OREID_URL: oreIdUrl, // HTTPS Address of OREID server
   REACT_APP_BACKGROUND_COLOR: backgroundColor, // Background color shown during login flow
+  REACT_APP_CHAIN_NETWORK: chainNetwork,
 } = process.env;
 
 class ENV {
@@ -19,6 +20,7 @@ class ENV {
     this.signCallbackUrl = signCallbackUrl;
     this.oreIdUrl = oreIdUrl;
     this.backgroundColor = backgroundColor;
+    this.chainNetwork = chainNetwork;
   }
 }
 

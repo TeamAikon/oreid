@@ -8,8 +8,7 @@ import DiscoveryButtons from './components/DiscoveryButtons';
 import Utils from './js/utils';
 import SigningOptions from './components/SigningOptions';
 import MessageBox from './components/MessageBox';
-
-const chainNetworkForExample = 'eos_kylin';
+import ENV from './js/env';
 
 const App = observer(
   class App extends Component {
@@ -76,15 +75,14 @@ const App = observer(
     }
 
     async handleWalletDiscoverButton(permissionIndex) {
-      const chainNetwork = chainNetworkForExample;
       try {
         this.clearErrors();
         const { provider } = this.walletButtons[permissionIndex] || {};
         if (this.ore.id.canDiscover(provider)) {
-          await this.ore.id.discover(provider, chainNetwork);
+          await this.ore.id.discover(provider, ENV.chainNetwork);
         } else {
           console.log("Provider doesn't support discover, so we'll call login instead");
-          await this.ore.id.login({ provider, chainNetwork });
+          await this.ore.id.login({ provider, chainNetwork: ENV.chainNetwork });
         }
         this.loadUserFromApi(this.props.model.userInfo.accountName); // reload user from ore id api - to show new keys discovered
       } catch (error) {
@@ -93,10 +91,9 @@ const App = observer(
     }
 
     async handleLogin(provider) {
-      const chainNetwork = chainNetworkForExample;
       try {
         this.clearErrors();
-        const loginResponse = await this.ore.id.login({ provider, chainNetwork });
+        const loginResponse = await this.ore.id.login({ provider, chainNetwork: ENV.chainNetwork });
         // if the login responds with a loginUrl, then redirect the browser to it to start the user's OAuth login flow
         const { isLoggedIn, account, loginUrl } = loginResponse;
         if (loginUrl) {
@@ -194,7 +191,7 @@ const App = observer(
               <UserLoginView isLoggedIn={isLoggedIn} clickedLogin={this.handleLogin} />
 
               <SigningOptions isLoggedIn={isLoggedIn} click={this.handleSignButton} permissions={permissions} />
-              <DiscoveryButtons isLoggedIn={isLoggedIn} chainNetworkForExample={chainNetworkForExample} click={this.handleWalletDiscoverButton} />
+              <DiscoveryButtons isLoggedIn={isLoggedIn} click={this.handleWalletDiscoverButton} />
 
               <MessageBox isBusy={isBusy} errorMessage={errorMessage} signedTransaction={signedTransaction} signState={signState} />
             </div>

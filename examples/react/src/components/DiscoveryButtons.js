@@ -1,8 +1,9 @@
 import React from 'react';
 import WalletButton from './WalletButton';
+import ENV from '../js/env';
 
 function DiscoveryButtons(props) {
-  const { isLoggedIn, chainNetworkForExample, click } = props;
+  const { isLoggedIn, click } = props;
 
   const buttonBox = {
     width: '100%',
@@ -22,11 +23,11 @@ function DiscoveryButtons(props) {
   };
 
   const walletButtons = [
-    { provider: 'scatter', chainNetworkForExample },
-    { provider: 'ledger', chainNetworkForExample },
-    { provider: 'lynx', chainNetworkForExample },
-    { provider: 'meetone', chainNetworkForExample },
-    { provider: 'tokenpocket', chainNetworkForExample },
+    { provider: 'scatter', chainNetwork: ENV.chainNetwork },
+    { provider: 'ledger', chainNetwork: ENV.chainNetwork },
+    { provider: 'lynx', chainNetwork: ENV.chainNetwork },
+    { provider: 'meetone', chainNetwork: ENV.chainNetwork },
+    { provider: 'tokenpocket', chainNetwork: ENV.chainNetwork },
   ];
 
   if (isLoggedIn) {
