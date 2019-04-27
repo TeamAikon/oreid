@@ -1,33 +1,31 @@
-# ReactJS Web App Example
+This project demonstrates calling the 'eos-auth' api to verify a users email or phone number using oreid's server.
+This is useful if you would like to provide your own UI for authorizing users without using oreid's user interface.
 
-A simple ReactJS example that demonstrates use of the oreid-js and provides a few reusable components. This example was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-To run sample code:
+## Available Scripts
 
-- You'll need your App ID and API Key - you get them when you register your app with ORE ID
-- Populate .env file in root of project directory with your appId and apiKey (it will start with keys for a demo app)
+In the project directory, you can run:
 
-    ```
-    cd examples/react
-    npm install
-    npm start
-    ```
+### `npm start`
 
-Open [http://localhost:3000](http://localhost:3000) to view the running app.
+Runs the app in the development mode.<br>
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-The code to review is in App.js
+The page will reload if you make edits.<br>
+You will also see any lint errors in the console.
 
-The LoginButton React Component simplifies styling of common OAuth providers</br>
+### `npm test`
 
-If you use the callback handler, it stores the basic user info in a cookie (or local app storage). Local user info can be retrieved by calling getUser() and can be cleared by calling logout()
+Launches the test runner in the interactive watch mode.<br>
+See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
+### `npm run build`
 
-### Testing with Ledger Nano S
+Builds the app for production to the `build` folder.<br>
+It correctly bundles React in production mode and optimizes the build for the best performance.
 
-To test this sample app with a Ledger Nano S, this app must be hosting using HTTPS. Start the app with the following command:
+The build is minified and the filenames include the hashes.<br>
+Your app is ready to be deployed!
 
-```
-HTTPS=true npm start
-```
-
-You must also be using the latest Ledger BIOS, Ledger EOS App, and Google Chrome (73.0.3683.103 or higher)
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.

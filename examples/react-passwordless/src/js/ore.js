@@ -16,7 +16,7 @@ export default class ORE {
       appId: OREID_APP_ID,
       apiKey: OREID_API_KEY,
       oreIdUrl: OREID_URL,
-      setBusyCallback: setBusyCallback,
+      setBusyCallback,
     });
   }
 

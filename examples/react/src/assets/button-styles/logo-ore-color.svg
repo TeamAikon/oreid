@@ -1,0 +1,35 @@
+<svg id="Logo_CPU" data-name="Logo / CPU" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 42 48">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#linear-gradient);
+      }
+
+      .cls-2 {
+        fill: rgba(0,0,0,0);
+      }
+
+      .cls-3 {
+        clip-path: url(#clip-path);
+      }
+
+      .cls-4 {
+        fill: url(#linear-gradient-3);
+      }
+    </style>
+    <linearGradient id="linear-gradient" x1="0.5" y1="1" x2="0.5" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#4cc8ed"/>
+      <stop offset="0.15" stop-color="#4cc8ed"/>
+      <stop offset="1" stop-color="#e2ec55"/>
+    </linearGradient>
+    <clipPath id="clip-path">
+      <path id="Combined_Shape" data-name="Combined Shape" class="cls-1" d="M20.307,48h0L0,36V12L20.307,0,40.615,12V36L20.307,48Zm0-46.055L7.876,23.993l1.9,3.378L20.307,46.048,32.738,24,25.326,10.855ZM7.174,25.245,1.437,35.418,18.644,45.593Zm26.256,0L21.965,45.592,39.18,35.418ZM39.4,14.683,34.141,24l5.256,9.32Zm-38.179,0V33.319L6.474,24ZM18.646,2.411,1.429,12.584,7.17,22.758Zm3.316,0L33.43,22.756l5.75-10.174Z" transform="translate(0)"/>
+    </clipPath>
+    <linearGradient id="linear-gradient-3" x1="0.521" y1="0.986" x2="0.521" y2="-0.01" xlink:href="#linear-gradient"/>
+  </defs>
+  <rect id="Logo_CPU_background" data-name="Logo / CPU background" class="cls-2" width="42" height="48" transform="translate(0 0)"/>
+  <path id="Combined_Shape-2" data-name="Combined Shape" class="cls-1" d="M20.307,48h0L0,36V12L20.307,0,40.615,12V36L20.307,48Zm0-46.055L7.876,23.993l1.9,3.378L20.307,46.048,32.738,24,25.326,10.855ZM7.174,25.245,1.437,35.418,18.644,45.593Zm26.256,0L21.965,45.592,39.18,35.418ZM39.4,14.683,34.141,24l5.256,9.32Zm-38.179,0V33.319L6.474,24ZM18.646,2.411,1.429,12.584,7.17,22.758Zm3.316,0L33.43,22.756l5.75-10.174Z" transform="translate(0.538 0)"/>
+  <g class="cls-3" transform="translate(0.538 0)">
+    <rect id="Rectangle-path" class="cls-4" width="18.506" height="48" transform="translate(-0.538 0)"/>
+  </g>
+</svg>

@@ -1,383 +1,208 @@
-import dotenv from 'dotenv';
 import React, { Component } from 'react';
-import LoginButton from './components/loginButton';
-import { OreId } from 'eos-auth';
-import scatterProvider from 'eos-transit-scatter-provider';
-import ledgerProvider from 'eos-transit-ledger-provider'
-import lynxProvider from 'eos-transit-lynx-provider';
-import meetoneProvider from 'eos-transit-meetone-provider';
-import tokenpocketProvider from 'eos-transit-tokenpocket-provider';
-dotenv.config();
+import { observer } from 'mobx-react';
+import HeaderBar from './components/HeaderBar';
+import UserLoginView from './components/UserLoginView';
+import ORE from './js/ore';
+import EOSRpc from './js/eosRpc';
+import DiscoveryButtons from './components/DiscoveryButtons';
+import Utils from './js/utils';
+import SigningOptions from './components/SigningOptions';
+import MessageBox from './components/MessageBox';
 
-let chainNetworkForExample = 'eos_kylin';
+const chainNetworkForExample = 'eos_kylin';
 
-const { 
-  REACT_APP_OREID_APP_ID: appId,              // Provided when you register your app
-  REACT_APP_OREID_API_KEY:apiKey,             // Provided when you register your app
-  REACT_APP_AUTH_CALLBACK:authCallbackUrl,    // The url called by the server when login flow is finished - must match one of the callback strings listed in the App Registration
-  REACT_APP_SIGN_CALLBACK:signCallbackUrl,    // The url called by the server when transaction signing flow is finished - must match one of the callback strings listed in the App Registration
-  REACT_APP_OREID_URL:oreIdUrl,               // HTTPS Address of OREID server
-  REACT_APP_BACKGROUND_COLOR:backgroundColor  // Background color shown during login flow
-} = process.env;
+const App = observer(
+  class App extends Component {
+    constructor(props) {
+      super(props);
 
-let eosTransitWalletProviders = [
-  scatterProvider(),
-  // ledgerProvider(), 
-  ledgerProvider({ pathIndexList: [ 0, 1, 2, 35 ] }),
-  lynxProvider(),
-  meetoneProvider(),
-  tokenpocketProvider(),
-]
+      this.ore = new ORE();
 
-class App extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      isLoggedIn: false,
-      userInfo: {}
-    };
-    this.handleLogin = this.handleLogin.bind(this);
-    this.handleLogout = this.handleLogout.bind(this);
-    this.handleSignButton = this.handleSignButton.bind(this);
-  }
+      this.stagingRpc = new EOSRpc('https://ore-staging.openrights.exchange');
+      this.eosRpc = new EOSRpc('https://kylin.eoscanada.com');
 
-//called by library to set local busy state
-setBusyCallback = (isBusy) => {this.setState({isBusy})};
-
-//intialize oreId
-oreId = new OreId({ appName:"ORE ID Sample App", appId, apiKey, oreIdUrl, authCallbackUrl, signCallbackUrl, backgroundColor, eosTransitWalletProviders, setBusyCallback:this.setBusyCallback});
-
-async componentWillMount() {
-  this.loadUserFromLocalState();
-  this.handleAuthCallback();
-  this.handleSignCallback();
-}
-
-async loadUserFromLocalState() {
-  const userInfo = await this.oreId.getUser() || {};
-  if((userInfo ||{}).accountName) {
-    this.setState({userInfo, isLoggedIn:true});
-  }
-}
-
-async loadUserFromApi(account) {
-  try {
-    const userInfo = await this.oreId.getUserInfoFromApi(account) || {};
-    this.setState({userInfo, isLoggedIn:true});
-  } catch (error) {
-    this.setState({errorMessage:error.message});
-  }
-}
-
-clearErrors() {
-  this.setState({
-    errorMessage:null,
-    signedTransaction:null,
-    signState:null
-  });
-}
-
-handleLogout() {
-  this.clearErrors();
-  this.setState({userInfo:{}, isLoggedIn:false});
-  this.oreId.logout(); //clears local user state (stored in local storage or cookie)
-}
-
-async handleSignButton(permissionIndex) {
-  this.clearErrors();
-  let {chainAccount, chainNetwork, permission, externalWalletType:provider} = this.permissionsToRender[permissionIndex] || {};
-  let {accountName} = this.state.userInfo;
-  provider = provider || 'oreid';  //default to ore id
-  await this.handleSignSampleTransaction(provider, accountName, chainAccount, chainNetwork, permission);
-}
-
-async handleWalletDiscoverButton(permissionIndex) {
-  let chainNetwork = chainNetworkForExample;
-  try {
-    this.clearErrors();
-    let {provider} = this.walletButtons[permissionIndex] || {};
-    if(this.oreId.canDiscover(provider)) {
-      await this.oreId.discover(provider, chainNetwork);
-    } else {
-      console.log(`Provider doesn't support discover, so we'll call login instead`);
-      await this.oreId.login({ provider, chainNetwork });
+      this.handleLogin = this.handleLogin.bind(this);
+      this.handleLogout = this.handleLogout.bind(this);
+      this.handleSignButton = this.handleSignButton.bind(this);
+      this.handleWalletDiscoverButton = this.handleWalletDiscoverButton.bind(this);
     }
-    this.loadUserFromApi(this.state.userInfo.accountName); //reload user from ore id api - to show new keys discovered
-  } catch (error) {
-    this.setState({errorMessage:error.message});
-  }
-}
 
-async handleLogin(provider) {
-  let chainNetwork = chainNetworkForExample;
-  try {
-    this.clearErrors();
-    let loginResponse = await this.oreId.login({ provider, chainNetwork });
-    //if the login responds with a loginUrl, then redirect the browser to it to start the user's OAuth login flow
-    let { isLoggedIn, account, loginUrl } = loginResponse;
-    if(loginUrl) {
-      //redirect browser to loginURL
-      window.location = loginUrl;
+    async componentWillMount() {
+      this.loadUserFromLocalState();
+      this.handleAuthCallback();
+      this.handleSignCallback();
     }
-    this.setState({userInfo: {accountName:account}, isLoggedIn:isLoggedIn});
-  } catch (error) {
-    this.setState({errorMessage:error.message});
-  }
-}
 
-async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork, permission) {
-  try {
-    this.clearErrors();
-    const transaction = this.createSampleTransaction(chainAccount, permission);
-    let signOptions = {
-      provider:provider || '',  //wallet type (e.g. 'scatter' or 'oreid')
-      account:account || '',
-      broadcast:false,  //if broadcast=true, ore id will broadcast the transaction to the chain network for you 
-      chainAccount:chainAccount || '',
-      chainNetwork:chainNetwork || '',
-      state:'abc',  //anything you'd like to remember after the callback
-      transaction,
-      accountIsTransactionPermission:false
+    setUserLoggedIn(userInfo) {
+      this.props.model.isLoggedIn = true;
+      this.props.model.userInfo = userInfo;
     }
-    let signResponse = await this.oreId.sign(signOptions);
-    //if the sign responds with a signUrl, then redirect the browser to it to call the signing flow
-    let { signUrl, signedTransaction } = signResponse || {};
-    if(signUrl) {
-      //redirect browser to signUrl
-      window.location = signUrl;
-    }
-    if(signedTransaction) {
-      this.setState({signedTransaction:JSON.stringify(signedTransaction)});
-    }
-  } catch (error) {
-    this.setState({errorMessage:error.message});
-  }
-}
 
-createSampleTransaction(actor, permission = 'active') {
-  const transaction = {
-    account: "eosio.token",
-    name: "transfer",
-    authorization: [{
-      actor,
-      permission,
-    }],
-    data: {
-      from: actor,
-      to: actor,
-      quantity: "0.0001 EOS",
-      memo: `random number: ${Math.random()}`
-    }
-  };
-  return transaction;
-}
+    async loadUserFromLocalState() {
+      const userInfo = (await this.ore.id.getUser()) || {};
 
-
-/*
-   Handle the authCallback coming back from ORE-ID with an "account" parameter indicating that a user has logged in
-*/
-async handleAuthCallback() {
-  const url = window.location.href;
-  if (/authcallback/i.test(url)) {
-    const {account, errors, state} = await this.oreId.handleAuthResponse(url);
-    if(!errors) {
-      this.loadUserFromApi(account);
-    }
-  }
-}
-
-/*
-   Handle the signCallback coming back from ORE-ID with a "signedTransaction" parameter providing the transaction object with signatures attached
-*/
-async handleSignCallback() {
-  const url = window.location.href;
-  if (/signcallback/i.test(url)) {
-    const {signedTransaction, state, errors} = await this.oreId.handleSignResponse(url);
-    if(!errors && signedTransaction) {
-      this.setState({
-        signedTransaction:JSON.stringify(signedTransaction),
-        signState:state
-      });
-    }
-    else {
-      this.setState({errorMessage:errors.join(", ")});
-    }
-  }
-}
-
-render() {
-  let {errorMessage, isBusy, isLoggedIn, signedTransaction, signState} = this.state;
-  return (
-    <div>
-      <div>
-        {!isLoggedIn &&
-          this.renderLoginButtons()
-        }
-        {isLoggedIn &&
-          this.renderUserInfo()
-        }
-        {isLoggedIn &&
-          this.renderSigningOptions()
-        }
-      </div>
-      <h3 style={{color:'green', margin:'50px'}}>
-        {(isBusy) && 'working...'}
-      </h3>
-      <div style={{color:'red', margin:'50px'}}>
-        {(errorMessage) && errorMessage}
-      </div>
-      <div style={{color:'blue', marginLeft:'50px', marginTop:'50px'}}>
-        {(signedTransaction) && `Returned signed transaction: ${signedTransaction}`}
-      </div>
-      <div style={{color:'blue', marginLeft:'50px',marginTop:'10px'}}>
-        {(signState) && `Returned state param: ${signState}`}
-      </div>
-      {isLoggedIn &&
-          this.renderDiscoverOptions()
+      if ((userInfo || {}).accountName) {
+        this.setUserLoggedIn(userInfo);
       }
-    </div>
-  );
-}
+    }
 
-renderUserInfo() {
-  const {accountName, email, name, picture, username} = this.state.userInfo;
-  return (
-    <div style={{marginTop:50, marginLeft:40}}>
-      <h3>User Info</h3>
-      <img src={picture} style={{width:50,height:50}} alt={'user'}/><br/>
-      accountName: {accountName}<br/>
-      name: {name}<br/>
-      username: {username}<br/>
-      email: {email}<br/>
-      <button onClick={this.handleLogout}  style={{ marginTop:20, padding: '10px', backgroundColor: '#FFFBE6', borderRadius: '5px'}}>
-        Logout
-      </button>
-    </div>
-  );
-}
+    async loadUserFromApi(account) {
+      try {
+        const userInfo = (await this.ore.id.getUserInfoFromApi(account)) || {};
+        this.setUserLoggedIn(userInfo);
+      } catch (error) {
+        this.props.model.errorMessage = error.message;
+      }
+    }
 
+    clearErrors() {
+      this.props.model.clearErrors();
+    }
 
-renderSigningOptions() {
-  let {permissions} = this.state.userInfo;
-  this.permissionsToRender = (permissions ||[]).slice(0);
+    handleLogout() {
+      this.clearErrors();
+      this.props.model.isLoggedIn = false;
+      this.props.model.userInfo = {};
 
-  return (
-    <div>
-        <div style={{marginTop:50, marginLeft:20}}>
-            <h3>Sign transaction with one of your keys</h3>
-            <ul>
-              {this.renderSignButtons(this.permissionsToRender)}
-            </ul>
+      this.ore.id.logout(); // clears local user state (stored in local storage or cookie)
+    }
+
+    async handleSignButton(permissionIndex) {
+      this.clearErrors();
+      const { chainAccount, chainNetwork, permission, externalWalletType: provider } = this.permissionsToRender[permissionIndex] || {};
+      const { accountName } = this.props.model.userInfo;
+      // default to ore id
+      await this.handleSignSampleTransaction(provider || 'oreid', accountName, chainAccount, chainNetwork, permission);
+    }
+
+    async handleWalletDiscoverButton(permissionIndex) {
+      const chainNetwork = chainNetworkForExample;
+      try {
+        this.clearErrors();
+        const { provider } = this.walletButtons[permissionIndex] || {};
+        if (this.ore.id.canDiscover(provider)) {
+          await this.ore.id.discover(provider, chainNetwork);
+        } else {
+          console.log("Provider doesn't support discover, so we'll call login instead");
+          await this.ore.id.login({ provider, chainNetwork });
+        }
+        this.loadUserFromApi(this.props.model.userInfo.accountName); // reload user from ore id api - to show new keys discovered
+      } catch (error) {
+        this.props.model.errorMessage = error.message;
+      }
+    }
+
+    async handleLogin(provider) {
+      const chainNetwork = chainNetworkForExample;
+      try {
+        this.clearErrors();
+        const loginResponse = await this.ore.id.login({ provider, chainNetwork });
+        // if the login responds with a loginUrl, then redirect the browser to it to start the user's OAuth login flow
+        const { isLoggedIn, account, loginUrl } = loginResponse;
+        if (loginUrl) {
+          // redirect browser to loginURL
+          window.location = loginUrl;
+        }
+
+        this.props.model.userInfo.accountName = account;
+        this.props.model.isLoggedIn = isLoggedIn;
+      } catch (error) {
+        this.props.model.errorMessage = error.message;
+      }
+    }
+
+    async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork, permission) {
+      try {
+        this.clearErrors();
+        const transaction = Utils.createSampleTransaction(chainAccount, permission);
+        const signOptions = {
+          provider: provider || '', // wallet type (e.g. 'scatter' or 'oreid')
+          account: account || '',
+          broadcast: false, // if broadcast=true, ore id will broadcast the transaction to the chain network for you
+          chainAccount: chainAccount || '',
+          chainNetwork: chainNetwork || '',
+          state: 'abc', // anything you'd like to remember after the callback
+          transaction,
+          accountIsTransactionPermission: false,
+        };
+        const signResponse = await this.ore.id.sign(signOptions);
+        // if the sign responds with a signUrl, then redirect the browser to it to call the signing flow
+        const { signUrl, signedTransaction } = signResponse || {};
+        if (signUrl) {
+          // redirect browser to signUrl
+          window.location = signUrl;
+        }
+        if (signedTransaction) {
+          this.props.model.signedTransaction = JSON.stringify(signedTransaction);
+        }
+      } catch (error) {
+        this.props.model.errorMessage = error.message;
+      }
+    }
+
+    /*
+     Handle the authCallback coming back from ORE-ID with an "account" parameter indicating that a user has logged in
+  */
+    async handleAuthCallback() {
+      const url = window.location.href;
+      if (/authcallback/i.test(url)) {
+        // state is also available from handleAuthResponse, removed since not used.
+        const { account, errors } = await this.ore.id.handleAuthResponse(url);
+        if (!errors) {
+          this.loadUserFromApi(account);
+        }
+      }
+    }
+
+    /*
+     Handle the signCallback coming back from ORE-ID with a "signedTransaction" parameter providing the transaction object with signatures attached
+  */
+    async handleSignCallback() {
+      const url = window.location.href;
+      if (/signcallback/i.test(url)) {
+        const { signedTransaction, state, errors } = await this.ore.id.handleSignResponse(url);
+        if (!errors && signedTransaction) {
+          this.props.model.signedTransaction = JSON.stringify(signedTransaction);
+          this.props.model.signState = state;
+        } else {
+          this.props.model.errorMessage = errors.join(', ');
+        }
+      }
+    }
+
+    render() {
+      const { isLoggedIn, userInfo, errorMessage, signedTransaction, signState } = this.props.model;
+      const { permissions } = userInfo;
+
+      const isBusy = this.ore.isBusy();
+
+      const contentBox = {
+        display: 'flex',
+        justifyContent: 'center',
+      };
+      const innerContentBox = {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+      };
+
+      return (
+        <div>
+          <HeaderBar logout={this.handleLogout} isLoggedIn={isLoggedIn} userInfo={userInfo} />
+          <div style={contentBox}>
+            <div style={innerContentBox}>
+              <UserLoginView isLoggedIn={isLoggedIn} clickedLogin={this.handleLogin} />
+
+              <SigningOptions isLoggedIn={isLoggedIn} click={this.handleSignButton} permissions={permissions} />
+              <DiscoveryButtons isLoggedIn={isLoggedIn} chainNetworkForExample={chainNetworkForExample} click={this.handleWalletDiscoverButton} />
+
+              <MessageBox isBusy={isBusy} errorMessage={errorMessage} signedTransaction={signedTransaction} signState={signState} />
+            </div>
+          </div>
         </div>
-    </div>
-  );
-}
-
-renderDiscoverOptions() {
-  let chainNetwork = chainNetworkForExample;
-  this.walletButtons = [
-    {provider:'scatter', chainNetwork},
-    {provider:'ledger', chainNetwork},
-    {provider:'lynx', chainNetwork},
-    {provider:'meetone', chainNetwork},
-    {provider:'tokenpocket', chainNetwork}
-  ];
-  return (
-    <div>
-        <div style={{marginTop:50, marginLeft:20}}>
-            <h3 style={{marginTop:50}}>Or discover a key in your wallet</h3>
-            <ul>
-              {this.renderWalletDiscoverButtons(this.walletButtons)}
-            </ul>
-        </div>
-    </div>
-  );
-}
-
-//render one sign transaction button for each chain
-renderSignButtons = (permissions) => 
-  permissions.map((permission, index) =>  {
-    let provider = permission.externalWalletType || 'oreid';
-    return (
-      <div style={{alignContent:'center'}}>
-        <LoginButton provider={provider} data-tag={index} buttonStyle={{width:225, marginLeft:-20, marginTop:20, marginBottom:10}} text={`Sign with ${provider}`} onClick={() => {this.handleSignButton(index)}}>{`Sign Transaction with ${provider}`}</LoginButton>
-        {`Chain:${permission.chainNetwork} ---- Account:${permission.chainAccount} ---- Permission:${permission.permission}`}
-      </div>
-    )
-  });
-
-  //render one sign transaction button for each chain
-  renderWalletDiscoverButtons = (walletButtons) =>
-  walletButtons.map((wallet, index) =>  {
-    let provider = wallet.provider;
-    return (
-      <div style={{alignContent:'center'}}>
-        <LoginButton provider={provider} data-tag={index} buttonStyle={{width:80, marginLeft:-20, marginTop:20, marginBottom:10}} text={`${provider}`} onClick={() => {this.handleWalletDiscoverButton(index)}}>{`${provider}`}</LoginButton>
-      </div>
-    )
-});
-
-renderLoginButtons() {
-  return (
-    <div>
-      <LoginButton provider='facebook'
-          buttonStyle={{width:250, marginTop:'24px'}}
-          logoStyle={{marginLeft:0}}
-          onClick={()=>this.handleLogin("facebook")}
-          //  text='Log in with Facebook'
-      />
-      <LoginButton provider='twitter'
-          buttonStyle={{width:250, marginTop:'24px'}}
-          logoStyle={{marginLeft:0}}
-          onClick={()=>this.handleLogin("twitter")}
-          //  text='Log in with Twitter'
-      />
-      <LoginButton provider='github'
-          buttonStyle={{width:250, marginTop:'24px'}}
-          logoStyle={{marginLeft:0}}
-          onClick={()=>this.handleLogin("github")}
-          //  text='Log in with Github'
-      />
-      <LoginButton provider='twitch'
-          buttonStyle={{width:250, marginTop:'24px'}}
-          logoStyle={{marginLeft:0}}
-          onClick={()=>this.handleLogin("twitch")}
-          //  text='Log in with Twitch'
-      />
-      <LoginButton provider='line'
-          buttonStyle={{width:250, marginTop:'24px'}}
-          logoStyle={{marginLeft:0}}
-          onClick={()=>this.handleLogin("line")}
-          //  text='Log in with Line'
-      />
-      <LoginButton provider='kakao'
-          buttonStyle={{width:250, marginTop:'24px'}}
-          logoStyle={{marginLeft:0}}
-          onClick={()=>this.handleLogin("kakao")}
-          //  text='Log in with Kakao'
-      />
-      <LoginButton provider='linkedin'
-          buttonStyle={{width:250, marginTop:'24px'}}
-          logoStyle={{marginLeft:0}}
-          onClick={()=>this.handleLogin("linkedin")}
-          //  text='Log in with LinkedIn'
-      />
-      <LoginButton provider='google'
-          buttonStyle={{width:250, marginTop:'24px'}}
-          logoStyle={{marginLeft:0}}
-          onClick={()=>this.handleLogin("google")}
-          //  text='Log in with Google'
-      />
-      <LoginButton provider='scatter'
-          buttonStyle={{width:250, marginTop:'24px'}}
-          logoStyle={{marginLeft:0}}
-          onClick={()=>this.handleLogin("scatter")}
-          //  text='Log in with Scatter'
-      />
-    </div>
-  )
-}
-
-}
+      );
+    }
+  },
+);
 
 export default App;
