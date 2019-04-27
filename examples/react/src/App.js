@@ -82,7 +82,7 @@ const App = observer(
           await this.ore.id.discover(provider, ENV.chainNetwork);
         } else {
           console.log("Provider doesn't support discover, so we'll call login instead");
-          await this.ore.id.login({ provider, chainNetwork: ENV.chainNetwork });
+          await this.ore.id.login({ provider }, ENV.chainNetwork);
         }
         this.loadUserFromApi(this.props.model.userInfo.accountName); // reload user from ore id api - to show new keys discovered
       } catch (error) {
@@ -93,7 +93,7 @@ const App = observer(
     async handleLogin(provider) {
       try {
         this.clearErrors();
-        const loginResponse = await this.ore.id.login({ provider, chainNetwork: ENV.chainNetwork });
+        const loginResponse = await this.ore.id.login({ provider }, ENV.chainNetwork);
         // if the login responds with a loginUrl, then redirect the browser to it to start the user's OAuth login flow
         const { isLoggedIn, account, loginUrl } = loginResponse;
         if (loginUrl) {
