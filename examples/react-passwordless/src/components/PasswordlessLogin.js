@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
+import $ from 'jquery';
 import './PasswordlessLoginStyles.scss';
 
 export default function PasswordlessLogin(props) {
@@ -15,6 +16,11 @@ export default function PasswordlessLogin(props) {
   const displayResults = (res) => {
     if (res) {
       setResults(JSON.stringify(res, null, '  '));
+
+      // auto resize the textarea
+      const textArea = $('.resultText');
+      const height = Math.min(800, textArea[0].scrollHeight);
+      textArea.css('height', `${height}px`);
     } else {
       setResults('');
     }
@@ -50,6 +56,14 @@ export default function PasswordlessLogin(props) {
       phone: '+13107705341',
     };
     const result = await ore.id.passwordlessSendCodeApi(args);
+
+    displayResults(result);
+  }
+
+  async function getUserInfo() {
+    displayResults();
+
+    const result = await ore.id.getUser();
 
     displayResults(result);
   }
@@ -132,11 +146,15 @@ export default function PasswordlessLogin(props) {
           <Button style={buttonMargin} variant="outlined" size="small" onClick={verifyPhone} color="primary">
             Phone Verify
           </Button>
+          <Button style={buttonMargin} variant="outlined" size="small" onClick={getUserInfo} color="primary">
+            User Info
+          </Button>
         </div>
       </div>
       <div className="boxClass">
         <div>Results</div>
-        <pre className="resultClass">{results}</pre>
+
+        <textarea readOnly wrap="off" className="resultText" value={results} />
       </div>
     </div>
   );

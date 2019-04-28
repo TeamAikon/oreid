@@ -7,10 +7,10 @@ function App() {
   const ore = new ORE();
 
   return (
-    <div className="App">
-      <header className="App-header">
+    <div className="app">
+      <div className="app-content">
         <PasswordlessLogin ore={ore} />
-      </header>
+      </div>
     </div>
   );
 }

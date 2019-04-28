@@ -5,10 +5,11 @@
   "dependencies": {
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "react-scripts": "3.0.0",
+    "react-scripts": "^3.0.0",
     "@material-ui/core": "^3.9.3",
     "@material-ui/icons": "^3.0.2",
-    "eos-auth": "file:../../../oreid-js"
+    "eos-auth": "file:../../../oreid-js",
+    "jquery": "^3.4.0"
   },
   "scripts": {
     "start": "react-scripts start",
