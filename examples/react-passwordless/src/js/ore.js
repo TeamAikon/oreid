@@ -1,8 +1,5 @@
 import { OreId } from 'eos-auth';
-
-const OREID_APP_ID = 'demo_0097ed83e0a54e679ca46d082ee0e33a';
-const OREID_API_KEY = 'demo_k_97b33a2f8c984fb5b119567ca19e4a49';
-const OREID_URL = 'https://staging.oreid.io';
+import ENV from './env';
 
 export default class ORE {
   constructor() {
@@ -13,9 +10,12 @@ export default class ORE {
 
     this.id = new OreId({
       appName: 'ORE ID Sample App',
-      appId: OREID_APP_ID,
-      apiKey: OREID_API_KEY,
-      oreIdUrl: OREID_URL,
+      appId: ENV.appId,
+      apiKey: ENV.apiKey,
+      oreIdUrl: ENV.oreIdUrl,
+      authCallbackUrl: ENV.authCallbackUrl,
+      signCallbackUrl: ENV.signCallbackUrl,
+      backgroundColor: ENV.backgroundColor,
       setBusyCallback,
     });
   }

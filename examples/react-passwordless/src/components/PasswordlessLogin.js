@@ -1,17 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import $ from 'jquery';
 import './PasswordlessLoginStyles.scss';
+import ENV from '../js/env';
 
 export default function PasswordlessLogin(props) {
   // NOTE: we are using React hooks 'useState'. This is just like React's this.state in React component classes
   // See this link for more information: https://reactjs.org/docs/hooks-overview.html
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [code, setCode] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [results, setResults] = useState('');
+  const [userInfo, setUserInfo] = useState(null);
 
   const { ore } = props;
+
+  const setUserLoggedIn = (ui) => {
+    setIsLoggedIn(true);
+    setUserInfo(ui);
+  };
+
+  const loadUserFromLocalState = async () => {
+    const ui = (await ore.id.getUser()) || {};
+
+    if ((ui || {}).accountName) {
+      setUserLoggedIn(ui);
+    }
+  };
 
   const displayResults = (res) => {
     if (res) {
@@ -25,6 +41,34 @@ export default function PasswordlessLogin(props) {
       setResults('');
     }
   };
+
+  const loadUserFromApi = async (account) => {
+    try {
+      const ui = (await ore.id.getUserInfoFromApi(account)) || {};
+      setUserLoggedIn(ui);
+    } catch (error) {
+      displayResults(error);
+    }
+  };
+
+  const handleAuthCallback = async () => {
+    const url = window.location.href;
+    if (/authcallback/i.test(url)) {
+      // state is also available from handleAuthResponse, removed since not used.
+      const { account, errors } = await ore.id.handleAuthResponse(url);
+      if (!errors) {
+        loadUserFromApi(account);
+      } else {
+        displayResults(errors);
+      }
+    }
+  };
+
+  // Similar to componentDidMount
+  useEffect(() => {
+    loadUserFromLocalState();
+    handleAuthCallback();
+  }, []);
 
   const handleEmailOrPhoneChange = (e) => {
     const { value } = e.target;
@@ -41,7 +85,7 @@ export default function PasswordlessLogin(props) {
 
     const args = {
       'login-type': 'email',
-      email: 'steve@aikon.com',
+      email: emailOrPhone,
     };
     const result = await ore.id.passwordlessSendCodeApi(args);
 
@@ -53,7 +97,7 @@ export default function PasswordlessLogin(props) {
 
     const args = {
       'login-type': 'phone',
-      phone: '+13107705341',
+      phone: emailOrPhone,
     };
     const result = await ore.id.passwordlessSendCodeApi(args);
 
@@ -73,7 +117,7 @@ export default function PasswordlessLogin(props) {
 
     const args = {
       'login-type': 'email',
-      email: 'steve@aikon.com',
+      email: emailOrPhone,
       code,
     };
     const result = await ore.id.passwordlessVerifyCodeApi(args);
@@ -86,12 +130,47 @@ export default function PasswordlessLogin(props) {
 
     const args = {
       'login-type': 'phone',
-      phone: '+13107705341',
+      phone: emailOrPhone,
       code,
     };
     const result = await ore.id.passwordlessVerifyCodeApi(args);
 
     displayResults(result);
+  }
+
+  async function clickedLogin(provider) {
+    displayResults();
+
+    const args = { provider, code };
+
+    switch (provider) {
+      case 'phone':
+        args.phone = emailOrPhone;
+        break;
+      case 'email':
+        args.email = emailOrPhone;
+        break;
+      default:
+        console.log('login switch not handled');
+    }
+
+    console.log(args);
+
+    try {
+      const loginResponse = await ore.id.login(args, ENV.chainNetwork);
+      // if the login responds with a loginUrl, then redirect the browser to it to start the user's OAuth login flow
+      // const { isLoggedIn, account, loginUrl } = loginResponse;
+      const { loginUrl } = loginResponse;
+      if (loginUrl) {
+        // redirect browser to loginURL
+        window.location = loginUrl;
+        // console.log(loginUrl);
+      }
+
+      console.log(loginResponse);
+    } catch (error) {
+      displayResults(error);
+    }
   }
 
   const buttonMargin = {
@@ -146,6 +225,12 @@ export default function PasswordlessLogin(props) {
           <Button style={buttonMargin} variant="outlined" size="small" onClick={verifyPhone} color="primary">
             Phone Verify
           </Button>
+          <Button style={buttonMargin} variant="outlined" size="small" onClick={() => clickedLogin('email')} color="primary">
+            Log In Email
+          </Button>
+          <Button style={buttonMargin} variant="outlined" size="small" onClick={() => clickedLogin('phone')} color="primary">
+            Log In Phone
+          </Button>
           <Button style={buttonMargin} variant="outlined" size="small" onClick={getUserInfo} color="primary">
             User Info
           </Button>
@@ -153,6 +238,9 @@ export default function PasswordlessLogin(props) {
       </div>
       <div className="boxClass">
         <div>Results</div>
+
+        {isLoggedIn && <div>Logged In</div>}
+        {userInfo && <div>{userInfo.accountName}</div>}
 
         <textarea readOnly wrap="off" className="resultText" value={results} />
       </div>
