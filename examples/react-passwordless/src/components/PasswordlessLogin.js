@@ -10,24 +10,9 @@ export default function PasswordlessLogin(props) {
   // See this link for more information: https://reactjs.org/docs/hooks-overview.html
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [code, setCode] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [results, setResults] = useState('');
-  const [userInfo, setUserInfo] = useState({});
 
   const { ore } = props;
-
-  const setUserLoggedIn = (ui) => {
-    setIsLoggedIn(true);
-    setUserInfo(ui);
-  };
-
-  const loadUserFromLocalState = async () => {
-    const ui = (await ore.id.getUser()) || {};
-
-    if ((ui || {}).accountName) {
-      setUserLoggedIn(ui);
-    }
-  };
 
   const displayResults = (res) => {
     if (res) {
@@ -42,40 +27,10 @@ export default function PasswordlessLogin(props) {
     }
   };
 
-  const logout = () => {
-    displayResults();
-    setIsLoggedIn(false);
-    setUserInfo({});
-
-    ore.id.logout(); // clears local user state (stored in local storage or cookie)
-  };
-
-  const loadUserFromApi = async (account) => {
-    try {
-      const ui = (await ore.id.getUserInfoFromApi(account)) || {};
-      setUserLoggedIn(ui);
-    } catch (error) {
-      displayResults(error);
-    }
-  };
-
-  const handleAuthCallback = async () => {
-    const url = window.location.href;
-    if (/authcallback/i.test(url)) {
-      // state is also available from handleAuthResponse, removed since not used.
-      const { account, errors } = await ore.id.handleAuthResponse(url);
-      if (!errors) {
-        loadUserFromApi(account);
-      } else {
-        displayResults(errors);
-      }
-    }
-  };
-
   // Similar to componentDidMount
   useEffect(() => {
-    loadUserFromLocalState();
-    handleAuthCallback();
+    ore.loadUserFromLocalState();
+    ore.handleAuthCallback();
   }, []);
 
   const handleEmailOrPhoneChange = (e) => {
@@ -95,7 +50,7 @@ export default function PasswordlessLogin(props) {
       'login-type': 'email',
       email: emailOrPhone,
     };
-    const result = await ore.id.passwordlessSendCodeApi(args);
+    const result = await ore.passwordlessSendCode(args);
 
     displayResults(result);
   }
@@ -107,15 +62,7 @@ export default function PasswordlessLogin(props) {
       'login-type': 'phone',
       phone: emailOrPhone,
     };
-    const result = await ore.id.passwordlessSendCodeApi(args);
-
-    displayResults(result);
-  }
-
-  async function getUserInfo() {
-    displayResults();
-
-    const result = await ore.id.getUser();
+    const result = await ore.passwordlessSendCode(args);
 
     displayResults(result);
   }
@@ -128,7 +75,7 @@ export default function PasswordlessLogin(props) {
       email: emailOrPhone,
       code,
     };
-    const result = await ore.id.passwordlessVerifyCodeApi(args);
+    const result = await ore.passwordlessVerifyCode(args);
 
     displayResults(result);
   }
@@ -141,7 +88,7 @@ export default function PasswordlessLogin(props) {
       phone: emailOrPhone,
       code,
     };
-    const result = await ore.id.passwordlessVerifyCodeApi(args);
+    const result = await ore.passwordlessVerifyCode(args);
 
     displayResults(result);
   }
@@ -162,99 +109,96 @@ export default function PasswordlessLogin(props) {
         console.log('login switch not handled');
     }
 
-    console.log(args);
-
-    try {
-      const loginResponse = await ore.id.login(args, ENV.chainNetwork);
-      // if the login responds with a loginUrl, then redirect the browser to it to start the user's OAuth login flow
-      // const { isLoggedIn, account, loginUrl } = loginResponse;
+    const loginResponse = await ore.login(args);
+    if (loginResponse) {
       const { loginUrl } = loginResponse;
+      // if the login responds with a loginUrl, then redirect the browser to it to start the user's OAuth login flow
       if (loginUrl) {
-        // redirect browser to loginURL
         window.location = loginUrl;
-        // console.log(loginUrl);
+      } else {
+        this.displayResults('loginUrl was null');
       }
-
-      console.log(loginResponse);
-    } catch (error) {
-      displayResults(error);
     }
   }
 
-  const buttonMargin = {
-    marginBottom: '6px',
-  };
+  function doRender() {
+    const isLoggedIn = ore.isLoggedIn();
+    const userInfo = ore.userInfo();
 
-  return (
-    <div>
-      <div className="boxClass">
-        <div className="titleClass">ORE</div>
-        <div className="subtitleClass">Passwordless Login</div>
+    const buttonMargin = {
+      marginBottom: '6px',
+    };
 
-        <div className="groupClass">
-          <TextField
-            id="outlined-text"
-            label="Email or phone number"
-            onChange={handleEmailOrPhoneChange}
-            value={emailOrPhone}
-            placeholder="email or phone number"
-            InputLabelProps={{
-              shrink: true,
-            }}
-            margin="normal"
-            variant="outlined"
-          />
+    return (
+      <div>
+        <div className="boxClass">
+          <div className="titleClass">ORE</div>
+          <div className="subtitleClass">Passwordless Login</div>
 
-          <Button style={buttonMargin} variant="outlined" size="small" onClick={loginEmail} color="primary">
-            Email Login
-          </Button>
-          <Button style={buttonMargin} variant="outlined" size="small" onClick={loginPhone} color="primary">
-            Phone Login
-          </Button>
+          <div className="groupClass">
+            <TextField
+              id="outlined-text"
+              label="Email or phone number"
+              onChange={handleEmailOrPhoneChange}
+              value={emailOrPhone}
+              placeholder="email or phone number"
+              InputLabelProps={{
+                shrink: true,
+              }}
+              margin="normal"
+              variant="outlined"
+            />
+
+            <Button style={buttonMargin} variant="outlined" size="small" onClick={loginEmail} color="primary">
+              Email Login
+            </Button>
+            <Button style={buttonMargin} variant="outlined" size="small" onClick={loginPhone} color="primary">
+              Phone Login
+            </Button>
+          </div>
+
+          <div className="groupClass">
+            <TextField
+              id="outlined-number"
+              label="Verification Code"
+              onChange={handleCodeChange}
+              value={code}
+              type="number"
+              placeholder="123456"
+              InputLabelProps={{
+                shrink: true,
+              }}
+              margin="normal"
+              variant="outlined"
+            />
+            <Button style={buttonMargin} variant="outlined" size="small" onClick={verifyEmail} color="primary">
+              Email Verify
+            </Button>
+            <Button style={buttonMargin} variant="outlined" size="small" onClick={verifyPhone} color="primary">
+              Phone Verify
+            </Button>
+            <Button style={buttonMargin} variant="outlined" size="small" onClick={() => clickedLogin('email')} color="primary">
+              Log In Email
+            </Button>
+            <Button style={buttonMargin} variant="outlined" size="small" onClick={() => clickedLogin('phone')} color="primary">
+              Log In Phone
+            </Button>
+            <Button style={buttonMargin} variant="outlined" size="small" onClick={ore.logout} color="primary">
+              Logout
+            </Button>
+          </div>
         </div>
+        <div className="boxClass">
+          <div>Results</div>
 
-        <div className="groupClass">
-          <TextField
-            id="outlined-number"
-            label="Verification Code"
-            onChange={handleCodeChange}
-            value={code}
-            type="number"
-            placeholder="123456"
-            InputLabelProps={{
-              shrink: true,
-            }}
-            margin="normal"
-            variant="outlined"
-          />
-          <Button style={buttonMargin} variant="outlined" size="small" onClick={verifyEmail} color="primary">
-            Email Verify
-          </Button>
-          <Button style={buttonMargin} variant="outlined" size="small" onClick={verifyPhone} color="primary">
-            Phone Verify
-          </Button>
-          <Button style={buttonMargin} variant="outlined" size="small" onClick={() => clickedLogin('email')} color="primary">
-            Log In Email
-          </Button>
-          <Button style={buttonMargin} variant="outlined" size="small" onClick={() => clickedLogin('phone')} color="primary">
-            Log In Phone
-          </Button>
-          <Button style={buttonMargin} variant="outlined" size="small" onClick={getUserInfo} color="primary">
-            User Info
-          </Button>
-          <Button style={buttonMargin} variant="outlined" size="small" onClick={logout} color="primary">
-            Logout
-          </Button>
+          {isLoggedIn && <div>Logged In</div>}
+          {userInfo && <div>{userInfo.accountName}</div>}
+
+          <textarea readOnly wrap="off" className="resultText" value={results} />
         </div>
       </div>
-      <div className="boxClass">
-        <div>Results</div>
+    );
+  }
 
-        {isLoggedIn && <div>Logged In</div>}
-        {userInfo && <div>{userInfo.accountName}</div>}
-
-        <textarea readOnly wrap="off" className="resultText" value={results} />
-      </div>
-    </div>
-  );
+  return doRender();
 }
