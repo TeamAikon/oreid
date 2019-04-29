@@ -12,7 +12,7 @@ export default function PasswordlessLogin(props) {
   const [code, setCode] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [results, setResults] = useState('');
-  const [userInfo, setUserInfo] = useState(null);
+  const [userInfo, setUserInfo] = useState({});
 
   const { ore } = props;
 
@@ -40,6 +40,14 @@ export default function PasswordlessLogin(props) {
     } else {
       setResults('');
     }
+  };
+
+  const logout = () => {
+    displayResults();
+    setIsLoggedIn(false);
+    setUserInfo({});
+
+    ore.id.logout(); // clears local user state (stored in local storage or cookie)
   };
 
   const loadUserFromApi = async (account) => {
@@ -233,6 +241,9 @@ export default function PasswordlessLogin(props) {
           </Button>
           <Button style={buttonMargin} variant="outlined" size="small" onClick={getUserInfo} color="primary">
             User Info
+          </Button>
+          <Button style={buttonMargin} variant="outlined" size="small" onClick={logout} color="primary">
+            Logout
           </Button>
         </div>
       </div>
