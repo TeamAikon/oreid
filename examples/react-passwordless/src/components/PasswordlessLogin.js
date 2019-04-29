@@ -10,7 +10,6 @@ const modeEnum = {
   ASK_PHONE: 'askPhone',
   VERIFY_EMAIL: 'verifyEmail',
   VERIFY_PHONE: 'verifyPhone',
-  LOGGED_IN: 'loggedIn',
 };
 
 const buttonMargin = {
@@ -110,8 +109,20 @@ export default function PasswordlessLogin(props) {
 
     const args = {
       'login-type': provider,
-      email: emailOrPhone,
     };
+
+    switch (provider) {
+      case 'phone':
+        args.phone = emailOrPhone;
+        break;
+      case 'email':
+        args.email = emailOrPhone;
+        break;
+      default:
+        console.log('login switch not handled');
+    }
+
+    console.log(args);
     const result = await ore.passwordlessSendCode(args);
 
     displayResults(result);
@@ -187,6 +198,12 @@ export default function PasswordlessLogin(props) {
   function doRenderVerify(provider) {
     return (
       <div className="groupClass">
+        <div className="message">
+          Check your
+          {provider}
+          for the verification code and enter it below.
+        </div>
+
         <TextField
           id="outlined-number"
           label="Verification Code"
@@ -200,7 +217,6 @@ export default function PasswordlessLogin(props) {
           margin="normal"
           variant="outlined"
         />
-        <div>Check your email for the verification code and enter it below.</div>
         <Button style={buttonMargin} variant="outlined" size="small" onClick={() => loginWithCode(provider)} color="primary">
           Verify Code
         </Button>
@@ -209,12 +225,10 @@ export default function PasswordlessLogin(props) {
   }
 
   function doRenderLoggedIn() {
-    const isLoggedIn = ore.isLoggedIn();
     const userInfo = ore.userInfo();
 
     return (
       <div className="groupClass">
-        {isLoggedIn && <div>Logged In</div>}
         {userInfo && <div>{userInfo.accountName}</div>}
 
         <Button style={buttonMargin} variant="outlined" size="small" onClick={clickedLogout} color="primary">
@@ -234,6 +248,8 @@ export default function PasswordlessLogin(props) {
 
     if (ore.isLoggedIn()) {
       contents = doRenderLoggedIn();
+    } else if (ore.waitingForLogin()) {
+      contents = null;
     } else {
       // render by mode
       switch (mode) {
@@ -254,10 +270,6 @@ export default function PasswordlessLogin(props) {
 
         case modeEnum.VERIFY_PHONE:
           contents = doRenderVerify('phone');
-          break;
-
-        case modeEnum.LOGGED_IN:
-          contents = doRenderLoggedIn();
           break;
 
         default:

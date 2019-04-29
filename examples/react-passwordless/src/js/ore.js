@@ -6,6 +6,7 @@ export default class ORE {
     this.v_busyFlag = false;
     this.v_isLoggedIn = false;
     this.v_userInfo = {};
+    this.v_waitingForLocalStateLogin = false;
 
     const setBusyCallback = (isBusy) => {
       console.log('busy: ', isBusy);
@@ -49,11 +50,19 @@ export default class ORE {
 
   // called on page load to get the user info from ORE ID
   async loadUserFromLocalState() {
+    this.v_waitingForLocalStateLogin = true;
+
     const info = await this.v_oreid.getUser();
 
     if (info && info.accountName) {
       this.setUserInfo(info);
     }
+
+    this.v_waitingForLocalStateLogin = false;
+  }
+
+  waitingForLogin() {
+    return this.v_waitingForLocalStateLogin;
   }
 
   async handleAuthCallback() {
