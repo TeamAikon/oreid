@@ -2,11 +2,10 @@ import { OreId } from 'eos-auth';
 import ENV from './env';
 
 export default class ORE {
-  constructor() {
+  constructor(model) {
     this.v_busyFlag = false;
-    this.v_isLoggedIn = false;
-    this.v_userInfo = {};
     this.v_waitingForLocalStateLogin = false;
+    this.v_model = model;
 
     const setBusyCallback = (isBusy) => {
       console.log('busy: ', isBusy);
@@ -29,22 +28,14 @@ export default class ORE {
     return this.v_busyFlag;
   }
 
-  isLoggedIn() {
-    return this.v_isLoggedIn;
-  }
-
-  userInfo() {
-    return this.v_userInfo;
-  }
-
   // pass nothing to clear and set loggedIn state to false
   setUserInfo(info = null) {
     if (info) {
-      this.v_isLoggedIn = true;
-      this.v_userInfo = info;
+      this.v_model.isLoggedIn = true;
+      this.v_model.userInfo = info;
     } else {
-      this.v_isLoggedIn = false;
-      this.v_userInfo = {};
+      this.v_model.isLoggedIn = false;
+      this.v_model.userInfo = {};
     }
   }
 
@@ -78,12 +69,22 @@ export default class ORE {
   }
 
   displayResults(results) {
-    console.log(results);
+    if (results) {
+      this.v_model.results = JSON.stringify(results, null, '  ');
+    } else {
+      this.v_model.results = '';
+    }
   }
 
   async login(args) {
+    this.displayResults();
+
     try {
-      return this.v_oreid.login(args, ENV.chainNetwork);
+      const result = this.v_oreid.login(args, ENV.chainNetwork);
+
+      this.displayResults(result);
+
+      return result;
     } catch (error) {
       this.displayResults(error);
 
@@ -101,15 +102,21 @@ export default class ORE {
   }
 
   async loadUserFromApi(account) {
+    this.displayResults();
+
     try {
       const info = await this.v_oreid.getUserInfoFromApi(account);
       this.setUserInfo(info);
+
+      this.displayResults(info);
     } catch (error) {
       this.displayResults(error);
     }
   }
 
   async passwordlessSendCode(args) {
+    this.displayResults();
+
     const result = await this.v_oreid.passwordlessSendCodeApi(args);
 
     this.displayResults(result);
@@ -118,6 +125,8 @@ export default class ORE {
   }
 
   async passwordlessVerifyCode(args) {
+    this.displayResults();
+
     const result = await this.v_oreid.passwordlessVerifyCodeApi(args);
 
     this.displayResults(result);

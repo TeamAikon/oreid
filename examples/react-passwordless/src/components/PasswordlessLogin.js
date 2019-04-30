@@ -3,6 +3,8 @@ import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import $ from 'jquery';
 import './PasswordlessLoginStyles.scss';
+import { observer } from 'mobx-react-lite';
+import { intercept } from 'mobx';
 
 const modeEnum = {
   START: 'start',
@@ -16,30 +18,28 @@ const buttonMargin = {
   marginBottom: '6px',
 };
 
-export default function PasswordlessLogin(props) {
+function PasswordlessLogin(props) {
   // NOTE: we are using React hooks 'useState'. This is just like React's this.state in React component classes
   // See this link for more information: https://reactjs.org/docs/hooks-overview.html
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [code, setCode] = useState('');
-  const [results, setResults] = useState('');
   const [mode, setMode] = useState(modeEnum.START);
 
-  const { ore } = props;
+  const { ore, model } = props;
 
-  const displayResults = (res) => {
-    if (res) {
-      setResults(JSON.stringify(res, null, '  '));
-
-      // auto resize the textarea
+  // auto resize the textarea
+  intercept(model, 'results', (change) => {
+    // must delay it since this is before value is set
+    setTimeout(() => {
       const textArea = $('.resultText');
       if (textArea.length > 0) {
         const height = Math.min(800, textArea[0].scrollHeight);
         textArea.css('height', `${height}px`);
       }
-    } else {
-      setResults('');
-    }
-  };
+    }, 10);
+
+    return change;
+  });
 
   // Similar to componentDidMount
   useEffect(() => {
@@ -58,8 +58,6 @@ export default function PasswordlessLogin(props) {
   }
 
   async function loginWithCode(provider) {
-    displayResults();
-
     const args = { provider, code };
 
     switch (provider) {
@@ -80,7 +78,7 @@ export default function PasswordlessLogin(props) {
       if (loginUrl) {
         window.location = loginUrl;
       } else {
-        this.displayResults('loginUrl was null');
+        model.results = 'loginUrl was null';
       }
     }
   }
@@ -105,8 +103,6 @@ export default function PasswordlessLogin(props) {
   }
 
   async function clickedRequestCode(provider) {
-    displayResults();
-
     const args = {
       'login-type': provider,
     };
@@ -122,10 +118,7 @@ export default function PasswordlessLogin(props) {
         console.log('login switch not handled');
     }
 
-    console.log(args);
     const result = await ore.passwordlessSendCode(args);
-
-    displayResults(result);
 
     if (result.success === true) {
       switch (provider) {
@@ -218,18 +211,32 @@ export default function PasswordlessLogin(props) {
           variant="outlined"
         />
         <Button style={buttonMargin} variant="outlined" size="small" onClick={() => loginWithCode(provider)} color="primary">
-          Verify Code
+          Login to ORE ID
         </Button>
       </div>
     );
   }
 
   function doRenderLoggedIn() {
-    const userInfo = ore.userInfo();
+    const { accountName, email, name, picture, username } = model.userInfo;
 
     return (
       <div className="groupClass">
-        {userInfo && <div>{userInfo.accountName}</div>}
+        <div>Logged in:</div>
+        <div className="user-info-box">
+          <img src={picture} style={{ width: 50, height: 50 }} alt="user" />
+          <div className="info-title"> accountName</div>
+          <div>{accountName}</div>
+
+          <div className="info-title"> name</div>
+          <div>{name}</div>
+
+          <div className="info-title"> username</div>
+          <div>{username}</div>
+
+          <div className="info-title"> email</div>
+          <div>{email}</div>
+        </div>
 
         <Button style={buttonMargin} variant="outlined" size="small" onClick={clickedLogout} color="primary">
           Logout
@@ -246,7 +253,7 @@ export default function PasswordlessLogin(props) {
   function doRenderPage() {
     let contents = null;
 
-    if (ore.isLoggedIn()) {
+    if (model.isLoggedIn) {
       contents = doRenderLoggedIn();
     } else if (ore.waitingForLogin()) {
       contents = null;
@@ -288,7 +295,7 @@ export default function PasswordlessLogin(props) {
 
         <div className="boxClass">
           <div>Results</div>
-          <textarea readOnly wrap="off" className="resultText" value={results} />
+          <textarea readOnly wrap="off" className="resultText" value={model.results} />
         </div>
       </div>
     );
@@ -296,3 +303,5 @@ export default function PasswordlessLogin(props) {
 
   return doRenderPage();
 }
+
+export default observer(PasswordlessLogin);

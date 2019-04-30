@@ -10,13 +10,13 @@
     "@material-ui/icons": "^3.0.2",
     "eos-auth": "file:../../../oreid-js",
     "jquery": "^3.4.0",
-    "dotenv": "^7.0.0"
+    "dotenv": "^7.0.0",
+    "mobx": "^5.9.4",
+    "mobx-react-lite": "^1.3.0"
   },
   "scripts": {
     "start": "PORT=3001 react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
     "lint": "eslint --ext .js --ext .jsx ./src --fix"
   },
   "browserslist": {
