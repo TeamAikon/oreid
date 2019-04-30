@@ -1,10 +1,11 @@
 import React from 'react';
 import { render } from 'react-dom';
+import { useLocalStore } from 'mobx-react-lite';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import blue from '@material-ui/core/colors/blue';
 import App from './App';
-import Model from './js/model';
 import './assets/app.scss';
+import ORE from './js/ore';
 
 const theme = createMuiTheme({
   palette: {
@@ -15,12 +16,25 @@ const theme = createMuiTheme({
   },
 });
 
-const model = new Model();
-
 function Root() {
+  const model = useLocalStore(() => ({
+    userInfo: [],
+    isLoggedIn: false,
+    errorMessage: '',
+    signedTransaction: null,
+    signState: null,
+    clearErrors() {
+      this.errorMessage = null;
+      this.signedTransaction = null;
+      this.signState = null;
+    },
+  }));
+
+  const ore = new ORE(model);
+
   return (
     <MuiThemeProvider theme={theme}>
-      <App model={model} />
+      <App ore={ore} model={model} />
     </MuiThemeProvider>
   );
 }

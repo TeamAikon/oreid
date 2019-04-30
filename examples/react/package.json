@@ -15,10 +15,8 @@
     "eos-transit-scatter-provider": "^3.0.1",
     "eos-transit-tokenpocket-provider": "^3.0.1",
     "eosjs": "^20.0.0",
-    "material-ui-popup-state": "^1.3.2",
     "mobx": "^5.9.4",
-    "mobx-react": "^5.4.3",
-    "react-json-view": "^1.19.1",
+    "mobx-react-lite": "^1.3.0",
     "react-router": "^5.0.0",
     "dotenv": "^7.0.0"
   },

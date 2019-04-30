@@ -1,205 +1,141 @@
-import React, { Component } from 'react';
-import { observer } from 'mobx-react';
-import HeaderBar from './components/HeaderBar';
+import React, { useEffect } from 'react';
+import { observer } from 'mobx-react-lite';
 import UserLoginView from './components/UserLoginView';
-import ORE from './js/ore';
-import EOSRpc from './js/eosRpc';
 import DiscoveryButtons from './components/DiscoveryButtons';
 import Utils from './js/utils';
 import SigningOptions from './components/SigningOptions';
 import MessageBox from './components/MessageBox';
 import ENV from './js/env';
 
-const App = observer(
-  class App extends Component {
-    constructor(props) {
-      super(props);
+function App(props) {
+  const { ore, model } = props;
 
-      this.ore = new ORE();
+  // Similar to componentDidMount
+  useEffect(() => {
+    ore.loadUserFromLocalState();
+    ore.handleAuthCallback();
+    ore.handleSignCallback();
+  }, []);
 
-      this.stagingRpc = new EOSRpc('https://ore-staging.openrights.exchange');
-      this.eosRpc = new EOSRpc('https://kylin.eoscanada.com');
+  function clearErrors() {
+    model.clearErrors();
+  }
 
-      this.handleLogin = this.handleLogin.bind(this);
-      this.handleLogout = this.handleLogout.bind(this);
-      this.handleSignButton = this.handleSignButton.bind(this);
-      this.handleWalletDiscoverButton = this.handleWalletDiscoverButton.bind(this);
+  async function handleSignButton(permissionIndex) {
+    clearErrors();
+
+    const { permissions } = model.userInfo();
+    const permissionsToRender = (permissions || []).slice(0);
+
+    const { chainAccount, chainNetwork, permission, externalWalletType: provider } = permissionsToRender[permissionIndex] || {};
+    const { accountName } = model.userInfo();
+    // default to ore id
+    await handleSignSampleTransaction(provider || 'oreid', accountName, chainAccount, chainNetwork, permission);
+  }
+
+  async function handleWalletDiscoverButton(permissionIndex) {
+    try {
+      clearErrors();
+
+      const chainNetwork = ENV.chainNetwork;
+      const walletButtons = [
+        { provider: 'scatter', chainNetwork },
+        { provider: 'ledger', chainNetwork },
+        { provider: 'lynx', chainNetwork },
+        { provider: 'meetone', chainNetwork },
+        { provider: 'tokenpocket', chainNetwork },
+      ];
+
+      const { provider } = walletButtons[permissionIndex] || {};
+      if (ore.canDiscover(provider)) {
+        await ore.discover(provider);
+      } else {
+        console.log("Provider doesn't support discover, so we'll call login instead");
+        await ore.login({ provider });
+      }
+      ore.loadUserFromApi(model.userInfo.accountName); // reload user from ore id api - to show new keys discovered
+    } catch (error) {
+      model.errorMessage = error.message;
     }
+  }
 
-    async componentWillMount() {
-      this.loadUserFromLocalState();
-      this.handleAuthCallback();
-      this.handleSignCallback();
-    }
+  async function handleLogin(provider) {
+    const args = { provider };
 
-    setUserLoggedIn(userInfo) {
-      this.props.model.isLoggedIn = true;
-      this.props.model.userInfo = userInfo;
-    }
-
-    async loadUserFromLocalState() {
-      const userInfo = (await this.ore.id.getUser()) || {};
-
-      if ((userInfo || {}).accountName) {
-        this.setUserLoggedIn(userInfo);
+    const loginResponse = await ore.login(args);
+    if (loginResponse) {
+      const { loginUrl } = loginResponse;
+      // if the login responds with a loginUrl, then redirect the browser to it to start the user's OAuth login flow
+      if (loginUrl) {
+        window.location = loginUrl;
+      } else {
+        model.results = 'loginUrl was null';
       }
     }
+  }
 
-    async loadUserFromApi(account) {
-      try {
-        const userInfo = (await this.ore.id.getUserInfoFromApi(account)) || {};
-        this.setUserLoggedIn(userInfo);
-      } catch (error) {
-        this.props.model.errorMessage = error.message;
-      }
-    }
-
-    clearErrors() {
-      this.props.model.clearErrors();
-    }
-
-    handleLogout() {
-      this.clearErrors();
-      this.props.model.isLoggedIn = false;
-      this.props.model.userInfo = {};
-
-      this.ore.id.logout(); // clears local user state (stored in local storage or cookie)
-    }
-
-    async handleSignButton(permissionIndex) {
-      this.clearErrors();
-      const { chainAccount, chainNetwork, permission, externalWalletType: provider } = this.permissionsToRender[permissionIndex] || {};
-      const { accountName } = this.props.model.userInfo;
-      // default to ore id
-      await this.handleSignSampleTransaction(provider || 'oreid', accountName, chainAccount, chainNetwork, permission);
-    }
-
-    async handleWalletDiscoverButton(permissionIndex) {
-      try {
-        this.clearErrors();
-        const { provider } = this.walletButtons[permissionIndex] || {};
-        if (this.ore.id.canDiscover(provider)) {
-          await this.ore.id.discover(provider, ENV.chainNetwork);
-        } else {
-          console.log("Provider doesn't support discover, so we'll call login instead");
-          await this.ore.id.login({ provider }, ENV.chainNetwork);
-        }
-        this.loadUserFromApi(this.props.model.userInfo.accountName); // reload user from ore id api - to show new keys discovered
-      } catch (error) {
-        this.props.model.errorMessage = error.message;
-      }
-    }
-
-    async handleLogin(provider) {
-      try {
-        this.clearErrors();
-        const loginResponse = await this.ore.id.login({ provider }, ENV.chainNetwork);
-        // if the login responds with a loginUrl, then redirect the browser to it to start the user's OAuth login flow
-        const { isLoggedIn, account, loginUrl } = loginResponse;
-        if (loginUrl) {
-          // redirect browser to loginURL
-          window.location = loginUrl;
-        }
-
-        this.props.model.userInfo.accountName = account;
-        this.props.model.isLoggedIn = isLoggedIn;
-      } catch (error) {
-        this.props.model.errorMessage = error.message;
-      }
-    }
-
-    async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork, permission) {
-      try {
-        this.clearErrors();
-        const transaction = Utils.createSampleTransaction(chainAccount, permission);
-        const signOptions = {
-          provider: provider || '', // wallet type (e.g. 'scatter' or 'oreid')
-          account: account || '',
-          broadcast: false, // if broadcast=true, ore id will broadcast the transaction to the chain network for you
-          chainAccount: chainAccount || '',
-          chainNetwork: chainNetwork || '',
-          state: 'abc', // anything you'd like to remember after the callback
-          transaction,
-          accountIsTransactionPermission: false,
-        };
-        const signResponse = await this.ore.id.sign(signOptions);
-        // if the sign responds with a signUrl, then redirect the browser to it to call the signing flow
-        const { signUrl, signedTransaction } = signResponse || {};
-        if (signUrl) {
-          // redirect browser to signUrl
-          window.location = signUrl;
-        }
-        if (signedTransaction) {
-          this.props.model.signedTransaction = JSON.stringify(signedTransaction);
-        }
-      } catch (error) {
-        this.props.model.errorMessage = error.message;
-      }
-    }
-
-    /*
-     Handle the authCallback coming back from ORE-ID with an "account" parameter indicating that a user has logged in
-  */
-    async handleAuthCallback() {
-      const url = window.location.href;
-      if (/authcallback/i.test(url)) {
-        // state is also available from handleAuthResponse, removed since not used.
-        const { account, errors } = await this.ore.id.handleAuthResponse(url);
-        if (!errors) {
-          this.loadUserFromApi(account);
-        }
-      }
-    }
-
-    /*
-     Handle the signCallback coming back from ORE-ID with a "signedTransaction" parameter providing the transaction object with signatures attached
-  */
-    async handleSignCallback() {
-      const url = window.location.href;
-      if (/signcallback/i.test(url)) {
-        const { signedTransaction, state, errors } = await this.ore.id.handleSignResponse(url);
-        if (!errors && signedTransaction) {
-          this.props.model.signedTransaction = JSON.stringify(signedTransaction);
-          this.props.model.signState = state;
-        } else {
-          this.props.model.errorMessage = errors.join(', ');
-        }
-      }
-    }
-
-    render() {
-      const { isLoggedIn, userInfo, errorMessage, signedTransaction, signState } = this.props.model;
-      const { permissions } = userInfo;
-
-      const isBusy = this.ore.isBusy();
-
-      const contentBox = {
-        display: 'flex',
-        justifyContent: 'center',
+  async function handleSignSampleTransaction(provider, account, chainAccount, chainNetwork, permission) {
+    try {
+      clearErrors();
+      const transaction = Utils.createSampleTransaction(chainAccount, permission);
+      const signOptions = {
+        provider: provider || '', // wallet type (e.g. 'scatter' or 'oreid')
+        account: account || '',
+        broadcast: false, // if broadcast=true, ore id will broadcast the transaction to the chain network for you
+        chainAccount: chainAccount || '',
+        chainNetwork: chainNetwork || '',
+        state: 'abc', // anything you'd like to remember after the callback
+        transaction,
+        accountIsTransactionPermission: false,
       };
-      const innerContentBox = {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-      };
+      const signResponse = await ore.sign(signOptions);
+      // if the sign responds with a signUrl, then redirect the browser to it to call the signing flow
+      const { signUrl, signedTransaction } = signResponse || {};
+      if (signUrl) {
+        // redirect browser to signUrl
+        window.location = signUrl;
+      }
+      if (signedTransaction) {
+        model.signedTransaction = JSON.stringify(signedTransaction);
+      }
+    } catch (error) {
+      model.errorMessage = error.message;
+    }
+  }
 
-      return (
-        <div>
-          <HeaderBar logout={this.handleLogout} isLoggedIn={isLoggedIn} userInfo={userInfo} />
-          <div style={contentBox}>
-            <div style={innerContentBox}>
-              <UserLoginView isLoggedIn={isLoggedIn} clickedLogin={this.handleLogin} />
+  function doRender() {
+    const { isLoggedIn, userInfo, errorMessage, signedTransaction, signState } = model;
+    const { permissions } = userInfo;
 
-              <SigningOptions isLoggedIn={isLoggedIn} click={this.handleSignButton} permissions={permissions} />
-              <DiscoveryButtons isLoggedIn={isLoggedIn} click={this.handleWalletDiscoverButton} />
+    const isBusy = ore.isBusy();
 
-              <MessageBox isBusy={isBusy} errorMessage={errorMessage} signedTransaction={signedTransaction} signState={signState} />
-            </div>
+    const contentBox = {
+      display: 'flex',
+      justifyContent: 'center',
+    };
+    const innerContentBox = {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+    };
+
+    return (
+      <div>
+        <div style={contentBox}>
+          <div style={innerContentBox}>
+            <UserLoginView isLoggedIn={isLoggedIn} clickedLogin={handleLogin} />
+
+            <SigningOptions isLoggedIn={isLoggedIn} click={handleSignButton} permissions={permissions} />
+            <DiscoveryButtons isLoggedIn={isLoggedIn} click={handleWalletDiscoverButton} />
+
+            <MessageBox isBusy={isBusy} errorMessage={errorMessage} signedTransaction={signedTransaction} signState={signState} />
           </div>
         </div>
-      );
-    }
-  },
-);
+      </div>
+    );
+  }
 
-export default App;
+  return doRender();
+}
+
+export default observer(App);
