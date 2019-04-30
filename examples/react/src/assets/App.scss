@@ -7,6 +7,7 @@
   min-height: 100vh;
   padding-top: 20px;
   font-size: calc(10px + 2vmin);
+  background-color: #282c34;
 
   .app-content {
     display: flex;
@@ -14,15 +15,10 @@
   }
 }
 
-.contentBox {
-  display: flex;
-  justify-content: center;
-}
-
-.innerContentBox {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.title-box {
+  background: white;
+  padding: 10px 0;
+  width: 100%;
 }
 
 .boxClass {
@@ -36,7 +32,7 @@
 }
 
 .message {
-  font-size: 0.4em;
+  font-size: 0.5em;
 }
 
 .groupClass {
@@ -80,4 +76,9 @@
     font-weight: bold;
     margin-top: 6px;
   }
+}
+
+.header-title {
+  font-size: 0.8em;
+  font-weight: bold;
 }

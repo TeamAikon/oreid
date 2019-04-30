@@ -50,29 +50,31 @@ function DiscoveryButtons(props) {
   }
 
   return (
-    <div style={buttonBox}>
-      <div style={innerButtonBox}>
-        <div>
+    <div className="boxClass">
+      <div style={buttonBox}>
+        <div style={innerButtonBox}>
           <div>
-            <h3>Or discover a key in your wallet</h3>
-            <div style={buttonGroupStyle}>
-              {walletButtons.map((wallet, index) => {
-                const provider = wallet.provider;
-                return (
-                  <div key={index}>
-                    <WalletButton
-                      provider={provider}
-                      data-tag={index}
-                      text={`${provider}`}
-                      onClick={() => {
-                        handleWalletDiscoverButton(index);
-                      }}
-                    >
-                      {`${provider}`}
-                    </WalletButton>
-                  </div>
-                );
-              })}
+            <div>
+              <div className="header-title">Or discover a key in your wallet</div>
+              <div style={buttonGroupStyle}>
+                {walletButtons.map((wallet, index) => {
+                  const provider = wallet.provider;
+                  return (
+                    <div key={index}>
+                      <WalletButton
+                        provider={provider}
+                        data-tag={index}
+                        text={`${provider}`}
+                        onClick={() => {
+                          handleWalletDiscoverButton(index);
+                        }}
+                      >
+                        {`${provider}`}
+                      </WalletButton>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>

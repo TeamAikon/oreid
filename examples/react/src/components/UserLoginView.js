@@ -2,19 +2,6 @@ import React from 'react';
 import SocialLoginButton from './SocialLoginButton';
 
 function UserLoginView(props) {
-  const buttonBox = {
-    width: '100%',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: '20px',
-    flexDirection: 'column',
-  };
-  const innerButtonBox = {
-    display: 'flex',
-    flexDirection: 'column',
-  };
-
   function renderLoginButtons() {
     const { clickedLogin } = props;
 
@@ -75,10 +62,9 @@ function UserLoginView(props) {
   }
 
   return (
-    <div style={buttonBox}>
-      <div>Login to ORE ID</div>
-
-      <div style={innerButtonBox}>{renderLoginButtons()}</div>
+    <div className="boxClass">
+      <div className="header-title">Login to ORE ID</div>
+      {renderLoginButtons()}
     </div>
   );
 }

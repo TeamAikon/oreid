@@ -55,8 +55,12 @@ function App(props) {
     return (
       <div className="app">
         <div className="app-content">
-          <div className="contentBox">
-            <div className="innerContentBox">{contents}</div>
+          <div className="groupClass">
+            <div className="title-box">
+              <div className="titleClass">ORE ID</div>
+              <div className="subtitleClass">React Example</div>
+            </div>
+            {contents}
           </div>
         </div>
       </div>

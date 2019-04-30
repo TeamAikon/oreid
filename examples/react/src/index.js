@@ -5,6 +5,7 @@ import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import blue from '@material-ui/core/colors/blue';
 import App from './App';
 import ORE from './js/ore';
+import './index.css';
 
 const theme = createMuiTheme({
   palette: {

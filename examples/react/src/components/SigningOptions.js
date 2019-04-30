@@ -1,4 +1,5 @@
 import React from 'react';
+import { observer } from 'mobx-react-lite';
 import SignButton from './SignButton';
 import Utils from '../js/utils';
 
@@ -6,7 +7,7 @@ function SigningOptions(props) {
   const { model, ore } = props;
   const { permissions } = model.userInfo;
 
-  const permissionsToRender = (permissions || []).slice(0);
+  const permissionsToRender = (permissions || []).slice();
 
   async function handleSignSampleTransaction(provider, account, chainAccount, chainNetwork, permission) {
     try {
@@ -42,14 +43,14 @@ function SigningOptions(props) {
     model.clearErrors();
 
     const { chainAccount, chainNetwork, permission, externalWalletType: provider } = permissionsToRender[permissionIndex] || {};
-    const { accountName } = model.userInfo();
+    const { accountName } = model.userInfo;
     // default to ore id
     await handleSignSampleTransaction(provider || 'oreid', accountName, chainAccount, chainNetwork, permission);
   }
 
   // render one sign transaction button for each chain
   function renderSignButtons() {
-    permissionsToRender.map((permission, index) => {
+    return permissionsToRender.map((permission, index) => {
       const provider = permission.externalWalletType || 'oreid';
       return (
         <div style={{ alignContent: 'center' }} key={index}>
@@ -69,20 +70,18 @@ function SigningOptions(props) {
           >
             {`Sign Transaction with ${provider}`}
           </SignButton>
-          {`Chain:${permission.chainNetwork} ---- Account:${permission.chainAccount} ---- Permission:${permission.permission}`}
+          <div className="message">{`Chain:${permission.chainNetwork} ---- Account:${permission.chainAccount} ---- Permission:${permission.permission}`}</div>
         </div>
       );
     });
   }
 
   return (
-    <div>
-      <div>
-        <h3>Sign transaction with one of your keys</h3>
-        <ul>{renderSignButtons()}</ul>
-      </div>
+    <div className="boxClass">
+      <div className="header-title">Sign transaction with one of your keys</div>
+      <div>{renderSignButtons()}</div>
     </div>
   );
 }
 
-export default SigningOptions;
+export default observer(SigningOptions);

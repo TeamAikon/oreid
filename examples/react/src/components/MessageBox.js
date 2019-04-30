@@ -30,7 +30,7 @@ function MessageBox(props) {
   let contents = null;
   if (results && results.length > 0) {
     contents = (
-      <div className="boxClass">
+      <div>
         <div>Results</div>
         <textarea readOnly wrap="off" className="resultText" value={results} />
       </div>
@@ -38,14 +38,14 @@ function MessageBox(props) {
   }
 
   return (
-    <div>
+    <div className="boxClass">
       <div style={messageBox}>
         <h3 style={{ color: 'green' }}>{isBusy && 'working...'}</h3>
         <div style={{ color: 'red' }}>{errorMessage && errorMessage}</div>
         <div style={{ color: 'blue' }}>{signedTransaction && `Returned signed transaction: ${signedTransaction}`}</div>
         <div style={{ color: 'blue' }}>{signState && `Returned state param: ${signState}`}</div>
       </div>
-      <div className="groupClass">{contents}</div>
+      {contents}
     </div>
   );
 }

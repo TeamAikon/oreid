@@ -6,14 +6,14 @@ function UserInfo(props) {
   const { ore, model } = props;
 
   const { accountName, email, name, picture, username } = model.userInfo;
-  console.log(model, accountName, email, name);
+
   function clickedLogout() {
     ore.logout();
   }
 
   return (
-    <div className="groupClass">
-      <div>Logged in:</div>
+    <div className="boxClass">
+      <div className="header-title">Logged in:</div>
       <div className="user-info-box">
         <img src={picture} style={{ width: 50, height: 50 }} alt="user" />
         <div className="info-title"> accountName</div>
