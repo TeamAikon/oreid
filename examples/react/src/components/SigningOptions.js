@@ -56,13 +56,6 @@ function SigningOptions(props) {
         <div className="sign-button-group" key={index}>
           <SignButton
             provider={provider}
-            data-tag={index}
-            buttonStyle={{
-              width: 225,
-              marginLeft: -20,
-              marginTop: 20,
-              marginBottom: 10,
-            }}
             text={`Sign with ${provider}`}
             onClick={() => {
               handleSignButton(index);
