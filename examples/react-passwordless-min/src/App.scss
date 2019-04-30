@@ -15,49 +15,14 @@
   }
 }
 
-.boxClass {
-  padding: 20px;
-  background: white;
-  margin-bottom: 8px;
-
-  // so result textarea is reasonably wide
-  min-width: 400px;
-  max-width: 500px;
-}
-
-.message {
-  font-size: 0.4em;
-}
-
 .groupClass {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.resultText {
-  font-size: 0.4em;
-  text-align: left;
-  width: 100%;
-  overflow: auto;
-  border: solid 1px rgba(0, 0, 0, 0.1);
-  padding: 12px;
-  margin: 8px 0;
-  resize: none;
-  font-family: monospace;
-  box-sizing: border-box;
-}
-
-.titleClass {
-  color: rgba(0, 80, 150, 0.7);
-  font-weight: bold;
-}
-
-.subtitleClass {
-  color: rgba(0, 0, 0, 0.5);
-  font-weight: bold;
-  font-size: 0.5em;
-  margin-bottom: 20px;
+label {
+  font-size: 0.6em;
 }
 
 .user-info-box {
@@ -69,4 +34,10 @@
     font-weight: bold;
     margin-top: 6px;
   }
+}
+
+.title-class {
+  color: rgba(0, 80, 150, 0.7);
+  font-weight: bold;
+  margin-bottom: 20px;
 }

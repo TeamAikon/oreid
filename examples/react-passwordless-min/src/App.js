@@ -41,11 +41,18 @@ class App extends Component {
     this.handleSubmitCode = this.handleSubmitCode.bind(this);
     this.onChangeCode = this.onChangeCode.bind(this);
     this.onChangeEmail = this.onChangeEmail.bind(this);
+    this.handleLogout = this.handleLogout.bind(this);
   }
 
   componentWillMount() {
     this.loadUserFromLocalState();
     this.handleAuthCallback();
+  }
+
+  handleLogout() {
+    this.clearErrors();
+    this.setState({ userInfo: {}, isLoggedIn: false });
+    this.oreId.logout(); //clears local user state (stored in local storage or cookie)
   }
 
   async loadUserFromLocalState() {
@@ -201,6 +208,8 @@ class App extends Component {
             <div className="info-title"> email</div>
             <div>{email}</div>
           </div>
+
+          <button onClick={this.handleLogout}>Logout</button>
         </div>
       );
     }
@@ -208,9 +217,9 @@ class App extends Component {
     return (
       <div className="app">
         <div className="app-content">
+          <div className="title-class">ORE ID Passwordless Login</div>
           {mainContent}
           {userInfoContent}
-
           {resultsContent}
         </div>
       </div>
