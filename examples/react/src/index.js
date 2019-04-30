@@ -4,7 +4,6 @@ import { useLocalStore } from 'mobx-react-lite';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import blue from '@material-ui/core/colors/blue';
 import App from './App';
-import './assets/app.scss';
 import ORE from './js/ore';
 
 const theme = createMuiTheme({
@@ -18,9 +17,10 @@ const theme = createMuiTheme({
 
 function Root() {
   const model = useLocalStore(() => ({
-    userInfo: [],
+    userInfo: {},
     isLoggedIn: false,
     errorMessage: '',
+    results: '',
     signedTransaction: null,
     signState: null,
     clearErrors() {

@@ -2,8 +2,6 @@ import React from 'react';
 import SocialLoginButton from './SocialLoginButton';
 
 function UserLoginView(props) {
-  const { isLoggedIn } = props;
-
   const buttonBox = {
     width: '100%',
     display: 'flex',
@@ -76,17 +74,13 @@ function UserLoginView(props) {
     );
   }
 
-  if (!isLoggedIn) {
-    return (
-      <div style={buttonBox}>
-        <div>Login to ORE ID</div>
+  return (
+    <div style={buttonBox}>
+      <div>Login to ORE ID</div>
 
-        <div style={innerButtonBox}>{renderLoginButtons()}</div>
-      </div>
-    );
-  }
-
-  return null;
+      <div style={innerButtonBox}>{renderLoginButtons()}</div>
+    </div>
+  );
 }
 
 export default UserLoginView;

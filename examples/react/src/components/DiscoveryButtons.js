@@ -3,7 +3,7 @@ import WalletButton from './WalletButton';
 import ENV from '../js/env';
 
 function DiscoveryButtons(props) {
-  const { isLoggedIn, click } = props;
+  const { ore, model } = props;
 
   const buttonBox = {
     width: '100%',
@@ -22,48 +22,63 @@ function DiscoveryButtons(props) {
     flexWrap: 'wrap',
   };
 
+  const chainNetwork = ENV.chainNetwork;
+
   const walletButtons = [
-    { provider: 'scatter', chainNetwork: ENV.chainNetwork },
-    { provider: 'ledger', chainNetwork: ENV.chainNetwork },
-    { provider: 'lynx', chainNetwork: ENV.chainNetwork },
-    { provider: 'meetone', chainNetwork: ENV.chainNetwork },
-    { provider: 'tokenpocket', chainNetwork: ENV.chainNetwork },
+    { provider: 'scatter', chainNetwork },
+    { provider: 'ledger', chainNetwork },
+    { provider: 'lynx', chainNetwork },
+    { provider: 'meetone', chainNetwork },
+    { provider: 'tokenpocket', chainNetwork },
   ];
 
-  if (isLoggedIn) {
-    return (
-      <div style={buttonBox}>
-        <div style={innerButtonBox}>
+  async function handleWalletDiscoverButton(permissionIndex) {
+    try {
+      model.clearErrors();
+
+      const { provider } = walletButtons[permissionIndex] || {};
+      if (ore.canDiscover(provider)) {
+        await ore.discover(provider);
+      } else {
+        console.log("Provider doesn't support discover, so we'll call login instead");
+        await ore.login({ provider });
+      }
+      ore.loadUserFromApi(model.userInfo.accountName); // reload user from ore id api - to show new keys discovered
+    } catch (error) {
+      model.errorMessage = error.message;
+    }
+  }
+
+  return (
+    <div style={buttonBox}>
+      <div style={innerButtonBox}>
+        <div>
           <div>
-            <div>
-              <h3>Or discover a key in your wallet</h3>
-              <div style={buttonGroupStyle}>
-                {walletButtons.map((wallet, index) => {
-                  const provider = wallet.provider;
-                  return (
-                    <div key={index}>
-                      <WalletButton
-                        provider={provider}
-                        data-tag={index}
-                        text={`${provider}`}
-                        onClick={() => {
-                          click(index);
-                        }}
-                      >
-                        {`${provider}`}
-                      </WalletButton>
-                    </div>
-                  );
-                })}
-              </div>
+            <h3>Or discover a key in your wallet</h3>
+            <div style={buttonGroupStyle}>
+              {walletButtons.map((wallet, index) => {
+                const provider = wallet.provider;
+                return (
+                  <div key={index}>
+                    <WalletButton
+                      provider={provider}
+                      data-tag={index}
+                      text={`${provider}`}
+                      onClick={() => {
+                        handleWalletDiscoverButton(index);
+                      }}
+                    >
+                      {`${provider}`}
+                    </WalletButton>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
       </div>
-    );
-  }
-
-  return null;
+    </div>
+  );
 }
 
 export default DiscoveryButtons;

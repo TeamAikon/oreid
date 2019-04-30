@@ -2,10 +2,10 @@ import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import UserLoginView from './components/UserLoginView';
 import DiscoveryButtons from './components/DiscoveryButtons';
-import Utils from './js/utils';
 import SigningOptions from './components/SigningOptions';
 import MessageBox from './components/MessageBox';
-import ENV from './js/env';
+import UserInfo from './components/UserInfo';
+import './assets/App.scss';
 
 function App(props) {
   const { ore, model } = props;
@@ -17,48 +17,6 @@ function App(props) {
     ore.handleSignCallback();
   }, []);
 
-  function clearErrors() {
-    model.clearErrors();
-  }
-
-  async function handleSignButton(permissionIndex) {
-    clearErrors();
-
-    const { permissions } = model.userInfo();
-    const permissionsToRender = (permissions || []).slice(0);
-
-    const { chainAccount, chainNetwork, permission, externalWalletType: provider } = permissionsToRender[permissionIndex] || {};
-    const { accountName } = model.userInfo();
-    // default to ore id
-    await handleSignSampleTransaction(provider || 'oreid', accountName, chainAccount, chainNetwork, permission);
-  }
-
-  async function handleWalletDiscoverButton(permissionIndex) {
-    try {
-      clearErrors();
-
-      const chainNetwork = ENV.chainNetwork;
-      const walletButtons = [
-        { provider: 'scatter', chainNetwork },
-        { provider: 'ledger', chainNetwork },
-        { provider: 'lynx', chainNetwork },
-        { provider: 'meetone', chainNetwork },
-        { provider: 'tokenpocket', chainNetwork },
-      ];
-
-      const { provider } = walletButtons[permissionIndex] || {};
-      if (ore.canDiscover(provider)) {
-        await ore.discover(provider);
-      } else {
-        console.log("Provider doesn't support discover, so we'll call login instead");
-        await ore.login({ provider });
-      }
-      ore.loadUserFromApi(model.userInfo.accountName); // reload user from ore id api - to show new keys discovered
-    } catch (error) {
-      model.errorMessage = error.message;
-    }
-  }
-
   async function handleLogin(provider) {
     const args = { provider };
 
@@ -69,66 +27,36 @@ function App(props) {
       if (loginUrl) {
         window.location = loginUrl;
       } else {
-        model.results = 'loginUrl was null';
+        model.errorMessage = 'loginUrl was null';
       }
-    }
-  }
-
-  async function handleSignSampleTransaction(provider, account, chainAccount, chainNetwork, permission) {
-    try {
-      clearErrors();
-      const transaction = Utils.createSampleTransaction(chainAccount, permission);
-      const signOptions = {
-        provider: provider || '', // wallet type (e.g. 'scatter' or 'oreid')
-        account: account || '',
-        broadcast: false, // if broadcast=true, ore id will broadcast the transaction to the chain network for you
-        chainAccount: chainAccount || '',
-        chainNetwork: chainNetwork || '',
-        state: 'abc', // anything you'd like to remember after the callback
-        transaction,
-        accountIsTransactionPermission: false,
-      };
-      const signResponse = await ore.sign(signOptions);
-      // if the sign responds with a signUrl, then redirect the browser to it to call the signing flow
-      const { signUrl, signedTransaction } = signResponse || {};
-      if (signUrl) {
-        // redirect browser to signUrl
-        window.location = signUrl;
-      }
-      if (signedTransaction) {
-        model.signedTransaction = JSON.stringify(signedTransaction);
-      }
-    } catch (error) {
-      model.errorMessage = error.message;
     }
   }
 
   function doRender() {
-    const { isLoggedIn, userInfo, errorMessage, signedTransaction, signState } = model;
-    const { permissions } = userInfo;
+    const { isLoggedIn } = model;
+    let contents = null;
 
     const isBusy = ore.isBusy();
 
-    const contentBox = {
-      display: 'flex',
-      justifyContent: 'center',
-    };
-    const innerContentBox = {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-    };
+    if (!isLoggedIn) {
+      contents = <UserLoginView clickedLogin={handleLogin} />;
+    } else {
+      contents = (
+        <div>
+          <UserInfo ore={ore} model={model} />
+          <SigningOptions ore={ore} model={model} />
+          <DiscoveryButtons ore={ore} model={model} />
+
+          <MessageBox isBusy={isBusy} model={model} />
+        </div>
+      );
+    }
 
     return (
-      <div>
-        <div style={contentBox}>
-          <div style={innerContentBox}>
-            <UserLoginView isLoggedIn={isLoggedIn} clickedLogin={handleLogin} />
-
-            <SigningOptions isLoggedIn={isLoggedIn} click={handleSignButton} permissions={permissions} />
-            <DiscoveryButtons isLoggedIn={isLoggedIn} click={handleWalletDiscoverButton} />
-
-            <MessageBox isBusy={isBusy} errorMessage={errorMessage} signedTransaction={signedTransaction} signState={signState} />
+      <div className="app">
+        <div className="app-content">
+          <div className="contentBox">
+            <div className="innerContentBox">{contents}</div>
           </div>
         </div>
       </div>
