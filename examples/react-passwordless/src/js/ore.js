@@ -8,7 +8,6 @@ export default class ORE {
     this.v_model = model;
 
     const setBusyCallback = (isBusy) => {
-      console.log('busy: ', isBusy);
       this.v_busyFlag = isBusy;
     };
 

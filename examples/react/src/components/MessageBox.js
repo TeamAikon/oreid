@@ -8,11 +8,6 @@ function MessageBox(props) {
 
   const { results, resultsTitle } = model;
 
-  const messageBox = {
-    width: '80vw',
-    wordWrap: 'break-word',
-  };
-
   // auto resize the textarea
   intercept(model, 'results', (change) => {
     // must delay it since this is before value is set
