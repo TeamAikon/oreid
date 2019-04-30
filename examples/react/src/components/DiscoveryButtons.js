@@ -45,7 +45,7 @@ function DiscoveryButtons(props) {
       }
       ore.loadUserFromApi(model.userInfo.accountName); // reload user from ore id api - to show new keys discovered
     } catch (error) {
-      model.errorMessage = error.message;
+      ore.displayResults(error, 'Error');
     }
   }
 

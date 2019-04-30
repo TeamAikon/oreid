@@ -4,8 +4,6 @@ import Button from '@material-ui/core/Button';
 const validProviders = ['oreid', 'scatter', 'facebook', 'github', 'google', 'kakao', 'line', 'linkedin', 'twitch', 'twitter', 'wechat', 'ledger', 'lynx', 'meetone', 'tokenpocket'];
 
 const defaultButtonStyle = {
-  padding: '10px 24px 10px 14px',
-  backgroundColor: '#3E5895',
   margin: '6px',
   color: '#ffffff',
 };

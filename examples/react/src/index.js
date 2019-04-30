@@ -20,13 +20,11 @@ function Root() {
   const model = useLocalStore(() => ({
     userInfo: {},
     isLoggedIn: false,
-    errorMessage: '',
-    results: '',
-    signedTransaction: null,
+    results: null,
+    resultsTitle: null,
     signState: null,
     clearErrors() {
-      this.errorMessage = null;
-      this.signedTransaction = null;
+      this.results = null;
       this.signState = null;
     },
   }));

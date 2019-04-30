@@ -91,7 +91,7 @@ export default class ORE {
       if (!errors) {
         this.loadUserFromApi(account);
       } else {
-        this.displayResults(errors);
+        this.displayResults(errors, 'Error');
       }
     }
   }
@@ -102,17 +102,18 @@ export default class ORE {
     if (/signcallback/i.test(url)) {
       const { signedTransaction, state, errors } = await this.v_oreid.handleSignResponse(url);
       if (!errors && signedTransaction) {
-        this.v_model.signedTransaction = JSON.stringify(signedTransaction);
+        this.displayResults(signedTransaction, 'Returned signed transaction');
         this.v_model.signState = state;
       } else {
-        this.v_model.errorMessage = errors.join(', ');
+        this.displayResults(errors, 'Error');
       }
     }
   }
 
-  displayResults(results) {
+  displayResults(results, resultsTitle = null) {
     if (results) {
       this.v_model.results = JSON.stringify(results, null, '  ');
+      this.v_model.resultsTitle = resultsTitle;
     } else {
       this.v_model.results = '';
     }
@@ -128,7 +129,7 @@ export default class ORE {
 
       return result;
     } catch (error) {
-      this.displayResults(error);
+      this.displayResults(error, 'Error');
 
       return null;
     }
@@ -150,9 +151,9 @@ export default class ORE {
       const info = await this.v_oreid.getUserInfoFromApi(account);
       this.setUserInfo(info);
 
-      this.displayResults(info);
+      this.displayResults(info, 'User Info');
     } catch (error) {
-      this.displayResults(error);
+      this.displayResults(error, 'Error');
     }
   }
 

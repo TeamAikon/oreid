@@ -31,10 +31,6 @@
   max-width: 500px;
 }
 
-.message {
-  font-size: 0.5em;
-}
-
 .groupClass {
   display: flex;
   flex-direction: column;
@@ -81,4 +77,16 @@
 .header-title {
   font-size: 0.8em;
   font-weight: bold;
+}
+.header-subtitle {
+  font-size: 0.7em;
+}
+
+.sign-button-group {
+  margin: 8px 0;
+
+  .button-message {
+    margin: 6px 0;
+    font-size: 0.5em;
+  }
 }

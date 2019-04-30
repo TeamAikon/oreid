@@ -27,7 +27,7 @@ function App(props) {
       if (loginUrl) {
         window.location = loginUrl;
       } else {
-        model.errorMessage = 'loginUrl was null';
+        ore.displayResults('loginUrl was null', 'Error');
       }
     }
   }

@@ -32,10 +32,10 @@ function SigningOptions(props) {
         window.location = signUrl;
       }
       if (signedTransaction) {
-        model.signedTransaction = JSON.stringify(signedTransaction);
+        ore.displayResults(signedTransaction, 'Signed transaction');
       }
     } catch (error) {
-      model.errorMessage = error.message;
+      ore.displayResults(error, 'Error');
     }
   }
 
@@ -53,7 +53,7 @@ function SigningOptions(props) {
     return permissionsToRender.map((permission, index) => {
       const provider = permission.externalWalletType || 'oreid';
       return (
-        <div style={{ alignContent: 'center' }} key={index}>
+        <div className="sign-button-group" key={index}>
           <SignButton
             provider={provider}
             data-tag={index}
@@ -70,7 +70,7 @@ function SigningOptions(props) {
           >
             {`Sign Transaction with ${provider}`}
           </SignButton>
-          <div className="message">{`Chain:${permission.chainNetwork} ---- Account:${permission.chainAccount} ---- Permission:${permission.permission}`}</div>
+          <div className="button-message">{`Chain:${permission.chainNetwork} ---- Account:${permission.chainAccount} ---- Permission:${permission.permission}`}</div>
         </div>
       );
     });

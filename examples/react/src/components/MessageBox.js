@@ -4,9 +4,9 @@ import { intercept } from 'mobx';
 import $ from 'jquery';
 
 function MessageBox(props) {
-  const { isBusy, model } = props;
+  const { model } = props;
 
-  const { results, errorMessage, signedTransaction, signState } = model;
+  const { results, resultsTitle } = model;
 
   const messageBox = {
     width: '80vw',
@@ -19,7 +19,7 @@ function MessageBox(props) {
     setTimeout(() => {
       const textArea = $('.resultText');
       if (textArea.length > 0) {
-        const height = Math.min(800, textArea[0].scrollHeight);
+        const height = Math.min(500, textArea[0].scrollHeight);
         textArea.css('height', `${height}px`);
       }
     }, 10);
@@ -31,23 +31,14 @@ function MessageBox(props) {
   if (results && results.length > 0) {
     contents = (
       <div>
-        <div>Results</div>
+        <div className="header-title">Results</div>
+        <div className="header-subtitle">{resultsTitle}</div>
         <textarea readOnly wrap="off" className="resultText" value={results} />
       </div>
     );
   }
 
-  return (
-    <div className="boxClass">
-      <div style={messageBox}>
-        <h3 style={{ color: 'green' }}>{isBusy && 'working...'}</h3>
-        <div style={{ color: 'red' }}>{errorMessage && errorMessage}</div>
-        <div style={{ color: 'blue' }}>{signedTransaction && `Returned signed transaction: ${signedTransaction}`}</div>
-        <div style={{ color: 'blue' }}>{signState && `Returned state param: ${signState}`}</div>
-      </div>
-      {contents}
-    </div>
-  );
+  return <div className="boxClass">{contents}</div>;
 }
 
 export default observer(MessageBox);
