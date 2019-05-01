@@ -67,10 +67,8 @@ class App extends Component {
     this.clearErrors();
 
     try {
-      const info = await this.oreId.getUserInfoFromApi(account);
-      this.setUserInfo(info);
-
-      this.setState({ results: info });
+      const userInfo = await this.oreId.getUserInfoFromApi(account);
+      this.setState({ userInfo, isLoggedIn: true });
     } catch (error) {
       this.setState({ results: error });
     }
