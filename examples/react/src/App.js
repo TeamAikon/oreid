@@ -97,7 +97,7 @@ async handleWalletDiscoverButton(permissionIndex) {
     this.clearErrors();
     let {provider} = this.walletButtons[permissionIndex] || {};
     if(this.oreId.canDiscover(provider)) {
-      await this.oreId.discover(provider, chainNetwork);
+      await this.oreId.discover({ provider, chainNetwork });
     } else {
       console.log(`Provider doesn't support discover, so we'll call login instead`);
       await this.oreId.login({ provider, chainNetwork });
@@ -180,6 +180,7 @@ async handleAuthCallback() {
   const url = window.location.href;
   if (/authcallback/i.test(url)) {
     const {account, errors, state} = await this.oreId.handleAuthResponse(url);
+    if(state) console.log(`state returned with request:${state}`);
     if(!errors) {
       this.loadUserFromApi(account);
     }
@@ -299,7 +300,7 @@ renderSignButtons = (permissions) =>
   permissions.map((permission, index) =>  {
     let provider = permission.externalWalletType || 'oreid';
     return (
-      <div style={{alignContent:'center'}}>
+      <div style={{alignContent:'center'}} key={index}>
         <LoginButton provider={provider} data-tag={index} buttonStyle={{width:225, marginLeft:-20, marginTop:20, marginBottom:10}} text={`Sign with ${provider}`} onClick={() => {this.handleSignButton(index)}}>{`Sign Transaction with ${provider}`}</LoginButton>
         {`Chain:${permission.chainNetwork} ---- Account:${permission.chainAccount} ---- Permission:${permission.permission}`}
       </div>
@@ -311,7 +312,7 @@ renderSignButtons = (permissions) =>
   walletButtons.map((wallet, index) =>  {
     let provider = wallet.provider;
     return (
-      <div style={{alignContent:'center'}}>
+      <div style={{alignContent:'center'}} key={index} >
         <LoginButton provider={provider} data-tag={index} buttonStyle={{width:80, marginLeft:-20, marginTop:20, marginBottom:10}} text={`${provider}`} onClick={() => {this.handleWalletDiscoverButton(index)}}>{`${provider}`}</LoginButton>
       </div>
     )
