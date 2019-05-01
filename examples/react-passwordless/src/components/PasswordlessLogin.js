@@ -5,6 +5,7 @@ import $ from 'jquery';
 import './PasswordlessLoginStyles.scss';
 import { observer } from 'mobx-react-lite';
 import { intercept } from 'mobx';
+import ENV from '../js/env';
 
 const modeEnum = {
   START: 'start',
@@ -58,8 +59,7 @@ function PasswordlessLogin(props) {
   }
 
   async function loginWithCode(provider) {
-    const args = { provider, code };
-
+    const args = { provider, code, chainNetwork: ENV.chainNetwork };
     switch (provider) {
       case 'phone':
         args.phone = emailOrPhone;

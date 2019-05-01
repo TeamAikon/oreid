@@ -79,7 +79,7 @@ export default class ORE {
     this.displayResults();
 
     try {
-      const result = this.v_oreid.login(args, ENV.chainNetwork);
+      const result = this.v_oreid.login(args);
 
       this.displayResults(result);
 

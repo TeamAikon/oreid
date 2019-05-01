@@ -8,7 +8,7 @@
     "react-scripts": "^3.0.0",
     "@material-ui/core": "^3.9.3",
     "@material-ui/icons": "^3.0.2",
-    "eos-auth": "file:../../../oreid-js",
+    "eos-auth": "2.1.0",
     "jquery": "^3.4.0",
     "dotenv": "^7.0.0",
     "mobx": "^5.9.4",

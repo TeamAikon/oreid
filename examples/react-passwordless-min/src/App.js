@@ -114,7 +114,7 @@ class App extends Component {
 
     try {
       this.clearErrors();
-      let loginResponse = await this.oreId.login({ provider, email, code }, chainNetwork);
+      let loginResponse = await this.oreId.login({ provider, email, code, chainNetwork });
       //if the login responds with a loginUrl, then redirect the browser to it to start the user's OAuth login flow
       let { isLoggedIn, account, loginUrl } = loginResponse;
       if (loginUrl) {

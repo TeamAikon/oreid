@@ -6,6 +6,7 @@ import SigningOptions from './components/SigningOptions';
 import MessageBox from './components/MessageBox';
 import UserInfo from './components/UserInfo';
 import './assets/App.scss';
+import ENV from './js/env';
 
 function App(props) {
   const { ore, model } = props;
@@ -18,7 +19,7 @@ function App(props) {
   }, []);
 
   async function handleLogin(provider) {
-    const args = { provider };
+    const args = { provider, chainNetwork: ENV.chainNetwork };
 
     const loginResponse = await ore.login(args);
     if (loginResponse) {

@@ -38,10 +38,10 @@ function DiscoveryButtons(props) {
 
       const { provider } = walletButtons[permissionIndex] || {};
       if (ore.canDiscover(provider)) {
-        await ore.discover(provider);
+        await ore.discover({ provider, chainNetwork: ENV.chainNetwork });
       } else {
         console.log("Provider doesn't support discover, so we'll call login instead");
-        await ore.login({ provider });
+        await ore.login({ provider, chainNetwork: ENV.chainNetwork });
       }
       ore.loadUserFromApi(model.userInfo.accountName); // reload user from ore id api - to show new keys discovered
     } catch (error) {

@@ -12,14 +12,7 @@ export default class ORE {
     this.v_waitingForLocalStateLogin = false;
     this.v_model = model;
 
-    const eosTransitWalletProviders = [
-      scatterProvider(),
-      // ledgerProvider(),
-      ledgerProvider({ pathIndexList: [0, 1, 2, 35] }),
-      lynxProvider(),
-      meetoneProvider(),
-      tokenpocketProvider(),
-    ];
+    const eosTransitWalletProviders = [scatterProvider(), ledgerProvider({ pathIndexList: [0, 1, 2, 35] }), lynxProvider(), meetoneProvider(), tokenpocketProvider()];
 
     const setBusyCallback = (isBusy) => {
       console.log('busy: ', isBusy);
@@ -75,8 +68,8 @@ export default class ORE {
     return this.v_oreid.canDiscover(provider);
   }
 
-  async discover(provider) {
-    return this.v_oreid.discover(provider, ENV.chainNetwork);
+  async discover(args) {
+    return this.v_oreid.discover(args);
   }
 
   async sign(options) {
@@ -123,7 +116,7 @@ export default class ORE {
     this.displayResults();
 
     try {
-      const result = this.v_oreid.login(args, ENV.chainNetwork);
+      const result = this.v_oreid.login(args);
 
       this.displayResults(result);
 
