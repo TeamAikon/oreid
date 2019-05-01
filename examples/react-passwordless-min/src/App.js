@@ -18,11 +18,12 @@ class App extends Component {
       code: '',
       results: null,
       userInfo: {},
+      isBusy: false,
       isLoggedIn: false,
     };
 
     const setBusyCallback = (isBusy) => {
-      this.v_busyFlag = isBusy;
+      this.setState({ isBusy: isBusy });
     };
 
     // intialize oreId
