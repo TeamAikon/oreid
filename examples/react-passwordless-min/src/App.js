@@ -13,7 +13,6 @@ const APP_CHAIN_NETWORK = 'eos_kylin';
 class App extends Component {
   constructor(props) {
     super(props);
-    console.log('consss');
     this.state = {
       email: '',
       code: '',
@@ -26,6 +25,7 @@ class App extends Component {
       this.v_busyFlag = isBusy;
     };
 
+    // intialize oreId
     this.oreId = new OreId({
       appName: 'ORE ID Sample App',
       appId: APP_ID,
@@ -75,6 +75,7 @@ class App extends Component {
     }
   }
 
+  // Handle the authCallback coming back from ORE-ID with an "account" parameter indicating that a user has logged in
   async handleAuthCallback() {
     const url = window.location.href;
     if (/authcallback/i.test(url)) {
