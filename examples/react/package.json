@@ -8,7 +8,7 @@
     "react-scripts": "3.0.0",
     "@material-ui/core": "^3.9.3",
     "@material-ui/icons": "^3.0.2",
-    "eos-auth": "^2.1.0",
+    "eos-auth": "^2.1.1",
     "eos-transit-ledger-provider": "^3.0.1",
     "eos-transit-lynx-provider": "^3.0.2",
     "eos-transit-meetone-provider": "^3.0.6",
@@ -22,7 +22,7 @@
     "jquery": "^3.4.0"
   },
   "scripts": {
-    "start": "PORT=3001 react-scripts start",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "lint": "eslint --ext .js --ext .jsx ./src --fix"
   },

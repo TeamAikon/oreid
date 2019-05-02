@@ -104,7 +104,7 @@ function PasswordlessLogin(props) {
 
   async function clickedRequestCode(provider) {
     const args = {
-      'login-type': provider,
+      provider,
     };
 
     switch (provider) {
