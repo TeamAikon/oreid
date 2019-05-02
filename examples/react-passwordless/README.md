@@ -4,23 +4,32 @@ This is useful if you would like to provide your own UI for authorizing users wi
 ## Example code
 
 ```javascript
+// STEP 1:
 // Initialize the library
 const oreId = new OreId({ appName:"My App", appId, apiKey, ... })
 
-// request code for your email address
-const args = {
-    provider: 'email',
-    email: 'steve@example.com',
-};
-const result = await oreId.passwordlessSendCodeApi(args);
+// STEP 2:
+// Request code for the users email address. An email will be sent to the user.
+ const result = await oreId.passwordlessSendCodeApi({ provider: 'email',  email: 'steve@example.com'});
 
-// email is sent, get the code and call this to login
-let loginResponse = await this.oreId.login({ provider:'email', email:'steve@example.com', codeFromEmail, chainNetwork:'eos_kylin' });
-//redirect browser to loginURL
+// STEP 3:
+// Verify the code sent in the email is correct.
+const result = await this.oreId.passwordlessVerifyCodeApi(args);
+if (result.success === true) {
+    // code is OK
+}
+
+// STEP 4:
+// Login in the user by sending the email and code from the email
+const loginResponse = await this.oreId.login({ provider:'email', email:'steve@example.com', codeFromEmail, chainNetwork:'eos_kylin' });
+
+// STEP 5:
+// Redirect browser to loginURL
 window.location = loginResponse.loginUrl;
 
+// STEP 6: (optional)
 // Get the user's info given a blockchain account
-letInfo = await oreId.getUserInfoFromApi(loginResponse.account)
+const info = await oreId.getUserInfoFromApi(loginResponse.account)
 ```
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
