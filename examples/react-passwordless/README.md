@@ -1,6 +1,28 @@
 This project demonstrates calling the 'eos-auth' api to use ORE IDs passwordless login for email.
 This is useful if you would like to provide your own UI for authorizing users without using oreid's user interface.
 
+## Example code
+
+```javascript
+// Initialize the library
+const oreId = new OreId({ appName:"My App", appId, apiKey, ... })
+
+// request code for your email address
+const args = {
+    provider: 'email',
+    email: 'steve@example.com',
+};
+const result = await oreId.passwordlessSendCodeApi(args);
+
+// email is sent, get the code and call this to login
+let loginResponse = await this.oreId.login({ provider:'email', email:'steve@example.com', codeFromEmail, chainNetwork:'eos_kylin' });
+//redirect browser to loginURL
+window.location = loginResponse.loginUrl;
+
+// Get the user's info given a blockchain account
+letInfo = await oreId.getUserInfoFromApi(loginResponse.account)
+```
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts

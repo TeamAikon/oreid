@@ -1,12 +1,12 @@
 {
-  "name": "react-passwordless-min",
-  "version": "0.1.0",
+  "name": "oreid-example-react-passwordless",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-scripts": "^3.0.0",
-    "eos-auth": "^2.1.0"
+    "eos-auth": "^2.1.1"
   },
   "scripts": {
     "start": "react-scripts start",

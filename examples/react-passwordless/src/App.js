@@ -87,7 +87,7 @@ class App extends Component {
 
   async requestCode() {
     const args = {
-      'login-type': 'email',
+      provider: 'email',
       email: this.state.email,
     };
 
@@ -139,10 +139,25 @@ class App extends Component {
     this.requestCode();
   }
 
-  handleSubmitCode(e) {
+  async handleSubmitCode(e) {
     e.preventDefault();
 
-    this.handleLogin();
+    // verify the code is good before login
+    // this is optional as it would just fail login if you passed a bad code, but helpful
+    // for displaying a quick message to the user
+    const args = {
+      provider: 'email',
+      email: this.state.email,
+      code: this.state.code,
+    };
+
+    const result = await this.oreId.passwordlessVerifyCodeApi(args);
+    console.log(result);
+    if (result.success === true) {
+      this.handleLogin();
+    } else {
+      this.setState({ results: result });
+    }
   }
 
   render() {
@@ -183,7 +198,7 @@ class App extends Component {
       resultsContent = (
         <div>
           <div>Results</div>
-          <div>{resultString}</div>
+          <div className="results">{resultString}</div>
         </div>
       );
     }
