@@ -10,18 +10,18 @@ const oreId = new OreId({ appName:"My App", appId, apiKey, ... })
 
 // STEP 2:
 // Request code for the users email address. An email will be sent to the user.
- const result = await oreId.passwordlessSendCodeApi({ provider: 'email',  email: 'steve@example.com'});
+ const result = await oreId.passwordlessSendCodeApi({ provider:'email',  email:'steve@example.com'});
 
 // STEP 3:
 // Verify the code sent in the email is correct.
-const result = await this.oreId.passwordlessVerifyCodeApi(args);
+const result = await this.oreId.passwordlessVerifyCodeApi({ provider:'email',  email:'steve@example.com', code:'123456' });
 if (result.success === true) {
     // code is OK
 }
 
 // STEP 4:
 // Login in the user by sending the email and code from the email
-const loginResponse = await this.oreId.login({ provider:'email', email:'steve@example.com', codeFromEmail, chainNetwork:'eos_kylin' });
+const loginResponse = await this.oreId.login({ provider:'email', email:'steve@example.com', code:'123456', chainNetwork:'eos_kylin' });
 
 // STEP 5:
 // Redirect browser to loginURL
