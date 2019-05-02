@@ -6,7 +6,7 @@ const APP_ID = 'demo_0097ed83e0a54e679ca46d082ee0e33a';
 const OREID_API_KEY = 'demo_k_97b33a2f8c984fb5b119567ca19e4a49';
 const APP_AUTH_CALLBACK = 'http://localhost:3000/authcallback';
 const APP_SIGN_CALLBACK = 'http://localhost:3000/signcallback';
-const APP_OREID_URL = 'https://staging.oreid.io';
+const APP_OREID_URL = 'https://oreid.io';
 const APP_BACKGROUND_COLOR = '3F7BC7';
 const APP_CHAIN_NETWORK = 'eos_kylin';
 
@@ -152,7 +152,6 @@ class App extends Component {
     };
 
     const result = await this.oreId.passwordlessVerifyCodeApi(args);
-    console.log(result);
     if (result.success === true) {
       this.handleLogin();
     } else {
