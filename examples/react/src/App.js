@@ -97,7 +97,7 @@ async handleWalletDiscoverButton(permissionIndex) {
     this.clearErrors();
     let {provider} = this.walletButtons[permissionIndex] || {};
     if(this.oreId.canDiscover(provider)) {
-      await this.oreId.discover(provider, chainNetwork);
+      await this.oreId.discover({ provider, chainNetwork });
     } else {
       console.log(`Provider doesn't support discover, so we'll call login instead`);
       await this.oreId.login({ provider, chainNetwork });
@@ -132,7 +132,7 @@ async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork,
     let signOptions = {
       provider:provider || '',  //wallet type (e.g. 'scatter' or 'oreid')
       account:account || '',
-      broadcast:false,  //if broadcast=true, ore id will broadcast the transaction to the chain network for you 
+      broadcast:true,  //if broadcast=true, ore id will broadcast the transaction to the chain network for you 
       chainAccount:chainAccount || '',
       chainNetwork:chainNetwork || '',
       state:'abc',  //anything you'd like to remember after the callback
@@ -156,17 +156,14 @@ async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork,
 
 createSampleTransaction(actor, permission = 'active') {
   const transaction = {
-    account: "eosio.token",
-    name: "transfer",
+    account: "demoapphello",
+    name: "hi",
     authorization: [{
       actor,
       permission,
     }],
     data: {
-      from: actor,
-      to: actor,
-      quantity: "0.0001 EOS",
-      memo: `random number: ${Math.random()}`
+      user: actor
     }
   };
   return transaction;
@@ -180,6 +177,7 @@ async handleAuthCallback() {
   const url = window.location.href;
   if (/authcallback/i.test(url)) {
     const {account, errors, state} = await this.oreId.handleAuthResponse(url);
+    if(state) console.log(`state returned with request:${state}`);
     if(!errors) {
       this.loadUserFromApi(account);
     }
@@ -299,7 +297,7 @@ renderSignButtons = (permissions) =>
   permissions.map((permission, index) =>  {
     let provider = permission.externalWalletType || 'oreid';
     return (
-      <div style={{alignContent:'center'}}>
+      <div style={{alignContent:'center'}} key={index}>
         <LoginButton provider={provider} data-tag={index} buttonStyle={{width:225, marginLeft:-20, marginTop:20, marginBottom:10}} text={`Sign with ${provider}`} onClick={() => {this.handleSignButton(index)}}>{`Sign Transaction with ${provider}`}</LoginButton>
         {`Chain:${permission.chainNetwork} ---- Account:${permission.chainAccount} ---- Permission:${permission.permission}`}
       </div>
@@ -311,7 +309,7 @@ renderSignButtons = (permissions) =>
   walletButtons.map((wallet, index) =>  {
     let provider = wallet.provider;
     return (
-      <div style={{alignContent:'center'}}>
+      <div style={{alignContent:'center'}} key={index} >
         <LoginButton provider={provider} data-tag={index} buttonStyle={{width:80, marginLeft:-20, marginTop:20, marginBottom:10}} text={`${provider}`} onClick={() => {this.handleWalletDiscoverButton(index)}}>{`${provider}`}</LoginButton>
       </div>
     )
