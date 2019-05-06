@@ -132,7 +132,7 @@ async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork,
     let signOptions = {
       provider:provider || '',  //wallet type (e.g. 'scatter' or 'oreid')
       account:account || '',
-      broadcast:false,  //if broadcast=true, ore id will broadcast the transaction to the chain network for you 
+      broadcast:true,  //if broadcast=true, ore id will broadcast the transaction to the chain network for you 
       chainAccount:chainAccount || '',
       chainNetwork:chainNetwork || '',
       state:'abc',  //anything you'd like to remember after the callback
@@ -156,17 +156,14 @@ async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork,
 
 createSampleTransaction(actor, permission = 'active') {
   const transaction = {
-    account: "eosio.token",
-    name: "transfer",
+    account: "demoapphello",
+    name: "hi",
     authorization: [{
       actor,
       permission,
     }],
     data: {
-      from: actor,
-      to: actor,
-      quantity: "0.0001 EOS",
-      memo: `random number: ${Math.random()}`
+      user: actor
     }
   };
   return transaction;
