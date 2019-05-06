@@ -1,10 +1,9 @@
 {
     "buttonStyle":{
-        "backgroundColor": "#C95A75"
+        "backgroundColor": "#FFFFFF",
+        "color": "#333333"
     },
     "logoStyle":{
-        "width":30,
-        "height":30
     },
-    "text":"Sign with Lynx"
+    "text":"Log in with Lynx"
 }

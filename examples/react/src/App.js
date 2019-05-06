@@ -372,6 +372,21 @@ renderLoginButtons() {
           onClick={()=>this.handleLogin("scatter")}
           //  text='Log in with Scatter'
       />
+      <LoginButton provider='meetone'
+          buttonStyle={{width:250, marginTop:'24px'}}
+          logoStyle={{marginLeft:0}}
+          onClick={()=>this.handleLogin("meetone")}
+      />
+      <LoginButton provider='lynx'
+          buttonStyle={{width:250, marginTop:'24px'}}
+          logoStyle={{marginLeft:0}}
+          onClick={()=>this.handleLogin("lynx")}
+      />
+      <LoginButton provider='ledger'
+          buttonStyle={{width:250, marginTop:'24px'}}
+          logoStyle={{marginLeft:0}}
+          onClick={()=>this.handleLogin("ledger")}
+      />
     </div>
   )
 }

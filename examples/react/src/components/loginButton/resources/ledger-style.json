@@ -1,10 +1,10 @@
 {
     "buttonStyle":{
-        "backgroundColor": "#39C5AB"
-
+        "backgroundColor": "#FFFFFF",
+        "color": "#142533"
     },
     "logoStyle":{
         "marginLeft":12
     },
-    "text":"Sign with Ledger"
+    "text":"Log in with Ledger"
 }
