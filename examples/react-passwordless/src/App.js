@@ -94,7 +94,7 @@ class App extends Component {
     const result = await this.oreId.passwordlessSendCodeApi(args);
 
     if (result.success === true) {
-      // check your email for a code
+      this.setState({ results: { success: 'check your email for a code' } });
     } else {
       this.setState({ results: { error: 'send code failed' } });
     }
