@@ -16,6 +16,20 @@ ORE ID removes the friction between your app and your future users.
 
 <img src="./docs/images/OREID-GitHub-diagram-01.png">
 
+# Quickstart Guide
+
+To run sample code:
+
+- You'll need your App ID and API Key - you get them when you register your app with ORE ID
+- Populate .env file in root of project directory with your appId and apiKey (it will start with keys for a demo app)
+
+    ```
+    cd examples/react
+    npm install
+    npm start
+    ```
+
+You can find other example apps including React Native, in the `/examples` folder.
 
 # Usage
 
