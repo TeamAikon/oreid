@@ -132,17 +132,17 @@ async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork,
     let signOptions = {
       provider:provider || '',  //wallet type (e.g. 'scatter' or 'oreid')
       account:account || '',
-      broadcast:false,  //if broadcast=true, ore id will broadcast the transaction to the chain network for you 
+      broadcast:true,  //if broadcast=true, ore id will broadcast the transaction to the chain network for you 
       chainAccount:chainAccount || '',
       chainNetwork:chainNetwork || '',
       state:'abc',  //anything you'd like to remember after the callback
       transaction,
       accountIsTransactionPermission:false,
-      returnSignedTransaction: false
+      returnSignedTransaction: true
     }
     let signResponse = await this.oreId.sign(signOptions);
     //if the sign responds with a signUrl, then redirect the browser to it to call the signing flow
-    let { signUrl, signedTransaction, state } = signResponse || {};
+    let { signUrl, signedTransaction, state, transactionId } = signResponse || {};
     if(signUrl) {
       //redirect browser to signUrl
       window.location = signUrl;
@@ -150,6 +150,7 @@ async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork,
     if(signedTransaction) {
       this.setState({signedTransaction:JSON.stringify(signedTransaction), state});
     }
+    if(transactionId) this.setState({ transactionId });
   } catch (error) {
     this.setState({errorMessage:error.message});
   }
@@ -191,10 +192,11 @@ async handleAuthCallback() {
 async handleSignCallback() {
   const url = window.location.href;
   if (/signcallback/i.test(url)) {
-    const {signedTransaction, state, errors} = await this.oreId.handleSignResponse(url);
+    const {signedTransaction, state, transactionId, errors} = await this.oreId.handleSignResponse(url);
     if(!errors) {
       if(state) this.setState({ signState:state });
       if(signedTransaction) this.setState({ signedTransaction:JSON.stringify(signedTransaction) })
+      if(transactionId) this.setState({ transactionId:JSON.stringify(transactionId) })
     }
     else {
       this.setState({errorMessage:errors.join(", ")});
@@ -203,7 +205,7 @@ async handleSignCallback() {
 }
 
 render() {
-  let {errorMessage, isBusy, isLoggedIn, signedTransaction, signState} = this.state;
+  let { errorMessage, isBusy, isLoggedIn, signedTransaction, signState, transactionId } = this.state;
   return (
     <div>
       <div>
@@ -224,6 +226,9 @@ render() {
         {(errorMessage) && errorMessage}
       </div>
       <div style={{color:'blue', marginLeft:'50px', marginTop:'50px'}}>
+        {(transactionId) && `Returned transactionId: ${transactionId}`}
+      </div>
+      <div style={{color:'blue', marginLeft:'50px', marginTop:'10px'}}>
         {(signedTransaction) && `Returned signed transaction: ${signedTransaction}`}
       </div>
       <div style={{color:'blue', marginLeft:'50px',marginTop:'10px'}}>
