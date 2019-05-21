@@ -127,27 +127,28 @@ async handleLogin(provider) {
 
 async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork, permission) {
   try {
-    this.clearErrors();
+    //this.clearErrors();
     const transaction = this.createSampleTransaction(chainAccount, permission);
     let signOptions = {
       provider:provider || '',  //wallet type (e.g. 'scatter' or 'oreid')
       account:account || '',
-      broadcast:true,  //if broadcast=true, ore id will broadcast the transaction to the chain network for you 
+      broadcast:false,  //if broadcast=true, ore id will broadcast the transaction to the chain network for you 
       chainAccount:chainAccount || '',
       chainNetwork:chainNetwork || '',
       state:'abc',  //anything you'd like to remember after the callback
       transaction,
-      accountIsTransactionPermission:false
+      accountIsTransactionPermission:false,
+      returnSignedTransaction: false
     }
     let signResponse = await this.oreId.sign(signOptions);
     //if the sign responds with a signUrl, then redirect the browser to it to call the signing flow
-    let { signUrl, signedTransaction } = signResponse || {};
+    let { signUrl, signedTransaction, state } = signResponse || {};
     if(signUrl) {
       //redirect browser to signUrl
       window.location = signUrl;
     }
     if(signedTransaction) {
-      this.setState({signedTransaction:JSON.stringify(signedTransaction)});
+      this.setState({signedTransaction:JSON.stringify(signedTransaction), state});
     }
   } catch (error) {
     this.setState({errorMessage:error.message});
@@ -191,11 +192,9 @@ async handleSignCallback() {
   const url = window.location.href;
   if (/signcallback/i.test(url)) {
     const {signedTransaction, state, errors} = await this.oreId.handleSignResponse(url);
-    if(!errors && signedTransaction) {
-      this.setState({
-        signedTransaction:JSON.stringify(signedTransaction),
-        signState:state
-      });
+    if(!errors) {
+      if(state) this.setState({ signState:state });
+      if(signedTransaction) this.setState({ signedTransaction:JSON.stringify(signedTransaction) })
     }
     else {
       this.setState({errorMessage:errors.join(", ")});
