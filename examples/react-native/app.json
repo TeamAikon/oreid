@@ -1,20 +1,33 @@
 {
   "expo": {
-    "sdkVersion": "27.0.0",
+    "name": "mobile",
     "slug": "mobile",
-    "name": "mobile"
-  },
-  "ios": {
-    "infoPlist": {
-      "CFBundleIdentifier": "com.aikon.oreid.sample.reactnative",
-      "CFBundleURLTypes": [
-        {
-          "CFBundleURLName": "com.aikon.oreid.sample.reactnative",
-          "CFBundleURLSchemes": [
-            "oreidreactnativesample"
-          ]
-        }
-      ]
+    "privacy": "public",
+    "sdkVersion": "32.0.0",
+    "platforms": ["ios", "android"],
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "CFBundleIdentifier": "com.aikon.oreid.sample.reactnative",
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLName": "com.aikon.oreid.sample.reactnative",
+            "CFBundleURLSchemes": ["oreidreactnativesample"]
+          }
+        ]
+      }
     }
   }
 }

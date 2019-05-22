@@ -9,13 +9,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@apimarket/oreid-js": "^1.1.4",
-    "body-parser": "^1.18.3",
-    "dotenv": "^6.2.0",
-    "express": "^4.16.4",
+    "eos-auth": "^2.1.7",
+    "body-parser": "^1.19.0",
+    "dotenv": "^8.0.0",
+    "express": "^4.17.0",
     "js-cookie": "^2.2.0"
   },
   "devDependencies": {
-    "esm": "^3.2.3"
+    "esm": "^3.2.25"
   }
 }

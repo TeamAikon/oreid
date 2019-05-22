@@ -1,5 +1,10 @@
 {
-  "expoServerPort": 19000,
-  "packagerPort": 19002,
-  "packagerPid": 61973
+  "devToolsPort": 19003,
+  "expoServerPort": null,
+  "packagerPort": null,
+  "packagerPid": null,
+  "expoServerNgrokUrl": "https://pp-4xf.anonymous.react-native.exp.direct",
+  "packagerNgrokUrl": "https://packager.pp-4xf.anonymous.react-native.exp.direct",
+  "ngrokPid": 20005,
+  "webpackServerPort": null
 }
