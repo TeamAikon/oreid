@@ -64,15 +64,11 @@ class SocialLoginButton extends Component {
   render () {
     //TODO: Check that provider is one of the valid types
     let { provider, onClickCallback, buttonStyle, logoStyle, text} = this.state;
-    const smallLogo = require(`./resources/${provider}-logo.png`);
-    const mediumLogo = require(`./resources/${provider}-logo@2x.png`);
-    const largeLogo = require(`./resources/${provider}-logo@3x.png`);
-    return (
+     const mediumLogo = require(`./resources/${provider}-logo@2x.png`);
+     return (
       <div>
         <button style={buttonStyle} onClick={() => {onClickCallback(provider)}}>
-          <img style={logoStyle} src={smallLogo}
-               srcset={`${smallLogo} 1x, ${mediumLogo} 2x, ${largeLogo} 3x`}
-               alt={text}/>
+          <img style={logoStyle} src={mediumLogo} alt={text}/>
           {text}
         </button>
       </div>
