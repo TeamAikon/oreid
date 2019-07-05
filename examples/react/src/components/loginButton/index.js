@@ -16,7 +16,11 @@ let validProviders=[
   'ledger',
   'lynx',
   'meetone',
-  'tokenpocket'
+  'tokenpocket',
+  'portis',
+  'whalevault',
+  'simpleos',
+  'keycat'
 ]
 
 var defaultButtonStyle = {
