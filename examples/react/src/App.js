@@ -14,6 +14,7 @@ let chainNetworkForExample = 'eos_kylin';
 const { 
   REACT_APP_OREID_APP_ID: appId,              // Provided when you register your app
   REACT_APP_OREID_API_KEY:apiKey,             // Provided when you register your app
+  REACT_APP_OREID_SERVICE_KEY:serviceKey,         // Provided when you register your app
   REACT_APP_AUTH_CALLBACK:authCallbackUrl,    // The url called by the server when login flow is finished - must match one of the callback strings listed in the App Registration
   REACT_APP_SIGN_CALLBACK:signCallbackUrl,    // The url called by the server when transaction signing flow is finished - must match one of the callback strings listed in the App Registration
   REACT_APP_OREID_URL:oreIdUrl,               // HTTPS Address of OREID server
@@ -45,7 +46,7 @@ class App extends Component {
 setBusyCallback = (isBusy) => {this.setState({isBusy})};
 
 //intialize oreId
-oreId = new OreId({ appName:"ORE ID Sample App", appId, apiKey, oreIdUrl, authCallbackUrl, signCallbackUrl, backgroundColor, eosTransitWalletProviders, setBusyCallback:this.setBusyCallback});
+oreId = new OreId({ appName:"ORE ID Sample App", appId, apiKey, serviceKey, oreIdUrl, authCallbackUrl, signCallbackUrl, backgroundColor, eosTransitWalletProviders, setBusyCallback:this.setBusyCallback});
 
 async componentWillMount() {
   this.loadUserFromLocalState();
@@ -171,6 +172,23 @@ createSampleTransaction(actor, permission = 'active') {
   return transaction;
 }
 
+async handleNewUser() {
+  const newUser = {
+    name: "John Smith",
+    userName: "jsmith",
+    email: "email@example.com",
+    picture: "https://site.com/johnsmith.jpg",
+    userPassword: "password",
+    phone: "+12223334444",
+    accountType: "native" 
+  };
+  try {
+    let account = await this.oreId.custodialNewAccount(newUser)
+    console.log(`new account:${account}`);
+  } catch (error) {
+    console.log(`error:`, error);
+  }
+}
 
 /*
    Handle the authCallback coming back from ORE-ID with an "account" parameter indicating that a user has logged in
@@ -390,6 +408,9 @@ renderLoginButtons() {
           buttonStyle={{width:250, marginTop:'24px'}}
           logoStyle={{marginLeft:0}}
           onClick={()=>this.handleLogin("lynx")}
+      />
+      <LoginButton provider='lynx'
+          onClick={()=> this.handleNewUser()}
       />
     </div>
   )

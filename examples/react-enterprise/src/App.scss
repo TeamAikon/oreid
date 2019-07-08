@@ -1,0 +1,47 @@
+.app {
+  text-align: center;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding-top: 20px;
+  font-size: calc(10px + 2vmin);
+
+  .app-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.groupClass {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+label {
+  font-size: 0.6em;
+}
+
+.user-info-box {
+  font-size: 0.6em;
+  margin: 10px 0;
+
+  .info-title {
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-top: 6px;
+  }
+}
+
+.title-class {
+  color: rgba(0, 80, 150, 0.7);
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.results {
+  font-size: 0.5em;
+}
