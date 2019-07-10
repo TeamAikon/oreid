@@ -36,6 +36,7 @@ class App extends Component {
 
     this.handleSubmitCreateUser = this.handleSubmitCreateUser.bind(this);
     this.handleSubmitSign = this.handleSubmitSign.bind(this);
+    this.handleSubmitMigrate = this.handleSubmitMigrate.bind(this);
     this.onChangeCode = this.onChangeCode.bind(this);
     this.onChangeValue = this.onChangeValue.bind(this);
   }
@@ -107,9 +108,6 @@ class App extends Component {
   async handleSubmitCreateUser(e) {
     e.preventDefault();
 
-    // verify the code is good before login
-    // this is optional as it would just fail login if you passed a bad code, but helpful
-    // for displaying a quick message to the user
     const { name, userName, email, picture, userPassword, phone, accountType } = this.state;
     const args = { name, userName, email, picture, userPassword, phone, accountType };
     try {
@@ -125,9 +123,6 @@ class App extends Component {
 
     const { txAccount, txBroadcast, txTransaction, txUserPassword }= this.state;
 
-    // verify the code is good before login
-    // this is optional as it would just fail login if you passed a bad code, but helpful
-    // for displaying a quick message to the user
     const args = {
       provider: 'custodial', 
       returnSignedTransaction: true, 
@@ -144,6 +139,28 @@ class App extends Component {
       console.log(`sign transaction result:`,result);
     } catch (error) {
       console.log(`sign transaction error:`, error);
+    }
+
+  }
+
+  async handleSubmitMigrate(e) {
+    e.preventDefault();
+
+    const { txAccount, txUserPassword }= this.state;
+
+    const args = {
+      chainNetwork: chainNetworkForExample,
+      chainAccount: txAccount,
+      account: txAccount,
+      toType: 'native',
+      userPassword: txUserPassword
+    };
+
+    try {
+      const result = await this.oreId.custodialMigrateAccount(args);
+      console.log(`migrate accounts result:`,result);
+    } catch (error) {
+      console.log(`migrate accounts error:`, error);
     }
 
   }
@@ -195,6 +212,13 @@ class App extends Component {
               <input type="text" placeholder="userPassword" value={this.state.txUserPassword} onChange={(e) => this.onChangeValue('txUserPassword', e)} />
               <input type="text" placeholder="broadcast" value={this.state.txBroadcast} onChange={(e) => this.onChangeValue('txBroadcast', e)} />
               <input type="submit" value="Sign Transaction" />
+          </form>
+
+          Enter Migrate Account Info
+          <form onSubmit={this.handleSubmitMigrate}>
+              <input type="text" placeholder="account" value={this.state.txAccount} onChange={(e) => this.onChangeValue('txAccount', e)} />
+              <input type="text" placeholder="userPassword" value={this.state.txUserPassword} onChange={(e) => this.onChangeValue('txUserPassword', e)} />
+              <input type="submit" value="Migrate Account" />
           </form>
 
         </div>
