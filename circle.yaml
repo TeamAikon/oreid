@@ -1,0 +1,126 @@
+# This configuration was automatically generated from a CircleCI 1.0 config.
+# It should include any build commands you had along with commands that CircleCI
+# inferred from your project structure. We strongly recommend you read all the
+# comments in this file to understand the structure of CircleCI 2.0, as the idiom
+# for configuration has changed substantially in 2.0 to allow arbitrary jobs rather
+# than the prescribed lifecycle of 1.0. In general, we recommend using this generated
+# configuration as a reference rather than using it in production, though in most
+# cases it should duplicate the execution of your original 1.0 config.
+version: 2
+jobs:
+  build:
+    working_directory: ~/API-market/ore-id-docs
+    parallelism: 1
+    shell: /bin/bash --login
+    environment:
+      CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
+      CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
+      PYTHONPATH: ${PYTHONPATH}:${HOME}/google_appengine
+      GCLOUD_PROJECT: ore-id
+      SERVICE_VERSION: 1
+    # In CircleCI 2.0 you can now specify your own image, or use one of our pre-configured images.
+    # To see the list of pre-built images that CircleCI provides for most common languages see
+    # https://circleci.com/docs/2.0/circleci-images/
+    docker:
+      - image: circleci/build-image:ubuntu-14.04-XXL-upstart-1189-5614f37
+        command: /sbin/init
+    steps:
+      # Machine Setup
+      - checkout
+      # 'See docs on artifact collection here https://circleci.com/docs/2.0/artifacts/'
+      - run: mkdir -p $CIRCLE_ARTIFACTS $CIRCLE_TEST_REPORTS
+      - run:
+          working_directory: ~/API-market/ore-id-docs
+          command: nvm install 10.4.0 && nvm alias default 10.4.0
+      # Dependencies
+      #   This would typically go in either a build or a build-and-test job when using workflows
+      # Restore the dependency cache
+      - restore_cache:
+          keys:
+            # This branch if available
+            - v1-dep-{{ .Branch }}-
+            # Default branch if not
+            - v1-dep-master-
+            # Any branch if there are none on the default branch - this should be unnecessary if you have your default branch configured correctly
+            - v1-dep-
+
+      # install gcloud and login to it
+      - run:
+          working_directory: ~/API-market/ore-id-docs/examples/react
+          command: |
+            if [ "$CIRCLE_BRANCH" == "master" ]
+              then
+                  curl -o $HOME/google_appengine_1.9.30.zip https://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.30.zip
+                  unzip -q -d $HOME $HOME/google_appengine_1.9.30.zip
+                  echo $GCLOUD_SERVICE_KEY | base64 --decode > ${HOME}/gcloud-service-key.json
+                  gcloud --quiet components update app
+                  gcloud auth activate-service-account --key-file ${HOME}/gcloud-service-key.json
+                  gcloud config set project $GCLOUD_PROJECT
+            fi
+
+      # copy .env file from circleci injected environmental variables
+      - run:
+          working_directory: ~/API-market/ore-id-docs/examples/react
+          command: |
+            if [ "$CIRCLE_BRANCH" == "master" ]
+             then
+                  cp -rf ./scripts/config/prod.app.yaml ./app.yaml
+                  echo $ENV | base64 --decode >> ./.env
+            fi
+
+      # install npm dependencies and run build script
+      - run:
+          working_directory: ~/API-market/ore-id-docs/examples/react
+          command: |
+            npm install
+            npm run build
+            # copy the folders we will deploy to a dist folder
+
+      # # Unit Tests
+      # - run:
+      #     working_directory: ~/API-market/ore-id-docs/examples/react
+      #     command: npm test
+
+      # deploy to Google Cloud
+      - run:
+          working_directory: ~/API-market/ore-id-docs/examples/react
+          command: |
+            if [ "$CIRCLE_BRANCH" == "master" ]
+              then
+                  rm -rf ./node_modules
+                  # deploy to AppEngine
+                  gcloud -q app deploy app.yaml --promote $1
+            fi
+
+      # Integration Tests
+      # - run:
+      #     command: |
+      #       if [ "$CIRCLE_BRANCH" == "master" ]
+      #        then
+      #            curl -o /dev/null https://api.ghostinspector.com/v1/suites/5c475541638e692a230eb3eb/execute/?apiKey=${GHOST_INSPECTOR_API_KEY}
+      #       fi
+
+      # Save dependency cache
+      - save_cache:
+          key: v1-dep-{{ .Branch }}-{{ epoch }}
+          paths:
+            # This is a broad list of cache paths to include many possible development environments
+            # You can probably delete some of these entries
+            - vendor/bundle
+            - ~/virtualenvs
+            - ~/.m2
+            - ~/.ivy2
+            - ~/.bundle
+            - ~/.go_workspace
+            - ~/.gradle
+            - ~/.cache/bower
+
+      # Teardown
+      # Save test results
+      - store_test_results:
+          path: /tmp/circleci-test-results
+      # Save artifacts
+      - store_artifacts:
+          path: /tmp/circleci-artifacts
+      - store_artifacts:
+          path: /tmp/circleci-test-results
