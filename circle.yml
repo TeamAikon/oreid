@@ -89,7 +89,7 @@ jobs:
               then
                   rm -rf ./node_modules
                   # deploy to AppEngine
-                  gcloud -q app deploy app.yaml --promote $1
+                  gcloud -q app deploy app.yaml
             fi
 
       # Integration Tests
