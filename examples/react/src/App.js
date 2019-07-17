@@ -1,6 +1,5 @@
 import dotenv from 'dotenv';
 import React, { Component } from 'react';
-import LoginButton from './components/loginButton';
 import { OreId } from 'eos-auth';
 import scatterProvider from 'eos-transit-scatter-provider';
 import ledgerProvider from 'eos-transit-ledger-provider';
@@ -12,9 +11,17 @@ import simpleosProvider from 'eos-transit-simpleos-provider';
 import keycatProvider from 'eos-transit-keycat-provider';
 // import portisProvider from 'eos-transit-portis-provider'
 
+import { Scatter } from 'ual-scatter'
+import { Lynx } from 'ual-lynx'
+import { Ledger } from 'ual-ledger'
+import { MeetOne } from 'ual-meetone'
+import { TokenPocket } from 'ual-token-pocket'
+
+import LoginButton from './components/loginButton';
+
 dotenv.config();
 
-let chainNetworkForExample = 'eos_kylin';
+let chainNetworkForExample = 'eos_main';
 
 const {
   REACT_APP_OREID_APP_ID: appId, // Provided when you register your app
@@ -39,6 +46,14 @@ let eosTransitWalletProviders = [
   // }),
 ];
 
+let ualProviders = [
+  Scatter,
+  Lynx,
+  Ledger,
+  MeetOne,
+  TokenPocket,
+]
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -54,8 +69,19 @@ class App extends Component {
 // called by library to set local busy state
 setBusyCallback = (isBusy) => {this.setState({ isBusy });};
 
-// intialize oreId
-oreId = new OreId({ appName:'ORE ID Sample App', appId, apiKey, oreIdUrl, authCallbackUrl, signCallbackUrl, backgroundColor, eosTransitWalletProviders, setBusyCallback:this.setBusyCallback });
+//intialize oreId
+oreId = new OreId({
+  appName: "ORE ID Sample App",
+  appId,
+  apiKey,
+  oreIdUrl,
+  authCallbackUrl,
+  signCallbackUrl,
+  backgroundColor,
+  eosTransitWalletProviders,
+  ualProviders,
+  setBusyCallback: this.setBusyCallback
+});
 
 async componentWillMount() {
   this.loadUserFromLocalState();
@@ -399,6 +425,11 @@ renderSignButtons = (permissions) => permissions.map((permission, index) => {
           buttonStyle={{ width:250, marginTop:'24px' }}
           logoStyle={{ marginLeft:0 }}
           onClick={() => this.handleLogin('lynx')}
+        />
+        <LoginButton provider='tokenpocket'
+          buttonStyle={{ width:250, marginTop:'24px' }}
+          logoStyle={{ marginLeft:0 }}
+          onClick={() => this.handleLogin('tockenpocket')}
         />
         <LoginButton provider='portis'
           buttonStyle={{ width:250, marginTop:'24px' }}
