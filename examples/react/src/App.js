@@ -21,7 +21,7 @@ import LoginButton from './components/loginButton';
 
 dotenv.config();
 
-let chainNetworkForExample = 'eos_main';
+let chainNetworkForExample = 'eos_kylin';
 
 const {
   REACT_APP_OREID_APP_ID: appId, // Provided when you register your app

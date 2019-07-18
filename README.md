@@ -108,6 +108,10 @@ Refer to the examples folder for the following sample projects
 
 - Express Server - A simple Express server that includes the use of middleware to automate handling of callbacks
 
+## Warnings
+
+When integrating with Transit or UAL the providers are interchangeable. You can switch between ual-lynx and transit-lynx but only one is allowed at any given time, attempting to pass in duplicate providers will result in an error. 
+
 
 [Frequently Asked Questions](https://drive.google.com/open?id=1Nx6qm7z8TQRM8S-onmcP0H--21z-gzYDBVEzzfcgE9g)
 
