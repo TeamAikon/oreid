@@ -2,20 +2,20 @@ import dotenv from 'dotenv';
 import React, { Component } from 'react';
 import { OreId } from 'eos-auth';
 import scatterProvider from 'eos-transit-scatter-provider';
-import ledgerProvider from 'eos-transit-ledger-provider';
+import ledgerProvider from 'eos-transit-ledger-provider'
 import lynxProvider from 'eos-transit-lynx-provider';
 import meetoneProvider from 'eos-transit-meetone-provider';
 import tokenpocketProvider from 'eos-transit-tokenpocket-provider';
-import whalevaultProvider from 'eos-transit-whalevault-provider';
-import simpleosProvider from 'eos-transit-simpleos-provider';
-import keycatProvider from 'eos-transit-keycat-provider';
+import whalevaultProvider from 'eos-transit-whalevault-provider'
+import simpleosProvider from 'eos-transit-simpleos-provider'
+import keycatProvider from 'eos-transit-keycat-provider'
 // import portisProvider from 'eos-transit-portis-provider'
 
-import { Scatter } from 'ual-scatter'
-import { Lynx } from 'ual-lynx'
-import { Ledger } from 'ual-ledger'
-import { MeetOne } from 'ual-meetone'
-import { TokenPocket } from 'ual-token-pocket'
+// import { Scatter } from 'ual-scatter'
+// import { Lynx } from 'ual-lynx'
+// import { Ledger } from 'ual-ledger'
+// import { MeetOne } from 'ual-meetone'
+// import { TokenPocket } from 'ual-token-pocket'
 
 import LoginButton from './components/loginButton';
 
@@ -34,7 +34,7 @@ const {
 
 let eosTransitWalletProviders = [
   scatterProvider(),
-  ledgerProvider({ pathIndexList: [0, 1, 2, 35] }),
+  ledgerProvider({ pathIndexList: [ 0, 1, 2, 35 ] }),
   lynxProvider(),
   meetoneProvider(),
   tokenpocketProvider(),
@@ -47,11 +47,11 @@ let eosTransitWalletProviders = [
 ];
 
 let ualProviders = [
-  Scatter,
-  Lynx,
-  Ledger,
-  MeetOne,
-  TokenPocket,
+  // Scatter,
+  // Lynx,
+  // Ledger,
+  // MeetOne,
+  // TokenPocket,
 ]
 
 class App extends Component {
@@ -69,9 +69,9 @@ class App extends Component {
 // called by library to set local busy state
 setBusyCallback = (isBusy) => {this.setState({ isBusy });};
 
-//intialize oreId
+// intialize oreId
 oreId = new OreId({
-  appName: "ORE ID Sample App",
+  appName: 'ORE ID Sample App',
   appId,
   apiKey,
   oreIdUrl,
