@@ -2,26 +2,26 @@ import dotenv from 'dotenv';
 import React, { Component } from 'react';
 import { OreId } from 'eos-auth';
 import scatterProvider from 'eos-transit-scatter-provider';
-import ledgerProvider from 'eos-transit-ledger-provider'
+import ledgerProvider from 'eos-transit-ledger-provider';
 import lynxProvider from 'eos-transit-lynx-provider';
 import meetoneProvider from 'eos-transit-meetone-provider';
 import tokenpocketProvider from 'eos-transit-tokenpocket-provider';
-import whalevaultProvider from 'eos-transit-whalevault-provider'
-import simpleosProvider from 'eos-transit-simpleos-provider'
-import keycatProvider from 'eos-transit-keycat-provider'
+import whalevaultProvider from 'eos-transit-whalevault-provider';
+import simpleosProvider from 'eos-transit-simpleos-provider';
+import keycatProvider from 'eos-transit-keycat-provider';
 // import portisProvider from 'eos-transit-portis-provider'
 
-// import { Scatter } from 'ual-scatter'
-// import { Lynx } from 'ual-lynx'
-// import { Ledger } from 'ual-ledger'
-// import { MeetOne } from 'ual-meetone'
-// import { TokenPocket } from 'ual-token-pocket'
+// import { Scatter } from 'ual-scatter';
+// import { Lynx } from 'ual-lynx';
+// import { Ledger } from 'ual-ledger';
+// import { MeetOne } from 'ual-meetone';
+// import { TokenPocket } from 'ual-token-pocket';
 
 import LoginButton from './components/loginButton';
 
 dotenv.config();
 
-let chainNetworkForExample = 'eos_kylin';
+let chainNetworkForExample = 'eos_main';
 
 const {
   REACT_APP_OREID_APP_ID: appId, // Provided when you register your app
@@ -51,8 +51,8 @@ let ualProviders = [
   // Lynx,
   // Ledger,
   // MeetOne,
-  // TokenPocket,
-]
+  // TokenPocket
+];
 
 class App extends Component {
   constructor(props) {
@@ -127,6 +127,14 @@ async handleSignButton(permissionIndex) {
   await this.handleSignSampleTransaction(provider, accountName, chainAccount, chainNetwork, permission);
 }
 
+async handleSignStringButton(permissionIndex) {
+  this.clearErrors();
+  let { chainAccount, chainNetwork, permission, externalWalletType:provider } = this.permissionsToRender[permissionIndex] || {};
+  let { accountName } = this.state.userInfo;
+  provider = provider || 'oreid'; // default to ore id
+  await this.handleSignString(provider, accountName, chainAccount, chainNetwork, permission);
+}
+
 async handleWalletDiscoverButton(permissionIndex) {
   let chainNetwork = chainNetworkForExample;
   try {
@@ -156,6 +164,23 @@ async handleLogin(provider) {
       window.location = loginUrl;
     }
     this.setState({ userInfo: { accountName:account }, isLoggedIn });
+  } catch (error) {
+    this.setState({ errorMessage:error.message });
+  }
+}
+
+async handleSignString(provider, account, chainAccount, chainNetwork) {
+  try {
+    const signOptions = {
+      provider,
+      account,
+      chainAccount,
+      chainNetwork,
+      string: 'testing',
+      message: 'test message'
+    };
+    const response = await this.oreId.signString(signOptions);
+    this.setState({ signedString: response });
   } catch (error) {
     this.setState({ errorMessage:error.message });
   }
@@ -239,7 +264,7 @@ async handleSignCallback() {
 }
 
 render() {
-  let { errorMessage, isBusy, isLoggedIn, signedTransaction, signState, transactionId } = this.state;
+  let { errorMessage, isBusy, isLoggedIn, signedTransaction, signState, transactionId, signedString } = this.state;
   return (
     <div>
       <div>
@@ -251,6 +276,9 @@ render() {
         }
         {isLoggedIn &&
           this.renderSigningOptions()
+        }
+        {isLoggedIn &&
+          this.renderSignStringOptions()
         }
       </div>
       <h3 style={{ color:'green', margin:'50px' }}>
@@ -267,6 +295,9 @@ render() {
       </div>
       <div style={{ color:'blue', marginLeft:'50px',marginTop:'10px' }}>
         {(signState) && `Returned state param: ${signState}`}
+      </div>
+      <div style={{ color:'blue', marginLeft:'50px', marginTop:'10px' }}>
+        {(signedString) && `Returned signed string: ${JSON.stringify(signedString)}`}
       </div>
       {isLoggedIn &&
           this.renderDiscoverOptions()
@@ -308,6 +339,22 @@ renderSigningOptions() {
   );
 }
 
+renderSignStringOptions() {
+  let { permissions } = this.state.userInfo;
+  this.permissionsToRender = (permissions ||[]).slice(0);
+
+  return (
+    <div>
+      <div style={{ marginTop:50, marginLeft:20 }}>
+        <h3>Sign string `testing` with one of your keys</h3>
+        <ul>
+          {this.renderSignStringButtons(this.permissionsToRender)}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
 renderDiscoverOptions() {
   let chainNetwork = chainNetworkForExample;
   this.walletButtons = [
@@ -339,6 +386,16 @@ renderSignButtons = (permissions) => permissions.map((permission, index) => {
   return (
     <div style={{ alignContent:'center' }} key={index}>
       <LoginButton provider={provider} data-tag={index} buttonStyle={{ width:225, marginLeft:-20, marginTop:20, marginBottom:10 }} text={`Sign with ${provider}`} onClick={() => {this.handleSignButton(index);}}>{`Sign Transaction with ${provider}`}</LoginButton>
+      {`Chain:${permission.chainNetwork} ---- Account:${permission.chainAccount} ---- Permission:${permission.permission}`}
+    </div>
+  );
+});
+
+renderSignStringButtons = (permissions) => permissions.map((permission, index) => {
+  let provider = permission.externalWalletType || 'oreid';
+  return (
+    <div style={{ alignContent:'center' }} key={index}>
+      <LoginButton provider={provider} data-tag={index} buttonStyle={{ width:225, marginLeft:-20, marginTop:20, marginBottom:10 }} text={`Sign String with ${provider}`} onClick={() => {this.handleSignStringButton(index);}}>{`Sign Transaction with ${provider}`}</LoginButton>
       {`Chain:${permission.chainNetwork} ---- Account:${permission.chainAccount} ---- Permission:${permission.permission}`}
     </div>
   );
