@@ -84,8 +84,6 @@ console.log(signResponse.signedTransaction)
 // if autoSign disabled 
 window.location = signResponse.signUrl
 
-
-
 OR
 
 //Start the signing process using local wallet app
