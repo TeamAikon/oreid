@@ -148,7 +148,8 @@ async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork,
       state:'abc', // anything you'd like to remember after the callback
       transaction,
       accountIsTransactionPermission:false,
-      returnSignedTransaction: true
+      returnSignedTransaction: true,
+      preventAutoSign: false // prevent auto sign even if transaction is auto signable
     };
     let signResponse = await this.oreId.sign(signOptions);
     // if the sign responds with a signUrl, then redirect the browser to it to call the signing flow
@@ -168,14 +169,24 @@ async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork,
 
 createSampleTransaction(actor, permission = 'active') {
   const transaction = {
-    account: 'demoapphello',
-    name: 'hi',
+    account: 'everipediaiq',
+    name: 'epartpropose',
     authorization: [{
       actor,
       permission
     }],
     data: {
-      user: actor
+      proposer: actor,
+      slug: 'slug',
+      wiki_id: -2,
+      title: 'Jeremy Lin',
+      ipfs_hash: 'QmXA32okPENZfupASGN7LzrczLineYunKDTELSjtmFEwKL',
+      lang_code:'en',
+      group_id: -1,
+      comment: 'commenting',
+      memo: 'memoing',
+      permission: 'appeveripedi'
+
     }
   };
   return transaction;
