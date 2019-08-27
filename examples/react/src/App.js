@@ -169,24 +169,14 @@ async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork,
 
 createSampleTransaction(actor, permission = 'active') {
   const transaction = {
-    account: 'everipediaiq',
-    name: 'epartpropose',
+    account: 'demoapphello',
+    name: 'hi',
     authorization: [{
       actor,
       permission
     }],
     data: {
-      proposer: actor,
-      slug: 'slug',
-      wiki_id: -2,
-      title: 'Jeremy Lin',
-      ipfs_hash: 'QmXA32okPENZfupASGN7LzrczLineYunKDTELSjtmFEwKL',
-      lang_code:'en',
-      group_id: -1,
-      comment: 'commenting',
-      memo: 'memoing',
-      permission: 'appeveripedi'
-
+      user: actor
     }
   };
   return transaction;
