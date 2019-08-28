@@ -79,9 +79,6 @@ let userInfo = await oreId.getUserInfoFromApi(account)
 
 //Start the ORE ID signing process
 let signResponse = await oreId.sign(signOptions)
-// if autoSign enabled then the signResponse will include signedTransaction 
-console.log(signResponse.signedTransaction)
-// if autoSign disabled 
 window.location = signResponse.signUrl
 
 OR
