@@ -10,7 +10,7 @@
     "eject": "expo eject"
   },
   "dependencies": {
-    "eos-auth": "^2.2.1",
+    "eos-auth": "^2.2.2",
     "expo": "32.0.0",
     "mobx": "^5.9.4",
     "mobx-react": "^5.4.4",

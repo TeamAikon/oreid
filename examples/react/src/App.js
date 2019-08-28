@@ -148,7 +148,8 @@ async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork,
       state:'abc', // anything you'd like to remember after the callback
       transaction,
       accountIsTransactionPermission:false,
-      returnSignedTransaction: true
+      returnSignedTransaction: true,
+      preventAutoSign: false // prevent auto sign even if transaction is auto signable
     };
     let signResponse = await this.oreId.sign(signOptions);
     // if the sign responds with a signUrl, then redirect the browser to it to call the signing flow
