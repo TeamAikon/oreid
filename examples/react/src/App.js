@@ -108,6 +108,9 @@ async handleWalletDiscoverButton(permissionIndex) {
     let { provider } = this.walletButtons[permissionIndex] || {};
     let { accountName } = this.state.userInfo;
 
+    if (!this.oreId.canDiscover(provider)) {
+      console.log('Provider doesn\'t support discover, so discover function will call wallet provider\'s login instead.');
+    }
     await this.oreId.discover({ provider, chainNetwork ,oreAccount:accountName });
     this.loadUserFromApi(this.state.userInfo.accountName); // reload user from ore id api - to show new keys discovered
   } catch (error) {
