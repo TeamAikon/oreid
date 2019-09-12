@@ -13,6 +13,7 @@ jobs:
     parallelism: 1
     shell: /bin/bash --login
     environment:
+      MONGO_URL: mongodb://localhost:27017/data
       CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
       PYTHONPATH: ${PYTHONPATH}:${HOME}/google_appengine
@@ -23,7 +24,7 @@ jobs:
     # https://circleci.com/docs/2.0/circleci-images/
     docker:
       - image: circleci/build-image:ubuntu-14.04-XXL-upstart-1189-5614f37
-        command: /sbin/init
+      - image: circleci/mongo:3
     steps:
       # Machine Setup
       - checkout

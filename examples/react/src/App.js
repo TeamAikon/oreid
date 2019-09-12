@@ -145,7 +145,8 @@ async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork,
       state:'abc', // anything you'd like to remember after the callback
       transaction,
       accountIsTransactionPermission:false,
-      returnSignedTransaction: true
+      returnSignedTransaction: true,
+      preventAutoSign: false // prevent auto sign even if transaction is auto signable
     };
     let signResponse = await this.oreId.sign(signOptions);
     // if the sign responds with a signUrl, then redirect the browser to it to call the signing flow
@@ -230,14 +231,14 @@ render() {
       <div style={{ color:'red', margin:'50px' }}>
         {(errorMessage) && errorMessage}
       </div>
-      <div style={{ color:'blue', marginLeft:'50px', marginTop:'50px' }}>
-        {(transactionId) && `Returned transactionId: ${transactionId}`}
+      <div id="transactionId" style={{ color:'blue', marginLeft:'50px', marginTop:'50px' }}>
+        <p className="log">{(transactionId) && `Returned transactionId: ${transactionId}`}</p>
       </div>
-      <div style={{ color:'blue', marginLeft:'50px', marginTop:'10px' }}>
-        {(signedTransaction) && `Returned signed transaction: ${signedTransaction}`}
+      <div id="signedTransaction" style={{ color:'blue', marginLeft:'50px', marginTop:'10px' }}>
+        <p className="log">{(signedTransaction) && `Returned signed transaction: ${signedTransaction}`}</p>
       </div>
-      <div style={{ color:'blue', marginLeft:'50px',marginTop:'10px' }}>
-        {(signState) && `Returned state param: ${signState}`}
+      <div id="signState" style={{ color:'blue', marginLeft:'50px',marginTop:'10px' }}>
+        <p className="log">{(signState) && `Returned state param: ${signState}`}</p>
       </div>
       {isLoggedIn &&
           this.renderDiscoverOptions()

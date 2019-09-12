@@ -21,6 +21,12 @@ The LoginButton React Component simplifies styling of common OAuth providers</br
 
 If you use the callback handler, it stores the basic user info in a cookie (or local app storage). Local user info can be retrieved by calling getUser() and can be cleared by calling logout()
 
+### Deploying React Example to Google Cloud
+
+```
+cd examples/react
+gcloud -q app deploy app.yaml
+```
 
 ### Testing with Ledger Nano S
 
