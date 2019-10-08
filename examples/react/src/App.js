@@ -332,6 +332,12 @@ renderSignButtons = (permissions) => permissions.map((permission, index) => {
   renderLoginButtons() {
     return (
       <div>
+        <LoginButton provider='apple'
+          buttonStyle={{ width:250, marginTop:'24px' }}
+          logoStyle={{ marginLeft:0 }}
+          onClick={() => this.handleLogin('apple')}
+          //  text='Log in with Apple'
+        />
         <LoginButton provider='facebook'
           buttonStyle={{ width:250, marginTop:'24px' }}
           logoStyle={{ marginLeft:0 }}
