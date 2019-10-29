@@ -2,26 +2,28 @@ import React, { Component } from 'react';
 import Roboto from './resources/Roboto-Medium.ttf';
 
 let validProviders=[
-  'apple',
   'oreid',
-  'scatter',
+  'apple',
+  'email',
   'facebook',
   'github',
   'google',
   'kakao',
   'line',
   'linkedin',
+  'phone',
   'twitch',
   'twitter',
   'wechat',
+  'keycat',
   'ledger',
   'lynx',
   'meetone',
-  'tokenpocket',
   'portis',
-  'whalevault',
+  'scatter',
   'simpleos',
-  'keycat'
+  'tokenpocket',
+  'whalevault'
 ];
 
 let defaultButtonStyle = {

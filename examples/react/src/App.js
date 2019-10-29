@@ -386,6 +386,18 @@ renderSignButtons = (permissions) => permissions.map((permission, index) => {
           onClick={() => this.handleLogin('google')}
           //  text='Log in with Google'
         />
+        <LoginButton provider='email'
+          buttonStyle={{ width:250, marginTop:'24px' }}
+          logoStyle={{ marginLeft:0 }}
+          onClick={() => this.handleLogin('email')}
+          //  text='Log in with Email'
+        />
+        <LoginButton provider='phone'
+          buttonStyle={{ width:250, marginTop:'24px' }}
+          logoStyle={{ marginLeft:0 }}
+          onClick={() => this.handleLogin('phone')}
+          //  text='Log in with Phone'
+        />
         <LoginButton provider='scatter'
           buttonStyle={{ width:250, marginTop:'24px' }}
           logoStyle={{ marginLeft:0 }}
