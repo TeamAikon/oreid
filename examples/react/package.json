@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "dotenv": "^8.0.0",
-    "eos-auth": "^2.2.2",
+    "eos-auth": "^2.3.0",
     "eos-transit-keycat-provider": "^4.0.1",
     "eos-transit-ledger-provider": "^4.0.2",
     "eos-transit-lynx-provider": "^4.0.1",

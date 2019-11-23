@@ -48,7 +48,7 @@ class App extends Component {
     this.state = {
       isLoggedIn: false,
       userInfo: {},
-      firstAuth: true
+      firstAuth: false
     };
     this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
@@ -146,7 +146,7 @@ getChainUrl(chainNetwork) {
   case 'ore_test':
     return 'https://ore-staging.openrights.exchange:443';
   case 'eos_kylin':
-    return 'https://kylin.eoscanada.com';
+    return 'https://api.kylin.alohaeos.com:443';
   case 'eos_jungle':
     return 'https://jungle2.cryptolions.io:443';
   default:
@@ -156,12 +156,12 @@ getChainUrl(chainNetwork) {
 
 async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork, permission, firstAuth = false) {
   try {
-    let transaction = {};
-    let firstAuthSignature = '';
+    let transaction = null;
+    let signedTransactionToSend = null;
     if (firstAuth) {
-      transaction = this.createFirstAuthSampleTransaction(firstAuthAccount, chainAccount, permission);
+      signedTransactionToSend = this.createFirstAuthSampleTransaction(firstAuthAccount, chainAccount, permission);
       const chainUrl = this.getChainUrl(chainNetwork);
-      firstAuthSignature = signTransaction(transaction, chainUrl, firstAuthKey);
+      signedTransactionToSend = await signTransaction(signedTransactionToSend, chainUrl, firstAuthKey);
     } else {
       transaction = this.createSampleTransaction(chainAccount, permission);
     }
@@ -173,12 +173,13 @@ async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork,
       chainAccount:chainAccount || '',
       chainNetwork:chainNetwork || '',
       state:'abc', // anything you'd like to remember after the callback
+      signedTransaction: signedTransactionToSend,
       transaction,
       accountIsTransactionPermission:false,
       returnSignedTransaction: true,
-      preventAutoSign: false, // prevent auto sign even if transaction is auto signable
-      signatures: [firstAuthSignature]
+      preventAutoSign: false // prevent auto sign even if transaction is auto signable
     };
+    console.log('SIGNEDTRANSACTION: ', signedTransactionToSend);
     let signResponse = await this.oreId.sign(signOptions);
     // if the sign responds with a signUrl, then redirect the browser to it to call the signing flow
     let { signUrl, signedTransaction, state, transactionId } = signResponse || {};
@@ -212,18 +213,19 @@ createSampleTransaction(actor, permission = 'active') {
 
 createFirstAuthSampleTransaction(payer, actor, permission = 'active', payerPermission = 'active') {
   const transaction = {
-    account: 'demoapphello',
-    name: 'hi',
-    authorization: [{
-      actor: payer,
-      permission: payerPermission
-    },{
-      actor,
-      permission
-    }],
-    data: {
-      user: actor
-    }
+    actions: [{ account: 'demoapphello',
+      name: 'hi',
+      authorization: [{
+        actor: payer,
+        permission: payerPermission
+      },{
+        actor,
+        permission
+      }],
+      data: {
+        user: actor
+      }
+    }]
   };
   return transaction;
 }
@@ -341,9 +343,9 @@ renderFirstAuthorizerCheckBox() {
   let { firstAuth } = this.state;
   console.log(firstAuth);
   return (
-    <div>
+    <div style={{ marginLeft:50, marginTop:20 }}>
       <input type="checkbox" onChange={this.toggleFirstAuth} checked={firstAuth}/>
-      <p>{(firstAuth) && 'asd'}</p>
+      <p>{'Check the box above if you want your transaction\'s CPU and NET to be payed by App.'}</p>
     </div>
   );
 }
