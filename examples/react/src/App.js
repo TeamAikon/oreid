@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import React, { Component } from 'react';
 import LoginButton from './components/loginButton';
 import { OreId } from 'eos-auth';
+import { signTransaction } from './eos';
 import scatterProvider from 'eos-transit-scatter-provider';
 import ledgerProvider from 'eos-transit-ledger-provider';
 import lynxProvider from 'eos-transit-lynx-provider';
@@ -22,7 +23,9 @@ const {
   REACT_APP_AUTH_CALLBACK:authCallbackUrl, // The url called by the server when login flow is finished - must match one of the callback strings listed in the App Registration
   REACT_APP_SIGN_CALLBACK:signCallbackUrl, // The url called by the server when transaction signing flow is finished - must match one of the callback strings listed in the App Registration
   REACT_APP_OREID_URL:oreIdUrl, // HTTPS Address of OREID server
-  REACT_APP_BACKGROUND_COLOR:backgroundColor // Background color shown during login flow
+  REACT_APP_BACKGROUND_COLOR:backgroundColor, // Background color shown during login flow
+  REACT_APP_FIRST_AUTH_ACCOUNT_NAME:firstAuthAccount, // First auth account for ore_test
+  REACT_APP_FIRST_AUTH_KEY:firstAuthKey
 } = process.env;
 
 let eosTransitWalletProviders = [
@@ -44,11 +47,13 @@ class App extends Component {
     super(props);
     this.state = {
       isLoggedIn: false,
-      userInfo: {}
+      userInfo: {},
+      firstAuth: false
     };
     this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
     this.handleSignButton = this.handleSignButton.bind(this);
+    this.toggleFirstAuth = this.toggleFirstAuth.bind(this);
   }
 
 // called by library to set local busy state
@@ -96,9 +101,10 @@ handleLogout() {
 async handleSignButton(permissionIndex) {
   this.clearErrors();
   let { chainAccount, chainNetwork, permission, externalWalletType:provider } = this.permissionsToRender[permissionIndex] || {};
-  let { accountName } = this.state.userInfo;
+  const { firstAuth, userInfo } = this.state;
+  let { accountName } = userInfo;
   provider = provider || 'oreid'; // default to ore id
-  await this.handleSignSampleTransaction(provider, accountName, chainAccount, chainNetwork, permission);
+  await this.handleSignSampleTransaction(provider, accountName, chainAccount, chainNetwork, permission, firstAuth);
 }
 
 async handleWalletDiscoverButton(permissionIndex) {
@@ -135,10 +141,31 @@ async handleLogin(provider) {
   }
 }
 
-async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork, permission) {
+getChainUrl(chainNetwork) {
+  switch (chainNetwork) {
+  case 'ore_test':
+    return 'https://ore-staging.openrights.exchange:443';
+  case 'eos_kylin':
+    return 'https://api.kylin.alohaeos.com:443';
+  case 'eos_jungle':
+    return 'https://jungle2.cryptolions.io:443';
+  default:
+    return '';
+  }
+}
+
+async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork, permission, firstAuth = false) {
   try {
-    // this.clearErrors();
-    const transaction = this.createSampleTransaction(chainAccount, permission);
+    let transaction = null;
+    let signedTransactionToSend = null;
+    if (firstAuth) {
+      signedTransactionToSend = this.createFirstAuthSampleTransaction(firstAuthAccount, chainAccount, permission);
+      const chainUrl = this.getChainUrl(chainNetwork);
+      signedTransactionToSend = await signTransaction(signedTransactionToSend, chainUrl, firstAuthKey);
+    } else {
+      transaction = this.createSampleTransaction(chainAccount, permission);
+    }
+    // this.clearErrors();gi
     let signOptions = {
       provider:provider || '', // wallet type (e.g. 'scatter' or 'oreid')
       account:account || '',
@@ -146,11 +173,13 @@ async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork,
       chainAccount:chainAccount || '',
       chainNetwork:chainNetwork || '',
       state:'abc', // anything you'd like to remember after the callback
+      signedTransaction: signedTransactionToSend,
       transaction,
       accountIsTransactionPermission:false,
       returnSignedTransaction: true,
       preventAutoSign: false // prevent auto sign even if transaction is auto signable
     };
+    console.log('SIGNEDTRANSACTION: ', signedTransactionToSend);
     let signResponse = await this.oreId.sign(signOptions);
     // if the sign responds with a signUrl, then redirect the browser to it to call the signing flow
     let { signUrl, signedTransaction, state, transactionId } = signResponse || {};
@@ -180,6 +209,30 @@ createSampleTransaction(actor, permission = 'active') {
     }
   };
   return transaction;
+}
+
+createFirstAuthSampleTransaction(payer, actor, permission = 'active', payerPermission = 'active') {
+  const transaction = {
+    actions: [{ account: 'demoapphello',
+      name: 'hi',
+      authorization: [{
+        actor: payer,
+        permission: payerPermission
+      },{
+        actor,
+        permission
+      }],
+      data: {
+        user: actor
+      }
+    }]
+  };
+  return transaction;
+}
+
+async toggleFirstAuth() {
+  this.setState({ firstAuth:!this.state.firstAuth });
+  console.log('togglefirst');
 }
 
 /*
@@ -226,6 +279,9 @@ render() {
         }
         {isLoggedIn &&
           this.renderSigningOptions()
+        }
+        {isLoggedIn &&
+          this.renderFirstAuthorizerCheckBox()
         }
       </div>
       <h3 style={{ color:'green', margin:'50px' }}>
@@ -279,6 +335,17 @@ renderSigningOptions() {
           {this.renderSignButtons(this.permissionsToRender)}
         </ul>
       </div>
+    </div>
+  );
+}
+
+renderFirstAuthorizerCheckBox() {
+  let { firstAuth } = this.state;
+  console.log(firstAuth);
+  return (
+    <div style={{ marginLeft:50, marginTop:20 }}>
+      <input type="checkbox" onChange={this.toggleFirstAuth} checked={firstAuth}/>
+      <p>{'Check the box above if you want your transaction\'s CPU and NET to be payed by App.'}</p>
     </div>
   );
 }

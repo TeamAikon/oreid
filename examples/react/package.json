@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "dotenv": "^8.0.0",
-    "eos-auth": "^2.2.2",
+    "eos-auth": "^2.3.0",
     "eos-transit-keycat-provider": "^4.0.1",
     "eos-transit-ledger-provider": "^4.0.2",
     "eos-transit-lynx-provider": "^4.0.1",
@@ -14,11 +14,16 @@
     "eos-transit-simpleos-provider": "^4.0.1",
     "eos-transit-tokenpocket-provider": "^4.0.1",
     "eos-transit-whalevault-provider": "^4.0.1",
+    "eosjs": "^20.0.0-beta3",
+    "eosjs-ecc": "^4.0.7",
     "node-sass": "^4.12.0",
+    "orejs": "^0.1.2",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
     "react-router": "^5.0.1",
-    "react-scripts": "^3.1.0"
+    "react-scripts": "^3.1.0",
+    "text-encoding": "^0.7.0",
+    "util": "^0.12.1"
   },
   "scripts": {
     "start": "react-scripts start",
