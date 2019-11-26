@@ -179,7 +179,7 @@ async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork,
       returnSignedTransaction: true,
       preventAutoSign: false // prevent auto sign even if transaction is auto signable
     };
-    console.log('SIGNEDTRANSACTION: ', signedTransactionToSend);
+
     let signResponse = await this.oreId.sign(signOptions);
     // if the sign responds with a signUrl, then redirect the browser to it to call the signing flow
     let { signUrl, signedTransaction, state, transactionId } = signResponse || {};
@@ -232,7 +232,6 @@ createFirstAuthSampleTransaction(payer, actor, permission = 'active', payerPermi
 
 async toggleFirstAuth() {
   this.setState({ firstAuth:!this.state.firstAuth });
-  console.log('togglefirst');
 }
 
 /*
@@ -341,7 +340,7 @@ renderSigningOptions() {
 
 renderFirstAuthorizerCheckBox() {
   let { firstAuth } = this.state;
-  console.log(firstAuth);
+
   return (
     <div style={{ marginLeft:50, marginTop:20 }}>
       <input type="checkbox" onChange={this.toggleFirstAuth} checked={firstAuth}/>
