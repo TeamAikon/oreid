@@ -35,7 +35,6 @@ export async function signTransaction(transaction, url, privateKey) {
   const api = await initAPI(url);
   const { serializedTransaction } = await serializeTransaction(transaction, api);
   signedTransaction.serializedTransaction = serializedTransaction;
-  console.log(signedTransaction.serializedTransaction);
   const buffer = await createBuffer(signedTransaction.serializedTransaction, api);
   signedTransaction.signatures = [ecc.Signature.sign(buffer, privateKey).toString()];
   return signedTransaction;
