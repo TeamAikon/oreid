@@ -149,22 +149,44 @@ getChainUrl(chainNetwork) {
     return 'https://api.kylin.alohaeos.com:443';
   case 'eos_jungle':
     return 'https://jungle2.cryptolions.io:443';
+  case 'eos_main':
+    return 'https://api.eosn.io:443';
   default:
     return '';
   }
+}
+
+getChainType(chainNetwork) {
+  switch (chainNetwork) {
+    case 'ore_test' || 'eos_kylin' || 'eos_jungle' || 'eos_main':
+      return 'eos';
+    case 'eth_ropsten' || 'eth_main':
+      return 'eth';
+    default:
+      return '';
+    }
 }
 
 async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork, permission, firstAuth = false) {
   try {
     let transaction = null;
     let signedTransactionToSend = null;
-    if (firstAuth) {
-      signedTransactionToSend = this.createFirstAuthSampleTransaction(firstAuthAccount, chainAccount, permission);
-      const chainUrl = this.getChainUrl(chainNetwork);
-      signedTransactionToSend = await signTransaction(signedTransactionToSend, chainUrl, firstAuthKey);
-    } else {
-      transaction = this.createSampleTransaction(chainAccount, permission);
+    if(this.getChainType(chainNetwork) === 'eth'){
+      transaction = this.createEthereumSampleTransaction(chainAccount, permission);
     }
+
+    if(this.getChainType(chainNetwork) === 'eos'){
+      console.log("in if")
+      if (firstAuth) {
+        signedTransactionToSend = this.createFirstAuthSampleTransaction(firstAuthAccount, chainAccount, permission);
+        const chainUrl = this.getChainUrl(chainNetwork);
+        signedTransactionToSend = await signTransaction(signedTransactionToSend, chainUrl, firstAuthKey);
+      } else {
+        transaction = this.createSampleTransaction(chainAccount, permission);
+        console.log('transaction', transaction)
+      }
+    }
+
     // this.clearErrors();gi
     let signOptions = {
       provider:provider || '', // wallet type (e.g. 'scatter' or 'oreid')
@@ -173,7 +195,6 @@ async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork,
       chainAccount:chainAccount || '',
       chainNetwork:chainNetwork || '',
       state:'abc', // anything you'd like to remember after the callback
-      signedTransaction: signedTransactionToSend,
       transaction,
       accountIsTransactionPermission:false,
       returnSignedTransaction: true,
@@ -214,19 +235,287 @@ createSampleTransaction(actor, permission = 'active') {
 createFirstAuthSampleTransaction(payer, actor, permission = 'active', payerPermission = 'active') {
   const transaction = {
     actions: [{ account: 'demoapphello',
-      name: 'hi',
-      authorization: [{
-        actor: payer,
-        permission: payerPermission
-      },{
-        actor,
-        permission
-      }],
-      data: {
-        user: actor
-      }
-    }]
-  };
+    name: 'hi',
+    authorization: [{
+      actor: payer,
+      permission: payerPermission
+    },{
+      actor,
+      permission
+    }],
+    data: {
+      user: actor
+    }
+  }]
+};
+return transaction;
+}
+
+
+createEthereumSampleTransaction(actor, permission = 'active') {
+  const ABI = [
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: true,
+          internalType: 'address',
+          name: 'owner',
+          type: 'address',
+        },
+        {
+          indexed: true,
+          internalType: 'address',
+          name: 'spender',
+          type: 'address',
+        },
+        {
+          indexed: false,
+          internalType: 'uint256',
+          name: 'value',
+          type: 'uint256',
+        },
+      ],
+      name: 'Approval',
+      type: 'event',
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: true,
+          internalType: 'address',
+          name: 'from',
+          type: 'address',
+        },
+        {
+          indexed: true,
+          internalType: 'address',
+          name: 'to',
+          type: 'address',
+        },
+        {
+          indexed: false,
+          internalType: 'uint256',
+          name: 'value',
+          type: 'uint256',
+        },
+      ],
+      name: 'Transfer',
+      type: 'event',
+    },
+    {
+      inputs: [
+        {
+          internalType: 'address',
+          name: 'owner',
+          type: 'address',
+        },
+        {
+          internalType: 'address',
+          name: 'spender',
+          type: 'address',
+        },
+      ],
+      name: 'allowance',
+      outputs: [
+        {
+          internalType: 'uint256',
+          name: '',
+          type: 'uint256',
+        },
+      ],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [
+        {
+          internalType: 'address',
+          name: 'spender',
+          type: 'address',
+        },
+        {
+          internalType: 'uint256',
+          name: 'amount',
+          type: 'uint256',
+        },
+      ],
+      name: 'approve',
+      outputs: [
+        {
+          internalType: 'bool',
+          name: '',
+          type: 'bool',
+        },
+      ],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        {
+          internalType: 'address',
+          name: 'account',
+          type: 'address',
+        },
+      ],
+      name: 'balanceOf',
+      outputs: [
+        {
+          internalType: 'uint256',
+          name: '',
+          type: 'uint256',
+        },
+      ],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [
+        {
+          internalType: 'address',
+          name: 'spender',
+          type: 'address',
+        },
+        {
+          internalType: 'uint256',
+          name: 'subtractedValue',
+          type: 'uint256',
+        },
+      ],
+      name: 'decreaseAllowance',
+      outputs: [
+        {
+          internalType: 'bool',
+          name: '',
+          type: 'bool',
+        },
+      ],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        {
+          internalType: 'address',
+          name: 'spender',
+          type: 'address',
+        },
+        {
+          internalType: 'uint256',
+          name: 'addedValue',
+          type: 'uint256',
+        },
+      ],
+      name: 'increaseAllowance',
+      outputs: [
+        {
+          internalType: 'bool',
+          name: '',
+          type: 'bool',
+        },
+      ],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        {
+          internalType: 'uint256',
+          name: 'amount',
+          type: 'uint256',
+        },
+      ],
+      name: 'mint',
+      outputs: [
+        {
+          internalType: 'bool',
+          name: '',
+          type: 'bool',
+        },
+      ],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'totalSupply',
+      outputs: [
+        {
+          internalType: 'uint256',
+          name: '',
+          type: 'uint256',
+        },
+      ],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [
+        {
+          internalType: 'address',
+          name: 'recipient',
+          type: 'address',
+        },
+        {
+          internalType: 'uint256',
+          name: 'amount',
+          type: 'uint256',
+        },
+      ],
+      name: 'transfer',
+      outputs: [
+        {
+          internalType: 'bool',
+          name: '',
+          type: 'bool',
+        },
+      ],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        {
+          internalType: 'address',
+          name: 'sender',
+          type: 'address',
+        },
+        {
+          internalType: 'address',
+          name: 'recipient',
+          type: 'address',
+        },
+        {
+          internalType: 'uint256',
+          name: 'amount',
+          type: 'uint256',
+        },
+      ],
+      name: 'transferFrom',
+      outputs: [
+        {
+          internalType: 'bool',
+          name: '',
+          type: 'bool',
+        },
+      ],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+  ]
+
+  const transaction = {
+    actions: [{
+      from: actor,
+      to: '0x04825941Ad80A6a869e85606b29c9D25144E91e6',
+      contract: {
+        abi: ABI,
+        parameters: ['0x27105356F6C1ede0e92020e6225E46DC1F496b81', 20], // 0xD38ADf7D0204a6f5b7ddDe509378e43B1447CDb6
+        method: 'transfer',
+      },
+    }]}
   return transaction;
 }
 
