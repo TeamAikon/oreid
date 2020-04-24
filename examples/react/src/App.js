@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import LoginButton from './components/loginButton';
 import { OreId } from 'eos-auth';
 import { signTransaction } from './eos';
+import { ABI, addEthForGas, init, transferErc20Token } from './eth';
 import scatterProvider from 'eos-transit-scatter-provider';
 import ledgerProvider from 'eos-transit-ledger-provider';
 import lynxProvider from 'eos-transit-lynx-provider';
@@ -25,7 +26,12 @@ const {
   REACT_APP_OREID_URL:oreIdUrl, // HTTPS Address of OREID server
   REACT_APP_BACKGROUND_COLOR:backgroundColor, // Background color shown during login flow
   REACT_APP_FIRST_AUTH_ACCOUNT_NAME:firstAuthAccount, // First auth account for ore_test
-  REACT_APP_FIRST_AUTH_KEY:firstAuthKey
+  REACT_APP_FIRST_AUTH_KEY:firstAuthKey,
+  REACT_APP_ETHEREUM_CONTRACT_ADDRESS: ethereumContractAddress,
+  REACT_APP_ETHEREUM_CONTRACT_PRIVATE_KEY: ethereumContractAddressPrivateKey,
+  REACT_APP_ETHEREUM_FUNDING_ACCOUNT_ADDRESS: ethereumFundingAddress,
+  REACT_APP_ETHEREUM_FUNDING_ACCOUNT_PRIVATE_KEY: ethereumFundingAddressPrivateKey
+
 } = process.env;
 
 let eosTransitWalletProviders = [
@@ -151,6 +157,8 @@ getChainUrl(chainNetwork) {
     return 'https://jungle2.cryptolions.io:443';
   case 'eos_main':
     return 'https://api.eosn.io:443';
+  case 'eth_ropsten':
+    return 'https://ropsten.infura.io/v3/a069a5004f2e4545a03e5c31285a3945';
   default:
     return '';
   }
@@ -158,9 +166,13 @@ getChainUrl(chainNetwork) {
 
 getChainType(chainNetwork) {
   switch (chainNetwork) {
-    case 'ore_test' || 'eos_kylin' || 'eos_jungle' || 'eos_main':
+    case 'ore_test':
+    case 'eos_kylin':
+    case 'eos_jungle':
+    case 'eos_main' :
       return 'eos';
-    case 'eth_ropsten' || 'eth_main':
+    case 'eth_ropsten':
+    case 'eth_main':
       return 'eth';
     default:
       return '';
@@ -176,14 +188,12 @@ async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork,
     }
 
     if(this.getChainType(chainNetwork) === 'eos'){
-      console.log("in if")
       if (firstAuth) {
         signedTransactionToSend = this.createFirstAuthSampleTransaction(firstAuthAccount, chainAccount, permission);
         const chainUrl = this.getChainUrl(chainNetwork);
-        signedTransactionToSend = await signTransaction(signedTransactionToSend, chainUrl, firstAuthKey);
+        transaction = await signTransaction(signedTransactionToSend, chainUrl, firstAuthKey);
       } else {
         transaction = this.createSampleTransaction(chainAccount, permission);
-        console.log('transaction', transaction)
       }
     }
 
@@ -253,259 +263,6 @@ return transaction;
 
 
 createEthereumSampleTransaction(actor, permission = 'active') {
-  const ABI = [
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: true,
-          internalType: 'address',
-          name: 'owner',
-          type: 'address',
-        },
-        {
-          indexed: true,
-          internalType: 'address',
-          name: 'spender',
-          type: 'address',
-        },
-        {
-          indexed: false,
-          internalType: 'uint256',
-          name: 'value',
-          type: 'uint256',
-        },
-      ],
-      name: 'Approval',
-      type: 'event',
-    },
-    {
-      anonymous: false,
-      inputs: [
-        {
-          indexed: true,
-          internalType: 'address',
-          name: 'from',
-          type: 'address',
-        },
-        {
-          indexed: true,
-          internalType: 'address',
-          name: 'to',
-          type: 'address',
-        },
-        {
-          indexed: false,
-          internalType: 'uint256',
-          name: 'value',
-          type: 'uint256',
-        },
-      ],
-      name: 'Transfer',
-      type: 'event',
-    },
-    {
-      inputs: [
-        {
-          internalType: 'address',
-          name: 'owner',
-          type: 'address',
-        },
-        {
-          internalType: 'address',
-          name: 'spender',
-          type: 'address',
-        },
-      ],
-      name: 'allowance',
-      outputs: [
-        {
-          internalType: 'uint256',
-          name: '',
-          type: 'uint256',
-        },
-      ],
-      stateMutability: 'view',
-      type: 'function',
-    },
-    {
-      inputs: [
-        {
-          internalType: 'address',
-          name: 'spender',
-          type: 'address',
-        },
-        {
-          internalType: 'uint256',
-          name: 'amount',
-          type: 'uint256',
-        },
-      ],
-      name: 'approve',
-      outputs: [
-        {
-          internalType: 'bool',
-          name: '',
-          type: 'bool',
-        },
-      ],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-    {
-      inputs: [
-        {
-          internalType: 'address',
-          name: 'account',
-          type: 'address',
-        },
-      ],
-      name: 'balanceOf',
-      outputs: [
-        {
-          internalType: 'uint256',
-          name: '',
-          type: 'uint256',
-        },
-      ],
-      stateMutability: 'view',
-      type: 'function',
-    },
-    {
-      inputs: [
-        {
-          internalType: 'address',
-          name: 'spender',
-          type: 'address',
-        },
-        {
-          internalType: 'uint256',
-          name: 'subtractedValue',
-          type: 'uint256',
-        },
-      ],
-      name: 'decreaseAllowance',
-      outputs: [
-        {
-          internalType: 'bool',
-          name: '',
-          type: 'bool',
-        },
-      ],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-    {
-      inputs: [
-        {
-          internalType: 'address',
-          name: 'spender',
-          type: 'address',
-        },
-        {
-          internalType: 'uint256',
-          name: 'addedValue',
-          type: 'uint256',
-        },
-      ],
-      name: 'increaseAllowance',
-      outputs: [
-        {
-          internalType: 'bool',
-          name: '',
-          type: 'bool',
-        },
-      ],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-    {
-      inputs: [
-        {
-          internalType: 'uint256',
-          name: 'amount',
-          type: 'uint256',
-        },
-      ],
-      name: 'mint',
-      outputs: [
-        {
-          internalType: 'bool',
-          name: '',
-          type: 'bool',
-        },
-      ],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-    {
-      inputs: [],
-      name: 'totalSupply',
-      outputs: [
-        {
-          internalType: 'uint256',
-          name: '',
-          type: 'uint256',
-        },
-      ],
-      stateMutability: 'view',
-      type: 'function',
-    },
-    {
-      inputs: [
-        {
-          internalType: 'address',
-          name: 'recipient',
-          type: 'address',
-        },
-        {
-          internalType: 'uint256',
-          name: 'amount',
-          type: 'uint256',
-        },
-      ],
-      name: 'transfer',
-      outputs: [
-        {
-          internalType: 'bool',
-          name: '',
-          type: 'bool',
-        },
-      ],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-    {
-      inputs: [
-        {
-          internalType: 'address',
-          name: 'sender',
-          type: 'address',
-        },
-        {
-          internalType: 'address',
-          name: 'recipient',
-          type: 'address',
-        },
-        {
-          internalType: 'uint256',
-          name: 'amount',
-          type: 'uint256',
-        },
-      ],
-      name: 'transferFrom',
-      outputs: [
-        {
-          internalType: 'bool',
-          name: '',
-          type: 'bool',
-        },
-      ],
-      stateMutability: 'nonpayable',
-      type: 'function',
-    },
-  ]
-
   const transaction = {
     actions: [{
       from: actor,
