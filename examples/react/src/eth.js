@@ -263,7 +263,6 @@ export async function getGasParams(from, web3){
 }
 
 export async function init(url){
-  console.log('url', url)
   const web3 = new Web3(url)
   return web3
 }
@@ -317,9 +316,7 @@ export async function addEthForGas(from, to, value, privateKey, web3){
     to,
     value
   }
-  console.log('rawTx',rawTx)
   const transaction = signAndSerializeTransaction(rawTx, privateKey)
-  console.log('transaction',transaction)
   const result = await sendSignedTransaction(transaction, web3)
   return result;
 }
