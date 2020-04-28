@@ -1,6 +1,7 @@
 const Web3 = require('web3') 
 const Tx = require('ethereumjs-tx').Transaction
 const { toBuffer } = require('ethereumjs-util')
+const { ETH_CHAIN_NETWORK } = require('./constants')
 
 export const ABI = [
   {
@@ -255,11 +256,16 @@ export const ABI = [
   },
 ]
 
-export async function getGasParams(from, web3){
-  const gasPrice = await parseInt(web3.eth.getGasPrice(), 10)
-  const gasLimit = await web3.eth.getBlock('latest').gasLimit
-  const nonce = await web3.eth.getTransactionCount(from, 'pending')
-  return { gasPrice, gasLimit, nonce }
+function toHex(value, web3){
+  return web3.utils.toHex(value)
+}
+
+function getEthChainName(chainNetwork){
+  try{
+    return chainNetwork.split('_')[1]
+  } catch(error){
+    throw new Error('Error getting ethereum chain name from ' + chainNetwork)
+  }
 }
 
 export async function init(url){
@@ -267,14 +273,16 @@ export async function init(url){
   return web3
 }
 
-export function signAndSerializeTransaction(rawTx, privateKey){
-  const tx = new Tx(rawTx)
+async function signAndSerializeTransaction(rawTx, privateKey){
+  privateKey = toBuffer(privateKey);
+  const chainName = getEthChainName(ETH_CHAIN_NETWORK)
+  const tx =  new Tx(rawTx, {chain:chainName});
   tx.sign(privateKey)
   const serializedTx = tx.serialize();
   return serializedTx
 }
 
-export function sendSignedTransaction(transaction, web3){
+async function sendSignedTransaction(transaction, web3){
   return new Promise((resolve, reject) => {
     web3.eth.sendSignedTransaction('0x' + transaction.toString('hex'))
       .on('receipt', receipt => {
@@ -286,37 +294,55 @@ export function sendSignedTransaction(transaction, web3){
     })
 }
 
-export async function transferErc20Token(from, to, value, privateKey, web3){
+export async function getGasParams(from, web3){
+  const gasPrice = await web3.eth.getGasPrice()
+  const { gasLimit } = await web3.eth.getBlock('latest')
+  const nonce = await web3.eth.getTransactionCount(from, 'pending')
+  return { gasPrice, gasLimit, nonce }
+}
+
+export  async function transferErc20Token(contractAddress, from, to, value, privateKey, web3){
   const { gasPrice, gasLimit, nonce } = await getGasParams(from, web3)
+  const erc20 = new web3.eth.Contract(ABI, contractAddress)
   const rawTx = {
-    nonce,
-    gasPrice: '0x09184e72a000',
-    gasLimit: '0x2710',
+    nonce: toHex(nonce, web3),
+    gasPrice: toHex(gasPrice,web3),
+    gasLimit: toHex(gasLimit,web3),
+    from,
+    to: contractAddress,
+    data: erc20.methods.transfer(to, value).encodeABI()
+  }
+  privateKey = '0x' + privateKey.toString('hex');
+  const transaction =  await signAndSerializeTransaction(rawTx, privateKey);
+  const result = await sendSignedTransaction(transaction, web3);
+  return result;
+}
+
+// value in ether
+export async function addEthForGas(from, to, value, privateKey, web3){
+  const { gasPrice, gasLimit, nonce } = await getGasParams(from, web3)
+  value = web3.utils.toWei(value,'ether') 
+  const rawTx = {
+    nonce: toHex(nonce, web3),
+    gasPrice: toHex(gasPrice + 20,web3),
+    gasLimit: toHex(gasLimit,web3),
     from,
     to,
-    contract: {
-      abi: ABI,
-      parameters: [to, value], 
-      method: 'transfer',
-    },
+    value: toHex(value,web3)
   }
-
-  const transaction = signAndSerializeTransaction(rawTx, privateKey)
+  privateKey = '0x' + privateKey.toString('hex');
+  const transaction = await signAndSerializeTransaction(rawTx, privateKey)
   const result = await sendSignedTransaction(transaction, web3)
   return result;
 }
 
-export async function addEthForGas(from, to, value, privateKey, web3){
-  const { gasPrice, gasLimit, nonce } = await getGasParams(from, web3)
-  const rawTx = {
-    nonce,
-    gasPrice,
-    gasLimit,
-    from,
-    to,
-    value
-  }
-  const transaction = signAndSerializeTransaction(rawTx, privateKey)
-  const result = await sendSignedTransaction(transaction, web3)
-  return result;
+export async function getEthBalance(address,web3){
+  const weiBalance = await web3.eth.getBalance(address);
+  return web3.utils.fromWei(weiBalance,'ether')
+}
+
+export async function getErc20Balance(contractAddress, address, web3){
+  const contractInstance = new web3.eth.Contract(ABI,contractAddress);
+  const balance = await contractInstance.methods.balanceOf(address).call()
+  return balance;
 }
