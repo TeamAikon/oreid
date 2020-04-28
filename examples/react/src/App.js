@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import LoginButton from './components/loginButton';
 import { OreId } from 'eos-auth';
 import { signTransaction } from './eos';
-import { ABI, addEthForGas, init, transferErc20Token } from './eth';
+import { ABI, addEthForGas, init, getGasParams, transferErc20Token, getEthBalance, getErc20Balance } from './eth';
 import scatterProvider from 'eos-transit-scatter-provider';
 import ledgerProvider from 'eos-transit-ledger-provider';
 import lynxProvider from 'eos-transit-lynx-provider';
@@ -12,11 +12,9 @@ import tokenpocketProvider from 'eos-transit-tokenpocket-provider';
 import whalevaultProvider from 'eos-transit-whalevault-provider';
 import simpleosProvider from 'eos-transit-simpleos-provider';
 import keycatProvider from 'eos-transit-keycat-provider';
-// import portisProvider from 'eos-transit-portis-provider'
+import { EOS_CHAIN_NETWORK, ERC20_FUNDING_AMOUNT, ERC20_TRANSFER_AMOUNT, ETH_TRANSFER_AMOUNT } from './constants'
 
 dotenv.config();
-
-let chainNetworkForExample = 'eos_kylin';
 
 const {
   REACT_APP_OREID_APP_ID: appId, // Provided when you register your app
@@ -28,7 +26,8 @@ const {
   REACT_APP_FIRST_AUTH_ACCOUNT_NAME:firstAuthAccount, // First auth account for ore_test
   REACT_APP_FIRST_AUTH_KEY:firstAuthKey,
   REACT_APP_ETHEREUM_CONTRACT_ADDRESS: ethereumContractAddress,
-  REACT_APP_ETHEREUM_CONTRACT_PRIVATE_KEY: ethereumContractAddressPrivateKey,
+  REACT_APP_ETHEREUM_CONTRACT_ACCOUNT_ADDRESS: ethereumContractAccountAddress,
+  REACT_APP_ETHEREUM_CONTRACT_ACCOUNT_PRIVATE_KEY: ethereumContractAccountPrivateKey,
   REACT_APP_ETHEREUM_FUNDING_ACCOUNT_ADDRESS: ethereumFundingAddress,
   REACT_APP_ETHEREUM_FUNDING_ACCOUNT_PRIVATE_KEY: ethereumFundingAddressPrivateKey
 
@@ -114,7 +113,7 @@ async handleSignButton(permissionIndex) {
 }
 
 async handleWalletDiscoverButton(permissionIndex) {
-  let chainNetwork = chainNetworkForExample;
+  let chainNetwork = EOS_CHAIN_NETWORK;
   try {
     this.clearErrors();
     let { provider } = this.walletButtons[permissionIndex] || {};
@@ -131,7 +130,7 @@ async handleWalletDiscoverButton(permissionIndex) {
 }
 
 async handleLogin(provider) {
-  let chainNetwork = chainNetworkForExample;
+  let chainNetwork = EOS_CHAIN_NETWORK;
   try {
     this.clearErrors();
     let loginResponse = await this.oreId.login({ provider, chainNetwork });
@@ -184,6 +183,7 @@ async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork,
     let transaction = null;
     let signedTransactionToSend = null;
     if(this.getChainType(chainNetwork) === 'eth'){
+      await this.fundEthereumAccountIfNeeded(chainAccount,chainNetwork);
       transaction = this.createEthereumSampleTransaction(chainAccount, permission);
     }
 
@@ -266,14 +266,28 @@ createEthereumSampleTransaction(actor, permission = 'active') {
   const transaction = {
     actions: [{
       from: actor,
-      to: '0x04825941Ad80A6a869e85606b29c9D25144E91e6',
+      to: ethereumContractAddress,
       contract: {
         abi: ABI,
-        parameters: ['0x27105356F6C1ede0e92020e6225E46DC1F496b81', 20], // 0xD38ADf7D0204a6f5b7ddDe509378e43B1447CDb6
+        parameters: [ethereumContractAccountAddress, ERC20_TRANSFER_AMOUNT],
         method: 'transfer',
       },
     }]}
   return transaction;
+}
+
+async fundEthereumAccountIfNeeded(chainAccount,chainNetwork){
+  const chainUrl = this.getChainUrl(chainNetwork)
+  const web3 = await init(chainUrl)
+  const { gasPrice, gasLimit } =  await getGasParams(chainAccount, web3);
+  const currentEthBalance = await getEthBalance(chainAccount,web3);
+  const currentErc20Balance = await getErc20Balance(ethereumContractAddress, chainAccount, web3);
+  if( web3.utils.toWei(currentEthBalance,'ether') < gasPrice * gasLimit){
+    await addEthForGas(ethereumFundingAddress, chainAccount, ETH_TRANSFER_AMOUNT, ethereumFundingAddressPrivateKey, web3)
+  }
+  if(parseInt(currentErc20Balance) < ERC20_TRANSFER_AMOUNT){
+    await transferErc20Token(ethereumContractAddress,ethereumContractAccountAddress,chainAccount,ERC20_FUNDING_AMOUNT,ethereumContractAccountPrivateKey,web3)
+  }
 }
 
 async toggleFirstAuth() {
@@ -396,7 +410,7 @@ renderFirstAuthorizerCheckBox() {
 }
 
 renderDiscoverOptions() {
-  let chainNetwork = chainNetworkForExample;
+  let chainNetwork = EOS_CHAIN_NETWORK;
   this.walletButtons = [
     { provider: 'scatter', chainNetwork },
     { provider: 'ledger', chainNetwork },
