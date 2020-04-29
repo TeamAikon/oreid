@@ -62,7 +62,7 @@ class App extends Component {
   }
 
 // called by library to set local busy state
-setBusyCallback = (isBusy, isBusyMessage) => {this.setState({ isBusy }); this.setState({ isBusyMessage })};
+setBusyCallback = (isBusy, isBusyMessage) => { this.setState({ isBusy, isBusyMessage }); };
 
 // intialize oreId
 oreId = new OreId({ appName:'ORE ID Sample App', appId, apiKey, oreIdUrl, authCallbackUrl, signCallbackUrl, backgroundColor, eosTransitWalletProviders, setBusyCallback:this.setBusyCallback });
