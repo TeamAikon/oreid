@@ -62,7 +62,7 @@ class App extends Component {
   }
 
 // called by library to set local busy state
-setBusyCallback = (isBusy) => {this.setState({ isBusy });};
+setBusyCallback = (isBusy, isBusyMessage) => {this.setState({ isBusy }); this.setState({ isBusyMessage })};
 
 // intialize oreId
 oreId = new OreId({ appName:'ORE ID Sample App', appId, apiKey, oreIdUrl, authCallbackUrl, signCallbackUrl, backgroundColor, eosTransitWalletProviders, setBusyCallback:this.setBusyCallback });
@@ -279,14 +279,14 @@ createEthereumSampleTransaction(actor, permission = 'active') {
 async fundEthereumAccountIfNeeded(chainAccount,chainNetwork){
   const chainUrl = this.getChainUrl(chainNetwork)
   const web3 = await init(chainUrl)
-  const { gasPrice, gasLimit } =  await getGasParams(chainAccount, web3);
-  const currentEthBalance = await getEthBalance(chainAccount,web3);
-  const currentErc20Balance = await getErc20Balance(ethereumContractAddress, chainAccount, web3);
+  const { gasPrice, gasLimit } =  await getGasParams(chainAccount, web3, this.setBusyCallback);
+  const currentEthBalance = await getEthBalance(chainAccount,web3, this.setBusyCallback);
+  const currentErc20Balance = await getErc20Balance(ethereumContractAddress, chainAccount, web3, this.setBusyCallback);
   if( web3.utils.toWei(currentEthBalance,'ether') < gasPrice * gasLimit){
-    await addEthForGas(ethereumFundingAddress, chainAccount, ETH_TRANSFER_AMOUNT, ethereumFundingAddressPrivateKey, web3)
+    await addEthForGas(ethereumFundingAddress, chainAccount, ETH_TRANSFER_AMOUNT, ethereumFundingAddressPrivateKey, web3, this.setBusyCallback)
   }
   if(parseInt(currentErc20Balance) < ERC20_TRANSFER_AMOUNT){
-    await transferErc20Token(ethereumContractAddress,ethereumContractAccountAddress,chainAccount,ERC20_FUNDING_AMOUNT,ethereumContractAccountPrivateKey,web3)
+    await transferErc20Token(ethereumContractAddress,ethereumContractAccountAddress,chainAccount,ERC20_FUNDING_AMOUNT,ethereumContractAccountPrivateKey,web3, this.setBusyCallback)
   }
 }
 
@@ -326,7 +326,7 @@ async handleSignCallback() {
 }
 
 render() {
-  let { errorMessage, isBusy, isLoggedIn, signedTransaction, signState, transactionId } = this.state;
+  let { errorMessage, isBusy, isBusyMessage, isLoggedIn, signedTransaction, signState, transactionId } = this.state;
   return (
     <div>
       <div>
@@ -344,7 +344,7 @@ render() {
         }
       </div>
       <h3 style={{ color:'green', margin:'50px' }}>
-        {(isBusy) && 'working...'}
+        {(isBusy) && (isBusyMessage ?? 'working...')}
       </h3>
       <div style={{ color:'red', margin:'50px' }}>
         {(errorMessage) && errorMessage}
