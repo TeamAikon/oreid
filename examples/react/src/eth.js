@@ -322,7 +322,7 @@ export  async function transferErc20Token(contractAddress, from, to, value, priv
 
 // value in ether
 export async function addEthForGas(from, to, value, privateKey, web3, setBusyCallback){
-  setBusyCallback(true, `first adding Eth to address: ${to} (for gas) so transation can execute. ----> NOTICE: This could take up to 15mins to confirm - you can wait or come back later`)
+  setBusyCallback(true, `first adding Eth to address: ${to} (for gas) so transaction can execute. ----> NOTICE: This could take up to 15mins to confirm - you can wait or come back later`)
   const { gasPrice, gasLimit, nonce } = await getGasParams(from, web3)
   value = web3.utils.toWei(value,'ether') 
   const rawTx = {
