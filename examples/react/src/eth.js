@@ -301,7 +301,8 @@ export async function getGasParams(from, web3){
   return { gasPrice, gasLimit, nonce }
 }
 
-export  async function transferErc20Token(contractAddress, from, to, value, privateKey, web3){
+export  async function transferErc20Token(contractAddress, from, to, value, privateKey, web3, setBusyCallback){
+  setBusyCallback(true, `transferring Erc20 token to address:${to}.`)
   const { gasPrice, gasLimit, nonce } = await getGasParams(from, web3)
   const erc20 = new web3.eth.Contract(ABI, contractAddress)
   const rawTx = {
@@ -315,11 +316,13 @@ export  async function transferErc20Token(contractAddress, from, to, value, priv
   privateKey = '0x' + privateKey.toString('hex');
   const transaction =  await signAndSerializeTransaction(rawTx, privateKey);
   const result = await sendSignedTransaction(transaction, web3);
+  setBusyCallback(false)
   return result;
 }
 
 // value in ether
-export async function addEthForGas(from, to, value, privateKey, web3){
+export async function addEthForGas(from, to, value, privateKey, web3, setBusyCallback){
+  setBusyCallback(true, `first adding Eth to address: ${to} (for gas) so transation can execute. ----> NOTICE: This could take up to 15mins to confirm - you can wait or come back later`)
   const { gasPrice, gasLimit, nonce } = await getGasParams(from, web3)
   value = web3.utils.toWei(value,'ether') 
   const rawTx = {
@@ -333,16 +336,21 @@ export async function addEthForGas(from, to, value, privateKey, web3){
   privateKey = '0x' + privateKey.toString('hex');
   const transaction = await signAndSerializeTransaction(rawTx, privateKey)
   const result = await sendSignedTransaction(transaction, web3)
+  setBusyCallback(false)
   return result;
 }
 
-export async function getEthBalance(address,web3){
+export async function getEthBalance(address, web3, setBusyCallback){
+  setBusyCallback(true, `checking Eth Balance for address: ${address}`)
   const weiBalance = await web3.eth.getBalance(address);
+  setBusyCallback(false)
   return web3.utils.fromWei(weiBalance,'ether')
 }
 
-export async function getErc20Balance(contractAddress, address, web3){
+export async function getErc20Balance(contractAddress, address, web3, setBusyCallback){
+  setBusyCallback(true, `checking Erc20 Balance for address: ${address}`)
   const contractInstance = new web3.eth.Contract(ABI,contractAddress);
   const balance = await contractInstance.methods.balanceOf(address).call()
+  setBusyCallback(false)
   return balance;
 }
