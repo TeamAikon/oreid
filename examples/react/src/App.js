@@ -53,12 +53,14 @@ class App extends Component {
     this.state = {
       isLoggedIn: false,
       userInfo: {},
-      firstAuth: false
+      firstAuth: false,
+      sendEthForGas: false,
     };
     this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
     this.handleSignButton = this.handleSignButton.bind(this);
     this.toggleFirstAuth = this.toggleFirstAuth.bind(this);
+    this.toggleSendEthForGas = this.toggleSendEthForGas.bind(this)
   }
 
 // called by library to set local busy state
@@ -106,10 +108,10 @@ handleLogout() {
 async handleSignButton(permissionIndex) {
   this.clearErrors();
   let { chainAccount, chainNetwork, permission, externalWalletType:provider } = this.permissionsToRender[permissionIndex] || {};
-  const { firstAuth, userInfo } = this.state;
+  const { firstAuth, sendEthForGas, userInfo } = this.state;
   let { accountName } = userInfo;
   provider = provider || 'oreid'; // default to ore id
-  await this.handleSignSampleTransaction(provider, accountName, chainAccount, chainNetwork, permission, firstAuth);
+  await this.handleSignSampleTransaction(provider, accountName, chainAccount, chainNetwork, permission, firstAuth, sendEthForGas);
 }
 
 async handleWalletDiscoverButton(permissionIndex) {
@@ -178,12 +180,14 @@ getChainType(chainNetwork) {
     }
 }
 
-async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork, permission, firstAuth = false) {
+async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork, permission, firstAuth = false, sendEthForGas) {
   try {
     let transaction = null;
     let signedTransactionToSend = null;
     if(this.getChainType(chainNetwork) === 'eth'){
-      await this.fundEthereumAccountIfNeeded(chainAccount,chainNetwork);
+      if(sendEthForGas){
+        await this.fundEthereumAccountIfNeeded(chainAccount,chainNetwork);
+      }
       transaction = this.createEthereumSampleTransaction(chainAccount, permission);
     }
 
@@ -294,6 +298,10 @@ async toggleFirstAuth() {
   this.setState({ firstAuth:!this.state.firstAuth });
 }
 
+async toggleSendEthForGas() {
+  this.setState({ sendEthForGas:!this.state.sendEthForGas });
+}
+
 /*
    Handle the authCallback coming back from ORE-ID with an "account" parameter indicating that a user has logged in
 */
@@ -342,9 +350,12 @@ render() {
         {isLoggedIn &&
           this.renderFirstAuthorizerCheckBox()
         }
+        {isLoggedIn &&
+          this.renderEthereumGasCheckBox()
+        }
       </div>
       <h3 style={{ color:'green', margin:'50px' }}>
-        {(isBusy) && (isBusyMessage ?? 'working...')}
+        {(isBusy) && (isBusyMessage || 'working...')}
       </h3>
       <div style={{ color:'red', margin:'50px' }}>
         {(errorMessage) && errorMessage}
@@ -404,7 +415,17 @@ renderFirstAuthorizerCheckBox() {
   return (
     <div style={{ marginLeft:50, marginTop:20 }}>
       <input type="checkbox" onChange={this.toggleFirstAuth} checked={firstAuth}/>
-      <p>{'Check the box above if you want your transaction\'s CPU and NET to be payed by App.'}</p>
+      <p>{'For Eos - Check the box above if you want your transaction\'s CPU and NET to be payed by App.'}</p>
+    </div>
+  );
+}
+
+renderEthereumGasCheckBox(){
+  let { sendEthForGas } = this.state;
+  return (
+    <div style={{ marginLeft:50, marginTop:20 }}>
+      <input type="checkbox" onChange={this.toggleSendEthForGas} checked={sendEthForGas}/>
+      <p>{'For Ethereum - Check the box above if you want to automatically send Eth for gas required for sample transaction if needed'}</p>
     </div>
   );
 }
