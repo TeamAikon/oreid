@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import LoginButton from './components/loginButton';
 import { OreId } from 'eos-auth';
 import { signTransaction } from './eos';
+import { ABI, addEthForGas, init, getGasParams, transferErc20Token, getEthBalance, getErc20Balance } from './eth';
 import scatterProvider from 'eos-transit-scatter-provider';
 import ledgerProvider from 'eos-transit-ledger-provider';
 import lynxProvider from 'eos-transit-lynx-provider';
@@ -11,11 +12,9 @@ import tokenpocketProvider from 'eos-transit-tokenpocket-provider';
 import whalevaultProvider from 'eos-transit-whalevault-provider';
 import simpleosProvider from 'eos-transit-simpleos-provider';
 import keycatProvider from 'eos-transit-keycat-provider';
-// import portisProvider from 'eos-transit-portis-provider'
+import { EOS_CHAIN_NETWORK, ERC20_FUNDING_AMOUNT, ERC20_TRANSFER_AMOUNT, ETH_TRANSFER_AMOUNT } from './constants'
 
 dotenv.config();
-
-let chainNetworkForExample = 'eos_kylin';
 
 const {
   REACT_APP_OREID_APP_ID: appId, // Provided when you register your app
@@ -25,7 +24,13 @@ const {
   REACT_APP_OREID_URL:oreIdUrl, // HTTPS Address of OREID server
   REACT_APP_BACKGROUND_COLOR:backgroundColor, // Background color shown during login flow
   REACT_APP_FIRST_AUTH_ACCOUNT_NAME:firstAuthAccount, // First auth account for ore_test
-  REACT_APP_FIRST_AUTH_KEY:firstAuthKey
+  REACT_APP_FIRST_AUTH_KEY:firstAuthKey,
+  REACT_APP_ETHEREUM_CONTRACT_ADDRESS: ethereumContractAddress,
+  REACT_APP_ETHEREUM_CONTRACT_ACCOUNT_ADDRESS: ethereumContractAccountAddress,
+  REACT_APP_ETHEREUM_CONTRACT_ACCOUNT_PRIVATE_KEY: ethereumContractAccountPrivateKey,
+  REACT_APP_ETHEREUM_FUNDING_ACCOUNT_ADDRESS: ethereumFundingAddress,
+  REACT_APP_ETHEREUM_FUNDING_ACCOUNT_PRIVATE_KEY: ethereumFundingAddressPrivateKey
+
 } = process.env;
 
 let eosTransitWalletProviders = [
@@ -48,16 +53,18 @@ class App extends Component {
     this.state = {
       isLoggedIn: false,
       userInfo: {},
-      firstAuth: false
+      firstAuth: false,
+      sendEthForGas: false,
     };
     this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
     this.handleSignButton = this.handleSignButton.bind(this);
     this.toggleFirstAuth = this.toggleFirstAuth.bind(this);
+    this.toggleSendEthForGas = this.toggleSendEthForGas.bind(this)
   }
 
 // called by library to set local busy state
-setBusyCallback = (isBusy) => {this.setState({ isBusy });};
+setBusyCallback = (isBusy, isBusyMessage) => { this.setState({ isBusy, isBusyMessage }); };
 
 // intialize oreId
 oreId = new OreId({ appName:'ORE ID Sample App', appId, apiKey, oreIdUrl, authCallbackUrl, signCallbackUrl, backgroundColor, eosTransitWalletProviders, setBusyCallback:this.setBusyCallback });
@@ -101,14 +108,14 @@ handleLogout() {
 async handleSignButton(permissionIndex) {
   this.clearErrors();
   let { chainAccount, chainNetwork, permission, externalWalletType:provider } = this.permissionsToRender[permissionIndex] || {};
-  const { firstAuth, userInfo } = this.state;
+  const { firstAuth, sendEthForGas, userInfo } = this.state;
   let { accountName } = userInfo;
   provider = provider || 'oreid'; // default to ore id
-  await this.handleSignSampleTransaction(provider, accountName, chainAccount, chainNetwork, permission, firstAuth);
+  await this.handleSignSampleTransaction(provider, accountName, chainAccount, chainNetwork, permission, firstAuth, sendEthForGas);
 }
 
 async handleWalletDiscoverButton(permissionIndex) {
-  let chainNetwork = chainNetworkForExample;
+  let chainNetwork = EOS_CHAIN_NETWORK;
   try {
     this.clearErrors();
     let { provider } = this.walletButtons[permissionIndex] || {};
@@ -125,7 +132,7 @@ async handleWalletDiscoverButton(permissionIndex) {
 }
 
 async handleLogin(provider) {
-  let chainNetwork = chainNetworkForExample;
+  let chainNetwork = EOS_CHAIN_NETWORK;
   try {
     this.clearErrors();
     let loginResponse = await this.oreId.login({ provider, chainNetwork });
@@ -149,22 +156,51 @@ getChainUrl(chainNetwork) {
     return 'https://api.kylin.alohaeos.com:443';
   case 'eos_jungle':
     return 'https://jungle2.cryptolions.io:443';
+  case 'eos_main':
+    return 'https://api.eosn.io:443';
+  case 'eth_ropsten':
+    return 'https://ropsten.infura.io/v3/a069a5004f2e4545a03e5c31285a3945';
   default:
     return '';
   }
 }
 
-async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork, permission, firstAuth = false) {
+getChainType(chainNetwork) {
+  switch (chainNetwork) {
+    case 'ore_test':
+    case 'eos_kylin':
+    case 'eos_jungle':
+    case 'eos_main' :
+      return 'eos';
+    case 'eth_ropsten':
+    case 'eth_main':
+      return 'eth';
+    default:
+      return '';
+    }
+}
+
+async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork, permission, firstAuth = false, sendEthForGas) {
   try {
     let transaction = null;
     let signedTransactionToSend = null;
-    if (firstAuth) {
-      signedTransactionToSend = this.createFirstAuthSampleTransaction(firstAuthAccount, chainAccount, permission);
-      const chainUrl = this.getChainUrl(chainNetwork);
-      signedTransactionToSend = await signTransaction(signedTransactionToSend, chainUrl, firstAuthKey);
-    } else {
-      transaction = this.createSampleTransaction(chainAccount, permission);
+    if(this.getChainType(chainNetwork) === 'eth'){
+      if(sendEthForGas){
+        await this.fundEthereumAccountIfNeeded(chainAccount,chainNetwork);
+      }
+      transaction = this.createEthereumSampleTransaction(chainAccount, permission);
     }
+
+    if(this.getChainType(chainNetwork) === 'eos'){
+      if (firstAuth) {
+        signedTransactionToSend = this.createFirstAuthSampleTransaction(firstAuthAccount, chainAccount, permission);
+        const chainUrl = this.getChainUrl(chainNetwork);
+        transaction = await signTransaction(signedTransactionToSend, chainUrl, firstAuthKey);
+      } else {
+        transaction = this.createSampleTransaction(chainAccount, permission);
+      }
+    }
+
     // this.clearErrors();gi
     let signOptions = {
       provider:provider || '', // wallet type (e.g. 'scatter' or 'oreid')
@@ -173,7 +209,6 @@ async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork,
       chainAccount:chainAccount || '',
       chainNetwork:chainNetwork || '',
       state:'abc', // anything you'd like to remember after the callback
-      signedTransaction: signedTransactionToSend,
       transaction,
       accountIsTransactionPermission:false,
       returnSignedTransaction: true,
@@ -214,24 +249,57 @@ createSampleTransaction(actor, permission = 'active') {
 createFirstAuthSampleTransaction(payer, actor, permission = 'active', payerPermission = 'active') {
   const transaction = {
     actions: [{ account: 'demoapphello',
-      name: 'hi',
-      authorization: [{
-        actor: payer,
-        permission: payerPermission
-      },{
-        actor,
-        permission
-      }],
-      data: {
-        user: actor
-      }
-    }]
-  };
+    name: 'hi',
+    authorization: [{
+      actor: payer,
+      permission: payerPermission
+    },{
+      actor,
+      permission
+    }],
+    data: {
+      user: actor
+    }
+  }]
+};
+return transaction;
+}
+
+
+createEthereumSampleTransaction(actor, permission = 'active') {
+  const transaction = {
+    actions: [{
+      from: actor,
+      to: ethereumContractAddress,
+      contract: {
+        abi: ABI,
+        parameters: [ethereumContractAccountAddress, ERC20_TRANSFER_AMOUNT],
+        method: 'transfer',
+      },
+    }]}
   return transaction;
+}
+
+async fundEthereumAccountIfNeeded(chainAccount,chainNetwork){
+  const chainUrl = this.getChainUrl(chainNetwork)
+  const web3 = await init(chainUrl)
+  const { gasPrice, gasLimit } =  await getGasParams(chainAccount, web3, this.setBusyCallback);
+  const currentEthBalance = await getEthBalance(chainAccount,web3, this.setBusyCallback);
+  const currentErc20Balance = await getErc20Balance(ethereumContractAddress, chainAccount, web3, this.setBusyCallback);
+  if( web3.utils.toWei(currentEthBalance,'ether') < gasPrice * gasLimit){
+    await addEthForGas(ethereumFundingAddress, chainAccount, ETH_TRANSFER_AMOUNT, ethereumFundingAddressPrivateKey, web3, this.setBusyCallback)
+  }
+  if(parseInt(currentErc20Balance) < ERC20_TRANSFER_AMOUNT){
+    await transferErc20Token(ethereumContractAddress,ethereumContractAccountAddress,chainAccount,ERC20_FUNDING_AMOUNT,ethereumContractAccountPrivateKey,web3, this.setBusyCallback)
+  }
 }
 
 async toggleFirstAuth() {
   this.setState({ firstAuth:!this.state.firstAuth });
+}
+
+async toggleSendEthForGas() {
+  this.setState({ sendEthForGas:!this.state.sendEthForGas });
 }
 
 /*
@@ -266,7 +334,7 @@ async handleSignCallback() {
 }
 
 render() {
-  let { errorMessage, isBusy, isLoggedIn, signedTransaction, signState, transactionId } = this.state;
+  let { errorMessage, isBusy, isBusyMessage, isLoggedIn, signedTransaction, signState, transactionId } = this.state;
   return (
     <div>
       <div>
@@ -282,9 +350,12 @@ render() {
         {isLoggedIn &&
           this.renderFirstAuthorizerCheckBox()
         }
+        {isLoggedIn &&
+          this.renderEthereumGasCheckBox()
+        }
       </div>
       <h3 style={{ color:'green', margin:'50px' }}>
-        {(isBusy) && 'working...'}
+        {(isBusy) && (isBusyMessage || 'working...')}
       </h3>
       <div style={{ color:'red', margin:'50px' }}>
         {(errorMessage) && errorMessage}
@@ -344,13 +415,23 @@ renderFirstAuthorizerCheckBox() {
   return (
     <div style={{ marginLeft:50, marginTop:20 }}>
       <input type="checkbox" onChange={this.toggleFirstAuth} checked={firstAuth}/>
-      <p>{'Check the box above if you want your transaction\'s CPU and NET to be payed by App.'}</p>
+      <p>{'For Eos - Check the box above if you want your transaction\'s CPU and NET to be payed by App.'}</p>
+    </div>
+  );
+}
+
+renderEthereumGasCheckBox(){
+  let { sendEthForGas } = this.state;
+  return (
+    <div style={{ marginLeft:50, marginTop:20 }}>
+      <input type="checkbox" onChange={this.toggleSendEthForGas} checked={sendEthForGas}/>
+      <p>{'For Ethereum - Check the box above if you want to automatically send Eth for gas required for sample transaction if needed'}</p>
     </div>
   );
 }
 
 renderDiscoverOptions() {
-  let chainNetwork = chainNetworkForExample;
+  let chainNetwork = EOS_CHAIN_NETWORK;
   this.walletButtons = [
     { provider: 'scatter', chainNetwork },
     { provider: 'ledger', chainNetwork },
