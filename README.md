@@ -8,7 +8,7 @@ ORE ID allows anyone to access your dApp with one-click sign up and blockchain a
 
 With ORE ID, users of your web or mobile app get an on-chain account upon first sign-in. Their private key is encrypted with a PIN of their choosing and stored for them so they don't have to remember their blockchain accounts or keys.
 
-ORE ID also serves as a blockchain wallet for your your users. Your app can request a user to sign a transaction using their PIN to decrypt their keys.
+ORE ID also serves as a blockchain wallet for your users. Your app can request a user to sign a transaction using their PIN to decrypt their keys.
 
 ORE ID is the easiest way to add support for Scatter, Ledger Nano S, Metro and every other EOS wallet that supports the new [Transit API](https://github.com/eosnewyork/eos-transit) standard. Just add our eos-auth library and your app will instantly support these popular wallets.
 
