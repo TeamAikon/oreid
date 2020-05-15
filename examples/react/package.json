@@ -3,7 +3,7 @@
   "version": "1.2.0",
   "private": true,
   "engines": {
-    "node": "9.x.x"
+    "node": "10.4.x"
   },
   "dependencies": {
     "dotenv": "^8.0.0",
