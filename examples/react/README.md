@@ -10,7 +10,7 @@ To run sample code:
     ```
     cd examples/react
     npm install
-    npm start
+    npm run dev
     ```
 
 Open [http://localhost:3000](http://localhost:3000) to view the running app.
@@ -33,7 +33,7 @@ gcloud -q app deploy app.yaml
 To test this sample app with a Ledger Nano S, this app must be hosting using HTTPS. Start the app with the following command:
 
 ```
-HTTPS=true npm start
+HTTPS=true npm run dev
 ```
 
 You must also be using the latest Ledger BIOS, Ledger EOS App, and Google Chrome (73.0.3683.103 or higher)
