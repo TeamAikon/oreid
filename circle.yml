@@ -65,7 +65,7 @@ jobs:
           command: |
             if [ "$CIRCLE_BRANCH" == "master" ]
              then
-                  cp -rf ./scripts/config/prod.app.yaml ./app.yaml
+                  rm ./.env || true
                   echo $ENV | base64 --decode >> ./.env
             fi
 
