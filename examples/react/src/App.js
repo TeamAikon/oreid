@@ -19,6 +19,7 @@ dotenv.config();
 const {
   REACT_APP_OREID_APP_ID: appId, // Provided when you register your app
   REACT_APP_OREID_API_KEY:apiKey, // Provided when you register your app
+  REACT_APP_OREID_SERVICE_KEY:serviceKey, // Optional - required for some advanced features including autoSign and custodial accounts
   REACT_APP_AUTH_CALLBACK:authCallbackUrl, // The url called by the server when login flow is finished - must match one of the callback strings listed in the App Registration
   REACT_APP_SIGN_CALLBACK:signCallbackUrl, // The url called by the server when transaction signing flow is finished - must match one of the callback strings listed in the App Registration
   REACT_APP_OREID_URL:oreIdUrl, // HTTPS Address of OREID server
@@ -67,7 +68,7 @@ class App extends Component {
 setBusyCallback = (isBusy, isBusyMessage) => { this.setState({ isBusy, isBusyMessage }); };
 
 // intialize oreId
-oreId = new OreId({ appName:'ORE ID Sample App', appId, apiKey, oreIdUrl, authCallbackUrl, signCallbackUrl, backgroundColor, eosTransitWalletProviders, setBusyCallback:this.setBusyCallback });
+oreId = new OreId({ appName:'ORE ID Sample App', appId, apiKey, serviceKey, oreIdUrl, authCallbackUrl, signCallbackUrl, backgroundColor, eosTransitWalletProviders, setBusyCallback:this.setBusyCallback });
 
 async componentWillMount() {
   this.loadUserFromLocalState();
