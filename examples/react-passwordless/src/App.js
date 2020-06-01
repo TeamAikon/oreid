@@ -6,7 +6,7 @@ const APP_ID = 'demo_0097ed83e0a54e679ca46d082ee0e33a';
 const OREID_API_KEY = 'demo_k_97b33a2f8c984fb5b119567ca19e4a49';
 const APP_AUTH_CALLBACK = 'http://localhost:3000/authcallback';
 const APP_SIGN_CALLBACK = 'http://localhost:3000/signcallback';
-const APP_OREID_URL = 'https://oreid.io';
+const APP_OREID_URL = 'https://service.oreid.io';
 const APP_BACKGROUND_COLOR = '3F7BC7';
 const APP_CHAIN_NETWORK = 'eos_kylin';
 
@@ -39,9 +39,11 @@ class App extends Component {
     });
 
     this.handleSubmitEmail = this.handleSubmitEmail.bind(this);
-    this.handleSubmitCode = this.handleSubmitCode.bind(this);
+    this.handleSubmitPhone = this.handleSubmitPhone.bind(this);
+    this.handleVerifyCode = this.handleVerifyCode.bind(this);
     this.onChangeCode = this.onChangeCode.bind(this);
     this.onChangeEmail = this.onChangeEmail.bind(this);
+    this.onChangePhone = this.onChangePhone.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
   }
 
@@ -85,16 +87,27 @@ class App extends Component {
     }
   }
 
-  async requestCode() {
+  async requestCodeForPhone() {
+    const args = {
+      provider: 'phone',
+      phone: this.state.phone,
+    };
+    const result = await this.oreId.passwordlessSendCodeApi(args);
+    if (result.success === true) {
+      this.setState({ results: { success: 'check your email for a code' } });
+    } else {
+      this.setState({ results: { error: 'send code failed' } });
+    }
+  }
+
+  async requestCodeForEmail() {
     const args = {
       provider: 'email',
       email: this.state.email,
     };
-
     const result = await this.oreId.passwordlessSendCodeApi(args);
-
     if (result.success === true) {
-      this.setState({ results: { success: 'check your email for a code' } });
+      this.setState({ results: { success: 'check your phone for a code' } });
     } else {
       this.setState({ results: { error: 'send code failed' } });
     }
@@ -129,27 +142,41 @@ class App extends Component {
     this.setState({ email: e.target.value });
   }
 
+  onChangePhone(e) {
+    this.setState({ phone: e.target.value });
+  }
+
   onChangeCode(e) {
     this.setState({ code: e.target.value });
   }
 
   handleSubmitEmail(e) {
     e.preventDefault();
-
-    this.requestCode();
+    this.requestCodeForEmail();
   }
 
-  async handleSubmitCode(e) {
+  handleSubmitPhone(e) {
+    e.preventDefault();
+    this.requestCodeForPhone();
+  }
+
+  async handleVerifyCode(e, type) {
     e.preventDefault();
 
     // verify the code is good before login
     // this is optional as it would just fail login if you passed a bad code, but helpful
     // for displaying a quick message to the user
-    const args = {
-      provider: 'email',
-      email: this.state.email,
+    let args = {
+      provider: type, // 'email' or 'phone'
       code: this.state.code,
-    };
+    }
+
+    if(type === 'email') {
+      args.email = this.state.email
+    }
+    if(type === 'phone') {
+      args.phone = this.state.phone
+    }
 
     const result = await this.oreId.passwordlessVerifyCodeApi(args);
     if (result.success === true) {
@@ -172,21 +199,39 @@ class App extends Component {
     } else {
       mainContent = (
         <div>
-          <form onSubmit={this.handleSubmitEmail}>
-            <label>
-              Enter Email:
-              <input type="email" value={this.state.email} onChange={this.onChangeEmail} />
-            </label>
-            <input type="submit" value="Submit Email" />
-          </form>
+          <div>
+            <form onSubmit={this.handleSubmitEmail}>
+              <label>
+                Enter Email:
+                <input type="email" value={this.state.email} onChange={this.onChangeEmail} />
+              </label>
+              <input type="submit" value="Submit Email" />
+            </form>
+            <form onSubmit={(e) => this.handleVerifyCode(e,'email')}>
+              <label>
+                 Verify Code sent to Email :
+                <input type="number" value={this.state.code} onChange={this.onChangeCode} />
+              </label>
+              <input type="submit" value="Submit Code" />
+            </form>
+          </div>
 
-          <form onSubmit={this.handleSubmitCode}>
+          <div>
+            <form onSubmit={this.handleSubmitPhone}>
             <label>
-              Submit Code:
-              <input type="number" value={this.state.code} onChange={this.onChangeCode} />
-            </label>
-            <input type="submit" value="Submit Code" />
-          </form>
+                  ... or Phone:
+                  <input type="text" value={this.state.phone} onChange={this.onChangePhone} />
+                </label>
+                <input type="submit" value="Submit Phone" />
+            </form>
+            <form onSubmit={(e) => this.handleVerifyCode(e,'phone')}>
+              <label>
+                Verify Code sent to Phone :
+                <input type="number" value={this.state.code} onChange={this.onChangeCode} />
+              </label>
+              <input type="submit" value="Submit Code" />
+            </form>
+          </div>
         </div>
       );
     }
