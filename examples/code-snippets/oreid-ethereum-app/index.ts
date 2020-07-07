@@ -35,21 +35,6 @@ const ropstenChainOptions = {
   hardFork: 'istanbul',
 }
 
-
-let composeValueTransferParams = {
-  fromAccountName: fundingAccount,
-  toAccountName: null,
-  tokenAmount: 10
-}
-
-function sleep(ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}   
-
-
-
 async function run() {
   /*
   * Initialize oreid
@@ -60,7 +45,7 @@ async function run() {
    * Create new oreid user
    * */
   // set the email field to a new email to generate a new oreid user.
-  const custodialNewAccountParams = { accountType: "native", email:  "testemail16@gmail.com", name: "Surabhi Lodha", picture: "", phone: "+1213357112", userName: "sulo", userPassword: "1993"}
+  const custodialNewAccountParams = { accountType: "native", email:  "testemail@gmail.com", name: "Surabhi Lodha", picture: "", phone: "+1213357112", userName: "sulo", userPassword: "1993"}
   const newUser = await oreId.custodialNewAccount(custodialNewAccountParams)
   const { accountName, processId } = newUser
   const userInfo = await oreId.getUserInfoFromApi(accountName, processId)
