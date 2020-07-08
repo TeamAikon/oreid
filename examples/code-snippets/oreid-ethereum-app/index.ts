@@ -59,7 +59,7 @@ async function run() {
    * Create new oreid user
    * */
   // set the email field to a new email to generate a new oreid user.
-  const custodialNewAccountParams = { accountType: "native", email:  "testemail112@gmail.com", name: "Surabhi Lodha", picture: "", phone: "+1213357112", userName: "sulo", userPassword: "1993"}
+  const custodialNewAccountParams = { accountType: "native", email:  "testemail@gmail.com", name: "Surabhi Lodha", picture: "", phone: "+1213357112", userName: "sulo", userPassword: "1993"}
   const newUser = await oreId.custodialNewAccount(custodialNewAccountParams)
   const { accountName, processId } = newUser
   const userInfo = await oreId.getUserInfoFromApi(accountName, processId)
@@ -147,7 +147,7 @@ async function run() {
     console.log('Funding account %o balance: %o', appToken, fundingAccountTokenBalance)
   
     const tokenTransferTransaction = oreTest.new.Transaction()
-    transaction.actions = [oreTest.composeAction(ChainActionType.TokenTransfer, appTokenTransferOptions)]
+    tokenTransferTransaction.actions = [oreTest.composeAction(ChainActionType.TokenTransfer, appTokenTransferOptions)]
     await tokenTransferTransaction.prepareToBeSigned()
     await tokenTransferTransaction.validate()
     await tokenTransferTransaction.sign([toEosPrivateKey(tokenFundingAccountPrivateKey)])
