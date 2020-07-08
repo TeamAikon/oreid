@@ -59,7 +59,7 @@ async function run() {
    * Create new oreid user
    * */
   // set the email field to a new email to generate a new oreid user.
-  const custodialNewAccountParams = { accountType: "native", email:  "testemail@gmail.com", name: "Surabhi Lodha", picture: "", phone: "+1213357112", userName: "sulo", userPassword: "1993"}
+  const custodialNewAccountParams = { accountType: "native", email:  "testemail115@gmail.com", name: "Surabhi Lodha", picture: "", phone: "+1213357112", userName: "sulo", userPassword: "1993"}
   const newUser = await oreId.custodialNewAccount(custodialNewAccountParams)
   const { accountName, processId } = newUser
   const userInfo = await oreId.getUserInfoFromApi(accountName, processId)
@@ -134,7 +134,7 @@ async function run() {
     const appTokenTransferOptions = {
       contractName: toEosEntityName(tokenContractAccount),
       fromAccountName: toEosEntityName(tokenFundingAccount),
-      toAccountName: toEosEntityName(chainAccount),
+      toAccountName: toEosEntityName(accountName), // oreid account name is the same as account name on ore network
       amount: 1.000,
       symbol: toEosSymbol(appToken),
       memo: 'token airdrop',
