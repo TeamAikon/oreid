@@ -5,7 +5,8 @@ const { ChainFactory, ChainType} = require('@open-rights-exchange/chainjs')
 const {
   EthUnit
 } = require('@open-rights-exchange/chainjs/dist/chains/ethereum_1/models')
-const {toEthereumPrivateKey } = require('@open-rights-exchange/chainjs/dist/chains/ethereum_1/helpers')
+const { toEthereumPrivateKey } = require('@open-rights-exchange/chainjs/dist/chains/ethereum_1/helpers')
+const { toEosEntityName, toEosPrivateKey, toEosSymbol } = require('@open-rights-exchange/chainjs/dist/chains/eos_2/helpers')
 const { ChainActionType, ConfirmType } = require('@open-rights-exchange/chainjs/dist/models')
 
 dotenv.config();
@@ -18,8 +19,13 @@ const {
   SIGN_CALLBACK:signCallbackUrl, // The url called by the server when transaction signing flow is finished - must match one of the callback strings listed in the App Registration
   OREID_URL:oreIdUrl, // HTTPS Address of OREID server
   BACKGROUND_COLOR:backgroundColor, // Background color shown during login flow
-  FUNDING_ACCOUNT_ADDRESS: fundingAccount, // ethereum account to fund oreid user wallets
-  FUNDING_ACCOUNT_PRIVATE_KEY: fundingAccountPrivateKey
+  FUNDING_ACCOUNT_ADDRESS: ethFundingAccount, // ethereum account to fund oreid user wallets
+  FUNDING_ACCOUNT_PRIVATE_KEY: ethFundingAccountPrivateKey,
+  APP_TOKEN_FUNDING_ACCOUNT_ADDRESS: tokenFundingAccount,
+  APP_TOKEN_FUNDING_ACCOUNT_PRIVATE_KEY: tokenFundingAccountPrivateKey,
+  APP_TOKEN_FUNDING_ACCOUNT_PERMISSION: tokenFundingAccountPermission,
+  APP_TOKEN_CONTRACT_ACCOUNT: tokenContractAccount,
+  APP_TOKEN: appToken
 } = process.env;
 
 const ETH_NETWORK = 'eth_ropsten'
@@ -35,6 +41,14 @@ const ropstenChainOptions = {
   hardFork: 'istanbul',
 }
 
+const oreTestEndpoints = [
+  {
+    url: new URL('https://ore-staging.openrights.exchange/'),
+  }
+]
+
+const oreChainSettings = {}
+
 async function run() {
   /*
   * Initialize oreid
@@ -45,7 +59,7 @@ async function run() {
    * Create new oreid user
    * */
   // set the email field to a new email to generate a new oreid user.
-  const custodialNewAccountParams = { accountType: "native", email:  "testemail@gmail.com", name: "Surabhi Lodha", picture: "", phone: "+1213357112", userName: "sulo", userPassword: "1993"}
+  const custodialNewAccountParams = { accountType: "native", email:  "testemail112@gmail.com", name: "Surabhi Lodha", picture: "", phone: "+1213357112", userName: "sulo", userPassword: "1993"}
   const newUser = await oreId.custodialNewAccount(custodialNewAccountParams)
   const { accountName, processId } = newUser
   const userInfo = await oreId.getUserInfoFromApi(accountName, processId)
@@ -68,7 +82,7 @@ async function run() {
   // construct eth transfer transaction 
   const transaction = await ropsten.new.Transaction()
   transaction.actions = [{
-      from: fundingAccount,
+      from: ethFundingAccount,
       to: chainAccount,   
       value: 100000000000 // wei amount to send to oreid user
   }]
@@ -77,7 +91,7 @@ async function run() {
   await transaction.prepareToBeSigned()
   await transaction.validate()
   // send the transaction  to transfer eth to user wallet 
-  await transaction.sign([toEthereumPrivateKey(fundingAccountPrivateKey)])
+  await transaction.sign([toEthereumPrivateKey(ethFundingAccountPrivateKey)])
   console.log("Send test eth to oreid user wallet and confirm the transaction on the ropsten network")
   const transactionResponse = await transaction.send(ConfirmType.After001)
   console.log('send response: %o', transactionResponse)
@@ -91,7 +105,7 @@ async function run() {
   const userTransaction = {
     actions: [{
       from: chainAccount,
-      to: fundingAccount,
+      to: ethFundingAccount,
       value: 1 // wei amount to send out of oreid user wallet
   }]}
   
@@ -108,6 +122,39 @@ async function run() {
   }
   const signedUserTransaction = await oreId.sign(sendTransactionParams)
   console.log('signedUserTransaction', signedUserTransaction)
+
+  /************************************************************************************************************************** */
+
+  /**
+  * Send custom app tokens to the newly created oreid user wallet.
+  * For the example, it is assumed that app token exists on ore test network
+  */
+
+  if(appToken){
+    const appTokenTransferOptions = {
+      contractName: toEosEntityName(tokenContractAccount),
+      fromAccountName: toEosEntityName(tokenFundingAccount),
+      toAccountName: toEosEntityName(chainAccount),
+      amount: 1.000,
+      symbol: toEosSymbol(appToken),
+      memo: 'token airdrop',
+      permission: toEosEntityName(tokenFundingAccountPermission),
+    }
+  
+    const oreTest = new ChainFactory().create(ChainType.EosV2, oreTestEndpoints, oreChainSettings)
+    await oreTest.connect()
+    const fundingAccountTokenBalance =  await oreTest.fetchBalance(toEosEntityName(tokenFundingAccount), toEosSymbol(appToken), toEosEntityName(tokenContractAccount))
+    console.log('Funding account %o balance: %o', appToken, fundingAccountTokenBalance)
+  
+    const tokenTransferTransaction = oreTest.new.Transaction()
+    transaction.actions = [oreTest.composeAction(ChainActionType.TokenTransfer, appTokenTransferOptions)]
+    await tokenTransferTransaction.prepareToBeSigned()
+    await tokenTransferTransaction.validate()
+    await tokenTransferTransaction.sign([toEosPrivateKey(tokenFundingAccountPrivateKey)])
+    const txResponse = await tokenTransferTransaction.send(ConfirmType.None)
+    console.log('token transfer response: %o', txResponse)
+  }
+
 }
 
 ;(async () => {
