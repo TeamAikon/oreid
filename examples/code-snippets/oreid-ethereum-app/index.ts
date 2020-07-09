@@ -135,7 +135,7 @@ async function run() {
       contractName: toEosEntityName(tokenContractAccount),
       fromAccountName: toEosEntityName(tokenFundingAccount),
       toAccountName: toEosEntityName(accountName), // oreid account name is the same as account name on ore network
-      amount: 1.000,
+      amount: 1.0000,
       symbol: toEosSymbol(appToken),
       memo: 'token airdrop',
       permission: toEosEntityName(tokenFundingAccountPermission),
