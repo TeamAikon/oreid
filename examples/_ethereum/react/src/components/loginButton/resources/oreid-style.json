@@ -1,0 +1,9 @@
+{
+    "buttonStyle":{
+        "color": "#222",
+        "backgroundColor": "#ffffff"
+    },
+    "logoStyle":{
+    },
+    "text":"Log in with Twitch"
+}

@@ -1,0 +1,9 @@
+{
+    "buttonStyle":{
+        "color": "#222",
+        "backgroundColor": "#FFF"
+    },
+    "logoStyle":{
+    },
+    "text":"Log in with WhaleVault"
+}

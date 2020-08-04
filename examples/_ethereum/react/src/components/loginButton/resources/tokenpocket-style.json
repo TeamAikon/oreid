@@ -1,0 +1,9 @@
+{
+    "buttonStyle":{
+        "backgroundColor": "#f5faff",
+        "color": "#333333"
+    },
+    "logoStyle":{
+    },
+    "text":"Log in with TokenPocket"
+}

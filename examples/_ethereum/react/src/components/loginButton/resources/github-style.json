@@ -1,0 +1,9 @@
+{
+    "buttonStyle":{
+        "backgroundColor": "#222222"
+
+    },
+    "logoStyle":{
+    },
+    "text":"Log in with Github"
+}
