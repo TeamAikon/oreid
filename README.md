@@ -108,6 +108,8 @@ Refer to the examples folder for the following sample projects
 
 - Express Server - A simple Express server that includes the use of middleware to automate handling of callbacks
 
+If you are only using one chain in your app, check out examples just for that chain in its own directory. Ex: /examples/_ethereum
+
 
 [Frequently Asked Questions](https://drive.google.com/open?id=1Nx6qm7z8TQRM8S-onmcP0H--21z-gzYDBVEzzfcgE9g)
 

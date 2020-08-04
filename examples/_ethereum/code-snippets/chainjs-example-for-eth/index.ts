@@ -2,12 +2,10 @@
 const dotenv = require('dotenv');
 const { OreId } = require('eos-auth');
 const { ChainFactory, ChainType} = require('@open-rights-exchange/chainjs')
-const {
-  EthUnit
-} = require('@open-rights-exchange/chainjs/dist/chains/ethereum_1/models')
+const { EthUnit } = require('@open-rights-exchange/chainjs/dist/chains/ethereum_1/models')
 const { toEthereumPrivateKey } = require('@open-rights-exchange/chainjs/dist/chains/ethereum_1/helpers')
 const { toEosEntityName, toEosPrivateKey, toEosSymbol } = require('@open-rights-exchange/chainjs/dist/chains/eos_2/helpers')
-const { ChainActionType, ConfirmType } = require('@open-rights-exchange/chainjs/dist/models')
+const { ChainActionType, ConfirmType, toChainEntityName } = require('@open-rights-exchange/chainjs/dist/models')
 
 dotenv.config();
 
@@ -110,15 +108,15 @@ async function run() {
   }]}
   
   const sendTransactionParams = {account:accountName,
-  broadcast: true,
-  returnSignedTransaction: true,
-  chainAccount,
-  chainNetwork: 'eth_ropsten',
-  processId,
-  transaction: userTransaction,
-  userPassword: '1993', // dummy user password
-  provider: 'custodial',
-  callbackUrl: ''
+    broadcast: true,
+    returnSignedTransaction: true,
+    chainAccount,
+    chainNetwork: 'eth_ropsten',
+    processId,
+    transaction: userTransaction,
+    userPassword: '1993', // replace with user password
+    provider: 'custodial',
+    callbackUrl: ''
   }
   const signedUserTransaction = await oreId.sign(sendTransactionParams)
   console.log('signedUserTransaction', signedUserTransaction)
@@ -132,25 +130,25 @@ async function run() {
 
   if(appToken){
     const appTokenTransferOptions = {
-      contractName: toEosEntityName(tokenContractAccount),
-      fromAccountName: toEosEntityName(tokenFundingAccount),
-      toAccountName: toEosEntityName(accountName), // oreid account name is the same as account name on ore network
-      amount: 1.0000,
-      symbol: toEosSymbol(appToken),
-      memo: 'token airdrop',
-      permission: toEosEntityName(tokenFundingAccountPermission),
+      contractName: tokenContractAccount,
+      fromAccountName: tokenFundingAccount,
+      toAccountName: accountName, // oreid account name is the same as account name on ore network
+      amount: '1.0000', // if token supports fractional values, you must include digits after the decimal place ('1' = no decimal places, '1.0000' 4 decimal places)
+      symbol: appToken,
+      memo: 'token transfer',
+      permission: tokenFundingAccountPermission,
     }
   
     const oreTest = new ChainFactory().create(ChainType.EosV2, oreTestEndpoints, oreChainSettings)
     await oreTest.connect()
-    const fundingAccountTokenBalance =  await oreTest.fetchBalance(toEosEntityName(tokenFundingAccount), toEosSymbol(appToken), toEosEntityName(tokenContractAccount))
+    const fundingAccountTokenBalance =  await oreTest.fetchBalance(tokenFundingAccount, appToken, tokenContractAccount)
     console.log('Funding account %o balance: %o', appToken, fundingAccountTokenBalance)
   
     const tokenTransferTransaction = oreTest.new.Transaction()
     tokenTransferTransaction.actions = [oreTest.composeAction(ChainActionType.TokenTransfer, appTokenTransferOptions)]
     await tokenTransferTransaction.prepareToBeSigned()
     await tokenTransferTransaction.validate()
-    await tokenTransferTransaction.sign([toEosPrivateKey(tokenFundingAccountPrivateKey)])
+    await tokenTransferTransaction.sign([tokenFundingAccountPrivateKey])
     const txResponse = await tokenTransferTransaction.send(ConfirmType.None)
     console.log('token transfer response: %o', txResponse)
   }

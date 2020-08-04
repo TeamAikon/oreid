@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "@open-rights-exchange/chainjs": "^0.17.7",
+    "@open-rights-exchange/chainjs": "^0.20.1",
     "bn.js": "^5.1.2",
     "dotenv": "^8.2.0",
     "eos-auth": "^2.5.0"
