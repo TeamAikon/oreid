@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-console */
 
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 import {
   ChainFactory,
   ChainType,
@@ -13,11 +13,10 @@ import {
   ModelsAlgorand,
 } from "@open-rights-exchange/chainjs";
 
-const env:any = dotenv.config();
+const env: any = dotenv.config();
 
 const algoApiKey = env.REACT_APP_AGLORAND_API_KEY;
 const algoFundingPrivateKey = env.REACT_APP_ALGORAND_ALGO_FUNDING_PRIVATE_KEY as string;
-console.log('algoApiKey:', algoApiKey)
 
 const algoMainnetEndpoints = [
   {
@@ -63,5 +62,5 @@ export async function transferAlgosToAccount(
   await transaction.sign([
     HelpersAlgorand.toAlgorandPrivateKey(algoFundingPrivateKey),
   ]);
-  return await transaction.send()
+  return await transaction.send();
 }

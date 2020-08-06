@@ -6,7 +6,7 @@
     "node": "10.4.x"
   },
   "dependencies": {
-    "@open-rights-exchange/chainjs": "^0.22.0",
+    "@open-rights-exchange/chainjs": "^0.22.1",
     "dotenv": "^8.0.0",
     "ethereumjs-tx": "^2.1.2",
     "ethereumjs-util": "^6.2.0",

@@ -2,10 +2,11 @@ import dotenv from 'dotenv';
 import React, { Component } from 'react';
 import LoginButton from './components/loginButton';
 import { OreId } from 'oreid-js';
-import { EOS_CHAIN_NETWORK } from './constants';
 import { transferAlgosToAccount } from './algorand';
 
 dotenv.config();
+
+const EOS_CHAIN_NETWORK = 'eos_kylin';
 
 const {
   REACT_APP_OREID_APP_ID: appId, // Provided when you register your app
