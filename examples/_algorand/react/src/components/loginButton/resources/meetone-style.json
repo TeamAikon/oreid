@@ -1,0 +1,9 @@
+{
+    "buttonStyle":{
+        "backgroundColor": "#2d2d2d",
+        "color": "#FFFFFF"
+    },
+    "logoStyle":{
+    },
+    "text":"Log in with MeetOne"
+}

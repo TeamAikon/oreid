@@ -1,0 +1,10 @@
+{
+    "buttonStyle":{
+        "color": "#3C1F1E",
+        "backgroundColor": "#FFEB00"
+
+    },
+    "logoStyle":{
+    },
+    "text":"Log in with Kakao"
+}
