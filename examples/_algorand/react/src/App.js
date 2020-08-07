@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import React, { Component } from 'react';
 import LoginButton from './components/loginButton';
 import { OreId } from 'oreid-js';
-import { transferAlgosToAccount } from './algorand';
+import { transferAlgosToAccount, getMultisigChainAccountsForTransaction } from './algorand';
 
 dotenv.config();
 
@@ -18,7 +18,7 @@ const {
   REACT_APP_BACKGROUND_COLOR: backgroundColor, // Background color shown during login flow
   REACT_APP_ALGORAND_ALGO_TO_ADDRESS: transferAlgoToAddress, // address of account to send Algos to (for sample transaction)
   REACT_APP_ALGORAND_ALGO_FUNDING_ADDRESS: transferAlgoFromFundingAddress, // address of account with Algos in it (for sample transaction)
-  REACT_APP_ALGORAND_ALGO_FUNDING_PRIVATE_KEY: transferAlgoFromFundingPrivateKey // PK of account with Algos in it (used to send to other account)
+  REACT_APP_ALGORAND_ALGO_FUNDING_PRIVATE_KEY: transferAlgoFromFundingPrivateKey, // PK of account with Algos in it (used to send to other account)
 } = process.env;
 
 class App extends Component {
@@ -162,6 +162,8 @@ class App extends Component {
         permission
       );
 
+      const multiSigChainAccounts = getMultisigChainAccountsForTransaction(this.state.userInfo, chainAccount)
+
       // this.clearErrors();
       let signOptions = {
         provider: provider || '', // wallet type (e.g. 'scatter' or 'oreid')
@@ -172,7 +174,8 @@ class App extends Component {
         state: 'abc', // anything you'd like to remember after the callback
         transaction,
         returnSignedTransaction: false,
-        preventAutoSign: false // prevent auto sign even if transaction is auto signable
+        preventAutoSign: false, // prevent auto sign even if transaction is auto signable
+        multiSigChainAccounts,
       };
 
       let signResponse = await this.oreId.sign(signOptions);
