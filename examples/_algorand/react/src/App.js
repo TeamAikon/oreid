@@ -356,6 +356,8 @@ class App extends Component {
   renderSigningOptions() {
     let { permissions } = this.state.userInfo;
     this.permissionsToRender = (permissions || []).slice(0);
+    console.log('this.permissionsToRender:', this.permissionsToRender);
+
 
     return (
       <div>
