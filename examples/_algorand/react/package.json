@@ -6,6 +6,7 @@
     "node": "10.4.x"
   },
   "dependencies": {
+    "@babel/plugin-proposal-class-properties": "^7.10.4",
     "@open-rights-exchange/chainjs": "^0.22.2",
     "oreid-js": "^2.5.1",
     "@babel/core": "7.9.0",
@@ -146,8 +147,5 @@
     "presets": [
       "react-app"
     ]
-  },
-  "devDependencies": {
-    "@babel/plugin-proposal-class-properties": "^7.10.4"
   }
 }
