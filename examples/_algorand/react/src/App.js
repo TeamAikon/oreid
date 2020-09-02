@@ -16,7 +16,7 @@ const {
   REACT_APP_SIGN_CALLBACK: signCallbackUrl, // The url called by the server when transaction signing flow is finished - must match one of the callback strings listed in the App Registration
   REACT_APP_OREID_URL: oreIdUrl, // HTTPS Address of OREID server
   REACT_APP_BACKGROUND_COLOR: backgroundColor, // Background color shown during login flow
-  REACT_APP_ALGORAND_ALGO_TO_ADDRESS: transferAlgoToAddress, // address of account to send Algos to (for sample transaction)
+  REACT_APP_ALGORAND_EXAMPLE_TO_ADDRESS: transferAlgoToAddress, // address of account to send Algos to (for sample transaction)
   REACT_APP_ALGORAND_ALGO_FUNDING_ADDRESS: transferAlgoFromFundingAddress, // address of account with Algos in it (for sample transaction)
   REACT_APP_ALGORAND_ALGO_FUNDING_PRIVATE_KEY: transferAlgoFromFundingPrivateKey // PK of account with Algos in it (used to send to other account)
 } = process.env;

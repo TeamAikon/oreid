@@ -16,7 +16,7 @@ import { isNullOrUndefined } from 'util';
 
 dotenv.config();
 
-const algoApiKey = process.env.REACT_APP_AGLORAND_API_KEY;
+const algorandApiKey = process.env.REACT_APP_ALGORAND_API_KEY;
 const algoFundingPrivateKey =
   process.env.REACT_APP_ALGORAND_ALGO_FUNDING_PRIVATE_KEY;
 const multisigAccountSigningKey =
@@ -25,19 +25,19 @@ const multisigAccountSigningKey =
 const algoMainnetEndpoints = [
   {
     url: new URL('http://mainnet-algorand.api.purestake.io/ps1'),
-    options: { headers: [{ 'X-API-Key': algoApiKey }] }
+    options: { headers: [{ 'X-API-Key': algorandApiKey }] }
   }
 ];
 const algoTestnetEndpoints = [
   {
     url: new URL('http://testnet-algorand.api.purestake.io/ps1'),
-    options: { headers: [{ 'X-API-Key': algoApiKey }] }
+    options: { headers: [{ 'X-API-Key': algorandApiKey }] }
   }
 ];
 const algoBetanetEndpoints = [
   {
     url: new URL('http://betanet-algorand.api.purestake.io/ps1'),
-    options: { headers: [{ 'X-API-Key': algoApiKey }] }
+    options: { headers: [{ 'X-API-Key': algorandApiKey }] }
   }
 ];
 
