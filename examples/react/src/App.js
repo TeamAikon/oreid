@@ -1,9 +1,10 @@
 import dotenv from 'dotenv';
 import React, { Component } from 'react';
 import LoginButton from './components/loginButton';
-import { OreId } from 'eos-auth';
+import { OreId } from 'oreid-js';
 import { signTransaction } from './eos';
 import { ABI, addEthForGas, init, getGasParams, transferErc20Token, getEthBalance, getErc20Balance } from './eth';
+import algoSignerProvider, { AlgoNetworkType } from 'eos-transit-algosigner-provider';
 import scatterProvider from 'eos-transit-scatter-provider';
 import ledgerProvider from 'eos-transit-ledger-provider';
 import lynxProvider from 'eos-transit-lynx-provider';
@@ -12,7 +13,8 @@ import tokenpocketProvider from 'eos-transit-tokenpocket-provider';
 import whalevaultProvider from 'eos-transit-whalevault-provider';
 import simpleosProvider from 'eos-transit-simpleos-provider';
 import keycatProvider from 'eos-transit-keycat-provider';
-import { EOS_CHAIN_NETWORK, ERC20_FUNDING_AMOUNT, ERC20_TRANSFER_AMOUNT, ETH_TRANSFER_AMOUNT } from './constants'
+import { EOS_CHAIN_NETWORK, ERC20_FUNDING_AMOUNT, ERC20_TRANSFER_AMOUNT, ETH_TRANSFER_AMOUNT, ALGO_CHAIN_NETWORK } from './constants';
+import { composeAlgorandSampleTransaction } from './algorand';
 
 dotenv.config();
 
@@ -30,7 +32,10 @@ const {
   REACT_APP_ETHEREUM_CONTRACT_ACCOUNT_ADDRESS: ethereumContractAccountAddress,
   REACT_APP_ETHEREUM_CONTRACT_ACCOUNT_PRIVATE_KEY: ethereumContractAccountPrivateKey,
   REACT_APP_ETHEREUM_FUNDING_ACCOUNT_ADDRESS: ethereumFundingAddress,
-  REACT_APP_ETHEREUM_FUNDING_ACCOUNT_PRIVATE_KEY: ethereumFundingAddressPrivateKey
+  REACT_APP_ETHEREUM_FUNDING_ACCOUNT_PRIVATE_KEY: ethereumFundingAddressPrivateKey,
+  REACT_APP_ALGORAND_EXAMPLE_TO_ADDRESS: transferAlgoToAddress, // address of account to send Algos to (for sample transaction)
+  REACT_APP_ALGORAND_ALGO_FUNDING_ADDRESS: transferAlgoFromFundingAddress, // address of account with Algos in it (for sample transaction)
+  REACT_APP_ALGORAND_ALGO_FUNDING_PRIVATE_KEY: transferAlgoFromFundingPrivateKey // PK of account with Algos in it (used to send to other account)
 
 } = process.env;
 
@@ -42,7 +47,8 @@ let eosTransitWalletProviders = [
   tokenpocketProvider(),
   whalevaultProvider(),
   simpleosProvider(),
-  keycatProvider()
+  keycatProvider(),
+  algoSignerProvider()
   // portisProvider({
   //   DappId: 'ENTER_YOUR_DappId_HERE'
   // }),
@@ -55,13 +61,13 @@ class App extends Component {
       isLoggedIn: false,
       userInfo: {},
       firstAuth: false,
-      sendEthForGas: false,
+      sendEthForGas: false
     };
     this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
     this.handleSignButton = this.handleSignButton.bind(this);
     this.toggleFirstAuth = this.toggleFirstAuth.bind(this);
-    this.toggleSendEthForGas = this.toggleSendEthForGas.bind(this)
+    this.toggleSendEthForGas = this.toggleSendEthForGas.bind(this);
   }
 
 // called by library to set local busy state
@@ -116,10 +122,9 @@ async handleSignButton(permissionIndex) {
 }
 
 async handleWalletDiscoverButton(permissionIndex) {
-  let chainNetwork = EOS_CHAIN_NETWORK;
   try {
     this.clearErrors();
-    let { provider } = this.walletButtons[permissionIndex] || {};
+    let { provider, chainNetwork } = this.walletButtons[permissionIndex] || {};
     let { accountName } = this.state.userInfo;
 
     if (!this.oreId.canDiscover(provider)) {
@@ -168,37 +173,46 @@ getChainUrl(chainNetwork) {
 
 getChainType(chainNetwork) {
   switch (chainNetwork) {
-    case 'ore_test':
-    case 'eos_kylin':
-    case 'eos_jungle':
-    case 'eos_main' :
-      return 'eos';
-    case 'eth_ropsten':
-    case 'eth_main':
-      return 'eth';
-    default:
-      return '';
-    }
+  case 'algo_main':
+  case 'algo_test':
+  case 'algo_beta':
+    return 'algo';
+  case 'ore_test':
+  case 'eos_kylin':
+  case 'eos_jungle':
+  case 'eos_main' :
+    return 'eos';
+  case 'eth_ropsten':
+  case 'eth_main':
+    return 'eth';
+  default:
+    return '';
+  }
 }
 
 async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork, permission, firstAuth = false, sendEthForGas) {
   try {
     let transaction = null;
     let signedTransactionToSend = null;
-    if(this.getChainType(chainNetwork) === 'eth'){
-      if(sendEthForGas){
-        await this.fundEthereumAccountIfNeeded(chainAccount,chainNetwork);
-      }
-      transaction = this.createEthereumSampleTransaction(chainAccount, permission);
+
+    if (this.getChainType(chainNetwork) === 'algo') {
+      transaction = this.createSampleTransactionAlgorand(chainAccount, permission);
     }
 
-    if(this.getChainType(chainNetwork) === 'eos'){
+    if (this.getChainType(chainNetwork) === 'eth') {
+      if (sendEthForGas) {
+        await this.fundEthereumAccountIfNeeded(chainAccount,chainNetwork);
+      }
+      transaction = this.createSampleTransactionEthereum(chainAccount, permission);
+    }
+
+    if (this.getChainType(chainNetwork) === 'eos') {
       if (firstAuth) {
-        signedTransactionToSend = this.createFirstAuthSampleTransaction(firstAuthAccount, chainAccount, permission);
+        signedTransactionToSend = this.createFirstAuthSampleTransactionEos(firstAuthAccount, chainAccount, permission);
         const chainUrl = this.getChainUrl(chainNetwork);
         transaction = await signTransaction(signedTransactionToSend, chainUrl, firstAuthKey);
       } else {
-        transaction = this.createSampleTransaction(chainAccount, permission);
+        transaction = this.createSampleTransactionEos(chainAccount, permission);
       }
     }
 
@@ -232,7 +246,7 @@ async handleSignSampleTransaction(provider, account, chainAccount, chainNetwork,
   }
 }
 
-createSampleTransaction(actor, permission = 'active') {
+createSampleTransactionEos(actor, permission = 'active') {
   const transaction = {
     account: 'demoapphello',
     name: 'hi',
@@ -247,27 +261,26 @@ createSampleTransaction(actor, permission = 'active') {
   return transaction;
 }
 
-createFirstAuthSampleTransaction(payer, actor, permission = 'active', payerPermission = 'active') {
+createFirstAuthSampleTransactionEos(payer, actor, permission = 'active', payerPermission = 'active') {
   const transaction = {
     actions: [{ account: 'demoapphello',
-    name: 'hi',
-    authorization: [{
-      actor: payer,
-      permission: payerPermission
-    },{
-      actor,
-      permission
-    }],
-    data: {
-      user: actor
-    }
-  }]
-};
-return transaction;
+      name: 'hi',
+      authorization: [{
+        actor: payer,
+        permission: payerPermission
+      },{
+        actor,
+        permission
+      }],
+      data: {
+        user: actor
+      }
+    }]
+  };
+  return transaction;
 }
 
-
-createEthereumSampleTransaction(actor, permission = 'active') {
+createSampleTransactionEthereum(actor, permission = 'active') {
   const transaction = {
     actions: [{
       from: actor,
@@ -275,23 +288,27 @@ createEthereumSampleTransaction(actor, permission = 'active') {
       contract: {
         abi: ABI,
         parameters: [ethereumContractAccountAddress, ERC20_TRANSFER_AMOUNT],
-        method: 'transfer',
-      },
-    }]}
+        method: 'transfer'
+      }
+    }] };
   return transaction;
 }
 
-async fundEthereumAccountIfNeeded(chainAccount,chainNetwork){
-  const chainUrl = this.getChainUrl(chainNetwork)
-  const web3 = await init(chainUrl)
-  const { gasPrice, gasLimit } =  await getGasParams(chainAccount, web3, this.setBusyCallback);
+createSampleTransactionAlgorand(account) {
+  return composeAlgorandSampleTransaction(account, transferAlgoToAddress);
+}
+
+async fundEthereumAccountIfNeeded(chainAccount,chainNetwork) {
+  const chainUrl = this.getChainUrl(chainNetwork);
+  const web3 = await init(chainUrl);
+  const { gasPrice, gasLimit } = await getGasParams(chainAccount, web3, this.setBusyCallback);
   const currentEthBalance = await getEthBalance(chainAccount,web3, this.setBusyCallback);
   const currentErc20Balance = await getErc20Balance(ethereumContractAddress, chainAccount, web3, this.setBusyCallback);
-  if( web3.utils.toWei(currentEthBalance,'ether') < gasPrice * gasLimit){
-    await addEthForGas(ethereumFundingAddress, chainAccount, ETH_TRANSFER_AMOUNT, ethereumFundingAddressPrivateKey, web3, this.setBusyCallback)
+  if (web3.utils.toWei(currentEthBalance,'ether') < gasPrice * gasLimit) {
+    await addEthForGas(ethereumFundingAddress, chainAccount, ETH_TRANSFER_AMOUNT, ethereumFundingAddressPrivateKey, web3, this.setBusyCallback);
   }
-  if(parseInt(currentErc20Balance) < ERC20_TRANSFER_AMOUNT){
-    await transferErc20Token(ethereumContractAddress,ethereumContractAccountAddress,chainAccount,ERC20_FUNDING_AMOUNT,ethereumContractAccountPrivateKey,web3, this.setBusyCallback)
+  if (parseInt(currentErc20Balance) < ERC20_TRANSFER_AMOUNT) {
+    await transferErc20Token(ethereumContractAddress,ethereumContractAccountAddress,chainAccount,ERC20_FUNDING_AMOUNT,ethereumContractAccountPrivateKey,web3, this.setBusyCallback);
   }
 }
 
@@ -421,7 +438,7 @@ renderFirstAuthorizerCheckBox() {
   );
 }
 
-renderEthereumGasCheckBox(){
+renderEthereumGasCheckBox() {
   let { sendEthForGas } = this.state;
   return (
     <div style={{ marginLeft:50, marginTop:20 }}>
@@ -432,17 +449,17 @@ renderEthereumGasCheckBox(){
 }
 
 renderDiscoverOptions() {
-  let chainNetwork = EOS_CHAIN_NETWORK;
   this.walletButtons = [
-    { provider: 'scatter', chainNetwork },
-    { provider: 'ledger', chainNetwork },
-    { provider: 'lynx', chainNetwork },
-    { provider: 'meetone', chainNetwork },
-    { provider: 'tokenpocket', chainNetwork },
-    { provider: 'portis', chainNetwork },
-    { provider: 'whalevault', chainNetwork },
-    { provider: 'simpleos', chainNetwork },
-    { provider: 'keycat', chainNetwork }
+    { provider: 'scatter', chainNetwork: EOS_CHAIN_NETWORK },
+    { provider: 'ledger', chainNetwork: EOS_CHAIN_NETWORK },
+    { provider: 'lynx', chainNetwork: EOS_CHAIN_NETWORK },
+    { provider: 'meetone', chainNetwork: EOS_CHAIN_NETWORK },
+    { provider: 'tokenpocket', chainNetwork: EOS_CHAIN_NETWORK },
+    { provider: 'portis', chainNetwork: EOS_CHAIN_NETWORK },
+    { provider: 'whalevault', chainNetwork: EOS_CHAIN_NETWORK },
+    { provider: 'simpleos', chainNetwork: EOS_CHAIN_NETWORK },
+    { provider: 'keycat', chainNetwork: EOS_CHAIN_NETWORK },
+    { provider: 'algosigner', chainNetwork: ALGO_CHAIN_NETWORK }
   ];
   return (
     <div>
@@ -586,6 +603,11 @@ renderSignButtons = (permissions) => permissions.map((permission, index) => {
           buttonStyle={{ width:250, marginTop:'24px' }}
           logoStyle={{ marginLeft:0 }}
           onClick={() => this.handleLogin('keycat')}
+        />
+        <LoginButton provider='algosigner'
+          buttonStyle={{ width:250, marginTop:'24px' }}
+          logoStyle={{ marginLeft:0 }}
+          onClick={() => this.handleLogin('algosigner')}
         />
       </div>
     );
