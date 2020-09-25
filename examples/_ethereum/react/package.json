@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "dotenv": "^8.0.0",
-    "oreid-js": "^2.5.1",
+    "oreid-js": "^2.6.1",
     "ethereumjs-tx": "^2.1.2",
     "ethereumjs-util": "^6.2.0",
     "node-sass": "^4.12.0",
