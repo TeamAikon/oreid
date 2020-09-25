@@ -1,12 +1,20 @@
 import dotenv from 'dotenv';
 import React, { Component } from 'react';
 import LoginButton from './components/loginButton';
+import algoSignerProvider, {
+  AlgoNetworkType
+} from 'eos-transit-algosigner-provider';
 import { OreId } from 'oreid-js';
-import { transferAlgosToAccount, getMultisigChainAccountsForTransaction } from './algorand';
+import {
+  transferAlgosToAccount,
+  getMultisigChainAccountsForTransaction,
+  composeAlgorandSampleTransaction,
+  composeAlgorandFundingTransaction
+} from './algorand';
 
 dotenv.config();
 
-const EOS_CHAIN_NETWORK = 'eos_kylin';
+export const ALGO_CHAIN_NETWORK = 'algo_test';
 
 const {
   REACT_APP_OREID_APP_ID: appId, // Provided when you register your app
@@ -20,6 +28,8 @@ const {
   REACT_APP_ALGORAND_ALGO_FUNDING_ADDRESS: transferAlgoFromFundingAddress, // address of account with Algos in it (for sample transaction)
   REACT_APP_ALGORAND_ALGO_FUNDING_PRIVATE_KEY: transferAlgoFromFundingPrivateKey // PK of account with Algos in it (used to send to other account)
 } = process.env;
+
+let eosTransitWalletProviders = [algoSignerProvider()];
 
 class App extends Component {
   constructor(props) {
@@ -52,6 +62,7 @@ class App extends Component {
     authCallbackUrl,
     signCallbackUrl,
     backgroundColor,
+    eosTransitWalletProviders,
     setBusyCallback: this.setBusyCallback
   });
 
@@ -113,7 +124,7 @@ class App extends Component {
   }
 
   async handleLogin(provider) {
-    let chainNetwork = EOS_CHAIN_NETWORK;
+    let chainNetwork = ALGO_CHAIN_NETWORK;
     try {
       this.clearErrors();
       let loginResponse = await this.oreId.login({ provider, chainNetwork });
@@ -135,8 +146,9 @@ class App extends Component {
   }
 
   async fundNewAlgorandAccount(chainAccount) {
-    const composeAlgoPaymentParams = this.composeAlgorandFundingTransaction(
-      chainAccount
+    const composeAlgoPaymentParams = composeAlgorandFundingTransaction(
+      chainAccount,
+      transferAlgoFromFundingAddress
     );
     const response = await transferAlgosToAccount(composeAlgoPaymentParams);
     console.log(
@@ -157,12 +169,24 @@ class App extends Component {
       if (sendAlgosToNewAccount) {
         await this.fundNewAlgorandAccount(chainAccount, chainNetwork);
       }
-      transaction = this.composeAlgorandSampleTransaction(
+      transaction = await composeAlgorandSampleTransaction(
         chainAccount,
-        permission
+        transferAlgoToAddress
       );
 
-      const multiSigChainAccounts = getMultisigChainAccountsForTransaction(this.state.userInfo, chainAccount);
+      // wrap transaction in actions array for oreid
+      if (provider === 'oreid') {
+        transaction = {
+          actions: [transaction]
+        };
+      }
+
+      console.log('transaction:', transaction);
+
+      const multiSigChainAccounts = getMultisigChainAccountsForTransaction(
+        this.state.userInfo,
+        chainAccount
+      );
 
       // this.clearErrors();
       let signOptions = {
@@ -194,40 +218,8 @@ class App extends Component {
       }
       if (transactionId) this.setState({ transactionId });
     } catch (error) {
-      this.setState({ errorMessage: error.message });
+      this.setState({ errorMessage: error.message || error });
     }
-  }
-
-  /** Send 1 microAlgos from the user's account to some other account */
-  composeAlgorandSampleTransaction(userAccount) {
-    const transaction = {
-      actions: [
-        {
-          from: userAccount,
-          to: transferAlgoToAddress,
-          amount: 1,
-          note: 'transfer memo',
-          type: 'pay'
-        }
-      ]
-    };
-    return transaction;
-  }
-
-  /** Send .1 Algos to an account */
-  composeAlgorandFundingTransaction(userAccount) {
-    const transaction = {
-      actions: [
-        {
-          from: transferAlgoFromFundingAddress,
-          to: userAccount,
-          amount: 100000, // minimum amount required to activate an account (.1 Algos)
-          note: 'initial accnt funding',
-          type: 'pay'
-        }
-      ]
-    };
-    return transaction;
   }
 
   async toggleSendAlgosToNewAccount() {
@@ -286,7 +278,7 @@ class App extends Component {
           {!isLoggedIn && this.renderLoginButtons()}
           {isLoggedIn && this.renderUserInfo()}
           {isLoggedIn && this.renderSigningOptions()}
-          {isLoggedIn && this.sendAlgosToNewAccount()}
+          {/* {isLoggedIn && this.renderSendAlgosToNewAccount()} */}
         </div>
         <h3 style={{ color: 'green', margin: '50px' }}>
           {isBusy && (isBusyMessage || 'working...')}
@@ -319,6 +311,7 @@ class App extends Component {
             {signState && `Returned state param: ${signState}`}
           </p>
         </div>
+        {isLoggedIn && this.renderDiscoverOptions()}
       </div>
     );
   }
@@ -356,8 +349,6 @@ class App extends Component {
   renderSigningOptions() {
     let { permissions } = this.state.userInfo;
     this.permissionsToRender = (permissions || []).slice(0);
-    console.log('this.permissionsToRender:', this.permissionsToRender);
-
     return (
       <div>
         <div style={{ marginTop: 50, marginLeft: 20 }}>
@@ -368,7 +359,7 @@ class App extends Component {
     );
   }
 
-  sendAlgosToNewAccount() {
+  renderSendAlgosToNewAccount() {
     let { sendAlgosToNewAccount } = this.state;
     return (
       <div style={{ marginLeft: 50, marginTop: 20 }}>
@@ -494,6 +485,66 @@ class App extends Component {
         />
       </div>
     );
+  }
+
+  // render one sign transaction button for each chain
+  renderWalletDiscoverButtons = (walletButtons) => walletButtons.map((wallet, index) => {
+    let { provider } = wallet;
+    return (
+      <div style={{ alignContent: 'center' }} key={index}>
+        <LoginButton
+          provider={provider}
+          data-tag={index}
+          buttonStyle={{
+            width: 80,
+            marginLeft: -20,
+            marginTop: 20,
+            marginBottom: 10
+          }}
+          text={`${provider}`}
+          onClick={() => {
+            this.handleWalletDiscoverButton(index);
+          }}
+        >{`${provider}`}</LoginButton>
+      </div>
+    );
+  });
+
+  renderDiscoverOptions() {
+    this.walletButtons = [
+      { provider: 'algosigner', chainNetwork: ALGO_CHAIN_NETWORK }
+    ];
+    return (
+      <div>
+        <div style={{ marginTop: 50, marginLeft: 20 }}>
+          <h3 style={{ marginTop: 50 }}>Or discover a key in your wallet</h3>
+          <ul>{this.renderWalletDiscoverButtons(this.walletButtons)}</ul>
+        </div>
+      </div>
+    );
+  }
+
+  async handleWalletDiscoverButton(permissionIndex) {
+    try {
+      this.clearErrors();
+      let { provider, chainNetwork } =
+        this.walletButtons[permissionIndex] || {};
+      let { accountName } = this.state.userInfo;
+
+      if (!this.oreId.canDiscover(provider)) {
+        console.log(
+          'Provider doesn\'t support discover, so discover function will call wallet provider\'s login instead.'
+        );
+      }
+      await this.oreId.discover({
+        provider,
+        chainNetwork,
+        oreAccount: accountName
+      });
+      this.loadUserFromApi(this.state.userInfo.accountName); // reload user from ore id api - to show new keys discovered
+    } catch (error) {
+      this.setState({ errorMessage: error.message });
+    }
   }
 }
 

@@ -66,6 +66,7 @@ export async function transferAlgosToAccount(
   await transaction.sign([
     HelpersAlgorand.toAlgorandPrivateKey(algoFundingPrivateKey)
   ]);
+  console.log('transaction:', transaction);
   return await transaction.send();
 }
 
@@ -110,7 +111,67 @@ export const getMultisigChainAccountsForTransaction = (
     return null;
   }
 
-  const keyAccount = userInfo.permissions.find((permission) => algorandMultisig.addrs?.includes(permission?.chainAccount));
+  const keyAccount = userInfo.permissions.find((permission) => algorandMultisig.addrs?.includes(permission?.chainAccount)
+  );
 
   return `${keyAccount?.chainAccount},${multisigAccountSigningKey}`;
 };
+
+/** Send 1 microAlgos from the user's account to some other account */
+export async function composeAlgorandSampleTransaction(userAccount, toAddress) {
+  // return await preparePaymentTransaction({
+  //   from: userAccount,
+  //   to: toAddress,
+  //   amount: 1,
+  //   note: "transfer memo",
+  // });
+  return {
+    from: userAccount,
+    to: toAddress,
+    amount: 1,
+    note: 'transfer memo',
+    fee: 1000,
+    type: 'pay',
+    firstRound: 9455859,
+    lastRound: 9456859,
+    genesisID: 'testnet-v1.0',
+    genesisHash: 'SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI='
+  };
+}
+
+/** Send .1 Algos to an account */
+export function composeAlgorandFundingTransaction(userAccount, fromAddress) {
+  const transaction = {
+    actions: [
+      {
+        from: fromAddress,
+        to: userAccount,
+        amount: 100000, // minimum amount required to activate an account (.1 Algos)
+        note: 'initial accnt funding',
+        type: 'pay'
+      }
+    ]
+  };
+  return transaction;
+}
+
+export async function preparePaymentTransaction(transactionParams) {
+  /** Create Algorand chain instance */
+  const algoTest = new ChainFactory().create(
+    ChainType.AlgorandV1,
+    algoTestnetEndpoints
+  );
+  await algoTest.connect();
+
+  /** Compose and send transaction */
+  const transaction = algoTest.new.Transaction();
+
+  // Compose an action from basic parameters using composeAction function
+  const action = await algoTest.composeAction(
+    ModelsAlgorand.AlgorandChainActionType.Payment,
+    transactionParams
+  );
+  transaction.actions = [action];
+
+  return action;
+}
