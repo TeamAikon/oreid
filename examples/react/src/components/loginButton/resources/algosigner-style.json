@@ -1,10 +1,10 @@
 {
     "buttonStyle":{
         "color": "#222",
-        "backgroundColor": "#FFF"
+        "backgroundColor": "#fff"
 
     },
     "logoStyle":{
     },
-    "text":"Log in with Portis"
+    "text":"Log in with AlgoSigner"
 }

@@ -3,6 +3,7 @@ import Roboto from './resources/Roboto-Medium.ttf';
 
 let validProviders=[
   'oreid',
+  'algosigner',
   'apple',
   'email',
   'facebook',
