@@ -1,15 +1,11 @@
 import dotenv from 'dotenv';
 import React, { Component } from 'react';
 import LoginButton from './components/loginButton';
-import algoSignerProvider, {
-  AlgoNetworkType
-} from 'eos-transit-algosigner-provider';
+import algoSignerProvider from 'eos-transit-algosigner-provider';
 import { OreId } from 'oreid-js';
 import {
-  transferAlgosToAccount,
   getMultisigChainAccountsForTransaction,
-  composeAlgorandSampleTransaction,
-  composeAlgorandFundingTransaction
+  composeAlgorandSampleTransaction
 } from './algorand';
 
 dotenv.config();
@@ -36,15 +32,11 @@ class App extends Component {
     super(props);
     this.state = {
       isLoggedIn: false,
-      userInfo: {},
-      sendAlgosToNewAccount: false
+      userInfo: {}
     };
     this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
     this.handleSignButton = this.handleSignButton.bind(this);
-    this.toggleSendAlgosToNewAccount = this.toggleSendAlgosToNewAccount.bind(
-      this
-    );
   }
 
   // called by library to set local busy state
@@ -110,7 +102,7 @@ class App extends Component {
       permission,
       externalWalletType: provider
     } = this.permissionsToRender[permissionIndex] || {};
-    const { sendAlgosToNewAccount, userInfo } = this.state;
+    const { userInfo } = this.state;
     let { accountName } = userInfo;
     provider = provider || 'oreid'; // default to ore id
     await this.handleSignSampleTransaction(
@@ -118,8 +110,7 @@ class App extends Component {
       accountName,
       chainAccount,
       chainNetwork,
-      permission,
-      sendAlgosToNewAccount
+      permission
     );
   }
 
@@ -145,30 +136,15 @@ class App extends Component {
     return `${protocol}://${host}`;
   }
 
-  async fundNewAlgorandAccount(chainAccount) {
-    const composeAlgoPaymentParams = composeAlgorandFundingTransaction(
-      chainAccount,
-      transferAlgoFromFundingAddress
-    );
-    const response = await transferAlgosToAccount(composeAlgoPaymentParams);
-    console.log(
-      `transferAlgosToAccount send response: ${JSON.stringify(response)}`
-    );
-  }
-
   async handleSignSampleTransaction(
     provider,
     account,
     chainAccount,
     chainNetwork,
-    permission,
-    sendAlgosToNewAccount
+    permission
   ) {
     try {
       let transaction = null;
-      if (sendAlgosToNewAccount) {
-        await this.fundNewAlgorandAccount(chainAccount, chainNetwork);
-      }
       transaction = await composeAlgorandSampleTransaction(
         chainAccount,
         transferAlgoToAddress
@@ -220,10 +196,6 @@ class App extends Component {
     } catch (error) {
       this.setState({ errorMessage: error.message || error });
     }
-  }
-
-  async toggleSendAlgosToNewAccount() {
-    this.setState({ sendAlgosToNewAccount: !this.state.sendAlgosToNewAccount });
   }
 
   /* Handle the authCallback coming back from ORE-ID with an "account" parameter indicating that a user has logged in */
@@ -278,7 +250,6 @@ class App extends Component {
           {!isLoggedIn && this.renderLoginButtons()}
           {isLoggedIn && this.renderUserInfo()}
           {isLoggedIn && this.renderSigningOptions()}
-          {/* {isLoggedIn && this.renderSendAlgosToNewAccount()} */}
         </div>
         <h3 style={{ color: 'green', margin: '50px' }}>
           {isBusy && (isBusyMessage || 'working...')}
@@ -352,27 +323,9 @@ class App extends Component {
     return (
       <div>
         <div style={{ marginTop: 50, marginLeft: 20 }}>
-          <h3>Sign transaction with one of your keys</h3>
+          <h3>Sign sample transaction with one of your keys</h3>
           <ul>{this.renderSignButtons(this.permissionsToRender)}</ul>
         </div>
-      </div>
-    );
-  }
-
-  renderSendAlgosToNewAccount() {
-    let { sendAlgosToNewAccount } = this.state;
-    return (
-      <div style={{ marginLeft: 50, marginTop: 20 }}>
-        <input
-          type="checkbox"
-          onChange={this.toggleSendAlgosToNewAccount}
-          checked={sendAlgosToNewAccount}
-        />
-        <p>
-          {
-            'For Algorand - Check the box above if you want to automatically send .1 Algos to the user account (required for sample transaction to work)'
-          }
-        </p>
       </div>
     );
   }
@@ -397,7 +350,7 @@ class App extends Component {
             onClick={() => {
               this.handleSignButton(index);
             }}
-          >{`Sign Transaction with ${provider}`}</LoginButton>
+          >{`Sign Sample Transaction with ${provider}`}</LoginButton>
           {`Chain:${permission.chainNetwork} ---- Account:${permission.chainAccount} ---- Permission:${permission.permission}`}
         </div>
       );
