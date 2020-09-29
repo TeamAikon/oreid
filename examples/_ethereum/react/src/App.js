@@ -391,7 +391,7 @@ class App extends Component {
     return (
       <div>
         <div style={{ marginTop: 50, marginLeft: 20 }}>
-          <h3>Sign transaction with one of your keys</h3>
+          <h3>Sign sample transaction with one of your keys</h3>
           <ul>{this.renderSignButtons(this.permissionsToRender)}</ul>
         </div>
       </div>
@@ -436,7 +436,7 @@ class App extends Component {
             onClick={() => {
               this.handleSignButton(index);
             }}
-          >{`Sign Transaction with ${provider}`}</LoginButton>
+          >{`Sign Sample Transaction with ${provider}`}</LoginButton>
           {`Chain:${permission.chainNetwork} ---- Account:${permission.chainAccount} ---- Permission:${permission.permission}`}
         </div>
       );
