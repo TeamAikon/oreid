@@ -132,8 +132,8 @@ export async function composeAlgorandSampleTransaction(userAccount, toAddress) {
     note: 'transfer memo',
     fee: 1000,
     type: 'pay',
-    firstRound: 9455859,
-    lastRound: 9456859,
+    firstRound: 9468939,
+    lastRound: 9469939,
     genesisID: 'testnet-v1.0',
     genesisHash: 'SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI='
   };
