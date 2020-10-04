@@ -57,7 +57,7 @@ class SocialLoginButton extends Component {
     this.state = {
       provider: this.props.provider,
       onClickCallback: this.props.onClick,
-      buttonStyle: { ...defaultButtonStyle, ...providerStyle.buttonStyle ,...this.props.buttonStyle },
+      buttonStyle: { ...defaultButtonStyle, ...providerStyle.buttonStyle , ...this.props.buttonStyle },
       logoStyle: { ...defaultLogoStyle, ...providerStyle.logoStyle, ...this.props.logoStyle },
       text: (this.props.text || providerStyle.text)
     };
