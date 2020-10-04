@@ -17,6 +17,8 @@
 runtime: nodejs
 env: flex
 service: react-example
+# service: react-example-staging
+
 # [END runtime]
 default_expiration: "0m"
 
