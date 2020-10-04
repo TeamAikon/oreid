@@ -93,10 +93,8 @@ class App extends Component {
     const { accountName, email, name, picture, username } = this.state.userInfo;
     return (
       <div>
-        <LoginButton provider='facebook'
-          buttonStyle={{ width: 225, marginLeft: -20, marginTop: 20, marginBottom: 10 }}
-          onClick={(e) => this.handleLogin(e, 'facebook')}>Login Facebook</LoginButton>
-        <button onClick={(e) => this.handleLogin(e, 'google')}>Login Google</button>
+        <LoginButton provider='facebook' onClick={(e) => this.handleLogin(e, 'facebook')}/>
+        <LoginButton provider='google' onClick={(e) => this.handleLogin(e, 'google')}/>
       </div>
     )
   }
