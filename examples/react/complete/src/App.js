@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import React, { Component } from 'react';
-import LoginButton from './components/loginButton';
+import LoginButton from 'oreid-login-button';
 import { OreId } from 'oreid-js';
 import { signTransaction } from './eos';
 import {
@@ -479,10 +479,14 @@ class App extends Component {
       } = await this.oreId.handleSignResponse(url);
       if (!errors) {
         if (state) this.setState({ signState: state });
-        if (signedTransaction) this.setState({
-          signedTransaction: JSON.stringify(signedTransaction)
-        });
-        if (transactionId) this.setState({ transactionId: JSON.stringify(transactionId) });
+        if (signedTransaction) {
+          this.setState({
+            signedTransaction: JSON.stringify(signedTransaction)
+          });
+        }
+        if (transactionId) {
+          this.setState({ transactionId: JSON.stringify(transactionId) });
+        }
       } else {
         this.setState({ errorMessage: errors.join(', ') });
       }
@@ -696,138 +700,108 @@ class App extends Component {
   });
 
   renderLoginButtons() {
+    const buttonStyle = { width: 200, marginTop: '24px' };
+    const logoStyle = { marginLeft: 0 };
     return (
       <div>
         <LoginButton
           provider="apple"
-          buttonStyle={{ width: 250, marginTop: '24px' }}
-          logoStyle={{ marginLeft: 0 }}
+          buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('apple')}
-          //  text='Log in with Apple'
         />
         <LoginButton
           provider="facebook"
-          buttonStyle={{ width: 250, marginTop: '24px' }}
-          logoStyle={{ marginLeft: 0 }}
+          buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('facebook')}
-          //  text='Log in with Facebook'
         />
         <LoginButton
           provider="twitter"
-          buttonStyle={{ width: 250, marginTop: '24px' }}
-          logoStyle={{ marginLeft: 0 }}
+          buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('twitter')}
-          //  text='Log in with Twitter'
         />
         <LoginButton
           provider="github"
-          buttonStyle={{ width: 250, marginTop: '24px' }}
-          logoStyle={{ marginLeft: 0 }}
+          buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('github')}
-          //  text='Log in with Github'
         />
         <LoginButton
           provider="twitch"
-          buttonStyle={{ width: 250, marginTop: '24px' }}
-          logoStyle={{ marginLeft: 0 }}
+          buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('twitch')}
-          //  text='Log in with Twitch'
         />
         <LoginButton
           provider="line"
-          buttonStyle={{ width: 250, marginTop: '24px' }}
-          logoStyle={{ marginLeft: 0 }}
+          buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('line')}
-          //  text='Log in with Line'
         />
         <LoginButton
           provider="kakao"
-          buttonStyle={{ width: 250, marginTop: '24px' }}
-          logoStyle={{ marginLeft: 0 }}
+          buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('kakao')}
-          //  text='Log in with Kakao'
         />
         <LoginButton
           provider="linkedin"
-          buttonStyle={{ width: 250, marginTop: '24px' }}
-          logoStyle={{ marginLeft: 0 }}
+          buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('linkedin')}
-          //  text='Log in with LinkedIn'
         />
         <LoginButton
           provider="google"
-          buttonStyle={{ width: 250, marginTop: '24px' }}
-          logoStyle={{ marginLeft: 0 }}
+          buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('google')}
-          //  text='Log in with Google'
         />
         <LoginButton
           provider="email"
-          buttonStyle={{ width: 250, marginTop: '24px' }}
-          logoStyle={{ marginLeft: 0 }}
+          buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('email')}
-          //  text='Log in with Email'
         />
         <LoginButton
           provider="phone"
-          buttonStyle={{ width: 250, marginTop: '24px' }}
-          logoStyle={{ marginLeft: 0 }}
+          buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('phone')}
-          //  text='Log in with Phone'
         />
         <LoginButton
           provider="scatter"
-          buttonStyle={{ width: 250, marginTop: '24px' }}
-          logoStyle={{ marginLeft: 0 }}
+          buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('scatter')}
-          //  text='Log in with Scatter'
         />
         <LoginButton
           provider="ledger"
-          buttonStyle={{ width: 250, marginTop: '24px' }}
-          logoStyle={{ marginLeft: 0 }}
+          buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('ledger')}
         />
         <LoginButton
           provider="meetone"
-          buttonStyle={{ width: 250, marginTop: '24px' }}
-          logoStyle={{ marginLeft: 0 }}
+          buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('meetone')}
         />
         <LoginButton
           provider="lynx"
-          buttonStyle={{ width: 250, marginTop: '24px' }}
-          logoStyle={{ marginLeft: 0 }}
+          buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('lynx')}
         />
         <LoginButton
           provider="portis"
-          buttonStyle={{ width: 250, marginTop: '24px' }}
-          logoStyle={{ marginLeft: 0 }}
+          buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('portis')}
         />
         <LoginButton
           provider="whalevault"
-          buttonStyle={{ width: 250, marginTop: '24px' }}
-          logoStyle={{ marginLeft: 0 }}
+          buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('whalevault')}
         />
         <LoginButton
           provider="simpleos"
-          buttonStyle={{ width: 250, marginTop: '24px' }}
-          logoStyle={{ marginLeft: 0 }}
+          buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('simpleos')}
         />
         <LoginButton
           provider="keycat"
-          buttonStyle={{ width: 250, marginTop: '24px' }}
-          logoStyle={{ marginLeft: 0 }}
+          buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('keycat')}
         />
         <LoginButton
           provider="algosigner"
-          buttonStyle={{ width: 250, marginTop: '24px' }}
-          logoStyle={{ marginLeft: 0 }}
+          buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('algosigner')}
         />
       </div>
