@@ -21,3 +21,11 @@ The code to review is in App.js
 The LoginButton React Component simplifies styling of common OAuth providers</br>
 
 If you use the callback handler, it stores the basic user info in a cookie (or local app storage). Local user info can be retrieved by calling getUser() and can be cleared by calling logout()
+<br><br>
+### IMPORTANT - Signing Sample Transaction
+The sample Algorand transaction provided for the signing flow must be updated with current values for 'last-round'. Run the following command and then update the value for 'last-round' in the sample transaction
+
+curl -X GET \\<br>
+  'https://testnet-algorand.api.purestake.io/ps2/v2/transactions/params' \\<br>
+  -H 'X-API-Key : *{your purestake.io api key}*'
+  

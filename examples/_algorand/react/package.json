@@ -8,14 +8,12 @@
   "dependencies": {
     "@babel/core": "7.9.0",
     "@babel/plugin-proposal-class-properties": "^7.10.4",
-    "@open-rights-exchange/chainjs": "^0.22.2",
     "@svgr/webpack": "4.3.3",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
     "@typescript-eslint/eslint-plugin": "^2.10.0",
     "@typescript-eslint/parser": "^2.10.0",
-    "algosdk": "^1.7.2",
     "babel-eslint": "10.1.0",
     "babel-jest": "^24.9.0",
     "babel-loader": "8.1.0",
@@ -80,7 +78,7 @@
     "test": "node scripts/test.js",
     "lint": "eslint --fix ./src",
     "serve": "npm run build && serve -s build",
-    "start": "npm run build && serve -s build"
+    "start": "npm run dev"
   },
   "eslintConfig": {
     "extends": "react-app"
