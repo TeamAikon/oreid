@@ -10,7 +10,7 @@ class App extends Component {
       userInfo: {},
       isLoggedIn: false
     };
-    this.handleSubmit = this.renderLoggedOut.bind(this);
+    this.handleSubmit = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this)
   }
 
@@ -38,16 +38,11 @@ class App extends Component {
     window.location = loginUrl; // redirect browser to loginURL to start the login flow
   }
 
-  /* Handle the authCallback coming back from ORE ID with an "account" parameter indicating that a user has logged in */
-  async handleAuthCallback() {
-    const urlPath = `${window.location.origin}${window.location.pathname}`;
-    if (urlPath === this.authCallbackUrl) {
-      const { account, errors } = this.oreId.handleAuthResponse(window.location.href);
-      if (!errors) {
-        await this.loadUserFromApi(account);
-        this.setState({ isLoggedIn: true });
-      }
-    }
+  /** remove user info from local storage */
+  async handleLogout() {
+    this.setState({ userInfo: {}, isLoggedIn: false });
+    this.oreId.logout();
+    window.location = window.location.origin; // clear callback url
   }
 
   /** load the user from local storage - user info is automatically saved to local storage by oreId.getUserInfoFromApi() */
@@ -62,11 +57,16 @@ class App extends Component {
     if(userInfo.accountName) this.setState({ userInfo, isLoggedIn: true });
   }
 
-  /** remove user info from local storage */
-  async handleLogout() {
-    this.setState({ userInfo: {}, isLoggedIn: false });
-    this.oreId.logout();
-    window.location = window.location.origin; // clear callback url
+  /* Handle the authCallback coming back from ORE ID with an "account" parameter indicating that a user has logged in */
+  async handleAuthCallback() {
+    const urlPath = `${window.location.origin}${window.location.pathname}`;
+    if (urlPath === this.authCallbackUrl) {
+      const { account, errors } = this.oreId.handleAuthResponse(window.location.href);
+      if (!errors) {
+        await this.loadUserFromApi(account);
+        this.setState({ isLoggedIn: true });
+      }
+    }
   }
 
   renderLoggedIn() {
