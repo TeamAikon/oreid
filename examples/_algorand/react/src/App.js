@@ -3,10 +3,7 @@ import React, { Component } from 'react';
 import LoginButton from 'oreid-login-button';
 import algoSignerProvider from 'eos-transit-algosigner-provider';
 import { OreId } from 'oreid-js';
-import {
-  getMultisigChainAccountsForTransaction,
-  composeAlgorandSampleTransaction
-} from './algorand';
+import { composeAlgorandSampleTransaction, getMultisigChainAccountsForTransaction } from './algorand';
 
 dotenv.config();
 
@@ -157,8 +154,7 @@ class App extends Component {
         };
       }
 
-      console.log('transaction:', transaction);
-
+      // this handles multisig transactions
       const multiSigChainAccounts = getMultisigChainAccountsForTransaction(
         this.state.userInfo,
         chainAccount

@@ -1,3 +1,4 @@
+/* eslint-disable quote-props */
 /* eslint-disable max-len */
 /* eslint-disable import/no-unresolved */
 /* eslint-disable @typescript-eslint/camelcase */
@@ -5,94 +6,44 @@
 /* eslint-disable no-console */
 
 import dotenv from 'dotenv';
-import {
-  ChainFactory,
-  ChainType,
-  HelpersAlgorand,
-  Models,
-  ModelsAlgorand
-} from '@open-rights-exchange/chainjs';
-import { isNullOrUndefined } from 'util';
-import algosdk from 'algosdk';
 
 dotenv.config();
 
-const algorandApiKey = process.env.REACT_APP_ALGORAND_API_KEY;
-const algoFundingPrivateKey =
-  process.env.REACT_APP_ALGORAND_ALGO_FUNDING_PRIVATE_KEY;
-const multisigAccountSigningKey =
-  process.env.REACT_APP_ALGORAND_MULTISIG_ACCOUNT;
-
-const server = 'http://testnet-algorand.api.purestake.io/ps1';
-
-const algoMainnetEndpoints = [
-  {
-    url: new URL('http://mainnet-algorand.api.purestake.io/ps1'),
-    options: { headers: [{ 'X-API-Key': algorandApiKey }] }
-  }
-];
-const algoTestnetEndpoints = [
-  {
-    url: new URL('http://testnet-algorand.api.purestake.io/ps1'),
-    options: { headers: [{ 'X-API-Key': algorandApiKey }] }
-  }
-];
-const algoBetanetEndpoints = [
-  {
-    url: new URL('http://betanet-algorand.api.purestake.io/ps1'),
-    options: { headers: [{ 'X-API-Key': algorandApiKey }] }
-  }
-];
-
-function getAlgod(endpoints) {
-  return new algosdk.Algodv2(algorandApiKey, 'http://algosigner.api.purestake.io/mainnet/algod', '');
+// The function below emmulates getting the latest chain params
+// For the sample transaction to work, you must update 'last-round' with current values from the chain. Get those by running the following command...
+// curl -X GET \
+//   'https://testnet-algorand.api.purestake.io/ps2/v2/transactions/params' \
+//   -H 'X-API-Key : *{your purestake.io api key}*'
+export function getLatestChainTransactionParams() {
+  return {
+    consensusVersion:'https://github.com/algorandfoundation/specs/tree/3a83c4c743f8b17adfd73944b4319c25722a6782',
+    fee: 0,
+    genesisHash: 'SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=',
+    genesisId: 'testnet-v1.0',
+    lastRound:9670570,
+    minFee: 1000
+  };
 }
 
-// Check out https://github.com/algorand/js-algorand-sdk/blob/aef967394a4e6b169f7f5df1af3a06d77e38dd0e/src/client/algod.js
-
-/** Transfer Algos to account - on TestNet */
-export async function transferAlgosToAccount(
-  algoPaymentParams // Typescript type: ModelsAlgorand.AlgorandActionPaymentParams
-) {
-  /** Create Algorand chain instance */
-  const algoTest = new ChainFactory().create(
-    ChainType.AlgorandV1,
-    algoTestnetEndpoints
-  );
-  await algoTest.connect();
-
-  /** Compose and send transaction */
-  const transaction = algoTest.new.Transaction();
-
-  // Compose an action from basic parameters using composeAction function
-  const action = await algoTest.composeAction(
-    ModelsAlgorand.AlgorandChainActionType.Payment,
-    algoPaymentParams
-  );
-  transaction.actions = [action];
-  await transaction.prepareToBeSigned();
-  await transaction.validate();
-  await transaction.sign([
-    HelpersAlgorand.toAlgorandPrivateKey(algoFundingPrivateKey)
-  ]);
-  console.log('transaction:', transaction);
-  return await transaction.send();
+/** Send 1 microAlgos from the user's account to some other account */
+export async function composeAlgorandSampleTransaction(userAccount, toAddress) {
+  let params = getLatestChainTransactionParams();
+  return {
+    from: userAccount,
+    to: toAddress,
+    amount: 1,
+    note: 'transfer memo',
+    fee: params.minFee,
+    type: 'pay',
+    firstRound: params.lastRound,
+    lastRound: params.lastRound + 1000,
+    genesisID: params.genesisId,
+    genesisHash: params.genesisHash
+  };
 }
-
-// Typescript type:
-// type Permission {
-//   accountType: string
-//   chainAccount: string
-//   chainNetwork: string
-//   externalWalletType: string
-//   permission: string
-//   permissionName: string
-//   privateKeyStoredExterally: boolean
-//   publicKey: string
-// }
 
 /**
- * Returns the multisig metadata for a specific account if it exists
+ * Returns the multisig metadata for a specific ORE ID account (if it exists)
  */
 export const getMultisigMetadata = (userInfo, chainAccount) => {
   const chainAccountInfo = userInfo?.permissions?.find(
@@ -102,90 +53,23 @@ export const getMultisigMetadata = (userInfo, chainAccount) => {
 };
 
 /**
- * Returns the required chainAccounts for the multsig transaction.
- * The `keyAccount` is in the users permissions and used to create the multisig (asset) account
- * We find the keyAccount in user.permissions and add `multisigAccountSigningKey` which is the second
- * account that will sign.
+ * Returns comma seperated list of chainAccounts required for the multsig transaction
+ * ORE ID will add signatures to the transaction for all these accounts
  *
- * Which account to use for multisigAccountSigningKey MUST be decided by the developer and be one of the
- * keys in the `addrs` field on chain.
+ * For an Algorand multisig account created by OREID, the user has two Algorand addresses in use..
+ * 1) Multisig 'Asset Account' address - the address which is the hash of all the multisig metadata - this address is the target of the transaction
+ * 2) 'Key Account` address - the address for which the user controls the private key with his ORE ID account - it is one of the signing parties to the multisig transaction
+ *
+ * When ORE ID signs an multisig transaction, it attaches the user's signaure from his KeyAccount (after he enters his PIN on the sign UX)
+ * It then attaches the signatures for all the other accounts/addresses included in this comma-seperated list - ORE ID must manage the private keys for these other accounts
+ *
+ * Which accounts compose the multisig transaction MUST be decided by the app developer prior to ORE ID creating multisig acconts for users
  */
-export const getMultisigChainAccountsForTransaction = (
-  userInfo,
-  chainAccount
-) => {
+export const getMultisigChainAccountsForTransaction = (userInfo, chainAccount) => {
   const algorandMultisig = getMultisigMetadata(userInfo, chainAccount);
-
-  if (isNullOrUndefined(algorandMultisig)) {
-    return null;
-  }
-
-  const keyAccount = userInfo.permissions.find((permission) => algorandMultisig.addrs?.includes(permission?.chainAccount)
-  );
-
-  return `${keyAccount?.chainAccount},${multisigAccountSigningKey}`;
+  const requiredAccountsForMultiSigTransaction = []; // put list of signatures required to sign here
+  if (!algorandMultisig) return null;
+  const keyAccount = userInfo.permissions.find((permission) => algorandMultisig.addrs?.includes(permission?.chainAccount));
+  requiredAccountsForMultiSigTransaction.push(keyAccount?.chainAccount);
+  return requiredAccountsForMultiSigTransaction.join(',');
 };
-
-/** Send 1 microAlgos from the user's account to some other account */
-export async function composeAlgorandSampleTransaction(userAccount, toAddress) {
-  console.log('got to composeAlgorandSampleTransaction');
-  const algod = getAlgod(algoTestnetEndpoints);
-  console.log('algod:', algod);
-  let params = await algod.getTransactionParams().do();
-  // return await preparePaymentTransaction({
-  //   from: userAccount,
-  //   to: toAddress,
-  //   amount: 1,
-  //   note: "transfer memo",
-  // });
-  console.log('params:', params);
-  return {
-    from: userAccount,
-    to: toAddress,
-    amount: 1,
-    note: 'transfer memo',
-    fee: params.fee,
-    type: 'pay',
-    firstRound: params.firstRound,
-    lastRound: params.lastRound,
-    genesisID: params.genesisID,
-    genesisHash: params.genesisHash
-  };
-}
-
-/** Send .1 Algos to an account */
-export function composeAlgorandFundingTransaction(userAccount, fromAddress) {
-  const transaction = {
-    actions: [
-      {
-        from: fromAddress,
-        to: userAccount,
-        amount: 100000, // minimum amount required to activate an account (.1 Algos)
-        note: 'initial accnt funding',
-        type: 'pay'
-      }
-    ]
-  };
-  return transaction;
-}
-
-export async function preparePaymentTransaction(transactionParams) {
-  /** Create Algorand chain instance */
-  const algoTest = new ChainFactory().create(
-    ChainType.AlgorandV1,
-    algoTestnetEndpoints
-  );
-  await algoTest.connect();
-
-  /** Compose and send transaction */
-  const transaction = algoTest.new.Transaction();
-
-  // Compose an action from basic parameters using composeAction function
-  const action = await algoTest.composeAction(
-    ModelsAlgorand.AlgorandChainActionType.Payment,
-    transactionParams
-  );
-  transaction.actions = [action];
-
-  return action;
-}
