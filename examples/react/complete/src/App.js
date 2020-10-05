@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import React, { Component } from 'react';
 import LoginButton from 'oreid-login-button';
 import { OreId } from 'oreid-js';
+import { signTransaction } from './eos';
 import {
   ABI,
   addEthForGas,
@@ -11,13 +12,25 @@ import {
   getEthBalance,
   getErc20Balance
 } from './eth';
-
+import algoSignerProvider, {
+  AlgoNetworkType
+} from 'eos-transit-algosigner-provider';
+import scatterProvider from 'eos-transit-scatter-provider';
+import ledgerProvider from 'eos-transit-ledger-provider';
+import lynxProvider from 'eos-transit-lynx-provider';
+import meetoneProvider from 'eos-transit-meetone-provider';
+import tokenpocketProvider from 'eos-transit-tokenpocket-provider';
+import whalevaultProvider from 'eos-transit-whalevault-provider';
+import simpleosProvider from 'eos-transit-simpleos-provider';
+import keycatProvider from 'eos-transit-keycat-provider';
 import {
   EOS_CHAIN_NETWORK,
   ERC20_FUNDING_AMOUNT,
   ERC20_TRANSFER_AMOUNT,
-  ETH_TRANSFER_AMOUNT
+  ETH_TRANSFER_AMOUNT,
+  ALGO_CHAIN_NETWORK
 } from './constants';
+import { composeAlgorandSampleTransaction } from './algorand';
 
 dotenv.config();
 
@@ -29,12 +42,32 @@ const {
   REACT_APP_SIGN_CALLBACK: signCallbackUrl, // The url called by the server when transaction signing flow is finished - must match one of the callback strings listed in the App Registration
   REACT_APP_OREID_URL: oreIdUrl, // HTTPS Address of OREID server
   REACT_APP_BACKGROUND_COLOR: backgroundColor, // Background color shown during login flow
+  REACT_APP_FIRST_AUTH_ACCOUNT_NAME: firstAuthAccount, // First auth account for ore_test
+  REACT_APP_FIRST_AUTH_KEY: firstAuthKey,
   REACT_APP_ETHEREUM_CONTRACT_ADDRESS: ethereumContractAddress,
   REACT_APP_ETHEREUM_CONTRACT_ACCOUNT_ADDRESS: ethereumContractAccountAddress,
   REACT_APP_ETHEREUM_CONTRACT_ACCOUNT_PRIVATE_KEY: ethereumContractAccountPrivateKey,
   REACT_APP_ETHEREUM_FUNDING_ACCOUNT_ADDRESS: ethereumFundingAddress,
-  REACT_APP_ETHEREUM_FUNDING_ACCOUNT_PRIVATE_KEY: ethereumFundingAddressPrivateKey
+  REACT_APP_ETHEREUM_FUNDING_ACCOUNT_PRIVATE_KEY: ethereumFundingAddressPrivateKey,
+  REACT_APP_ALGORAND_EXAMPLE_TO_ADDRESS: transferAlgoToAddress, // address of account to send Algos to (for sample transaction)
+  REACT_APP_ALGORAND_ALGO_FUNDING_ADDRESS: transferAlgoFromFundingAddress, // address of account with Algos in it (for sample transaction)
+  REACT_APP_ALGORAND_ALGO_FUNDING_PRIVATE_KEY: transferAlgoFromFundingPrivateKey // PK of account with Algos in it (used to send to other account)
 } = process.env;
+
+let eosTransitWalletProviders = [
+  scatterProvider(),
+  // ledgerProvider({ pathIndexList: [0, 1, 2, 35] }),
+  lynxProvider(),
+  meetoneProvider(),
+  tokenpocketProvider(),
+  whalevaultProvider(),
+  simpleosProvider(),
+  // keycatProvider(),
+  algoSignerProvider()
+  // portisProvider({
+  //   DappId: 'ENTER_YOUR_DappId_HERE'
+  // }),
+];
 
 class App extends Component {
   constructor(props) {
@@ -42,11 +75,13 @@ class App extends Component {
     this.state = {
       isLoggedIn: false,
       userInfo: {},
+      firstAuth: false,
       sendEthForGas: false
     };
     this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
     this.handleSignButton = this.handleSignButton.bind(this);
+    this.toggleFirstAuth = this.toggleFirstAuth.bind(this);
     this.toggleSendEthForGas = this.toggleSendEthForGas.bind(this);
   }
 
@@ -57,7 +92,7 @@ class App extends Component {
 
   // intialize oreId
   oreId = new OreId({
-    appName: 'ORE ID Ethereum Sample App',
+    appName: 'ORE ID Sample App',
     appId,
     apiKey,
     serviceKey,
@@ -65,6 +100,7 @@ class App extends Component {
     authCallbackUrl,
     signCallbackUrl,
     backgroundColor,
+    eosTransitWalletProviders,
     setBusyCallback: this.setBusyCallback
   });
 
@@ -112,7 +148,7 @@ class App extends Component {
       permission,
       externalWalletType: provider
     } = this.permissionsToRender[permissionIndex] || {};
-    const { sendEthForGas, userInfo } = this.state;
+    const { firstAuth, sendEthForGas, userInfo } = this.state;
     let { accountName } = userInfo;
     provider = provider || 'oreid'; // default to ore id
     await this.handleSignSampleTransaction(
@@ -121,8 +157,32 @@ class App extends Component {
       chainAccount,
       chainNetwork,
       permission,
+      firstAuth,
       sendEthForGas
     );
+  }
+
+  async handleWalletDiscoverButton(permissionIndex) {
+    try {
+      this.clearErrors();
+      let { provider, chainNetwork } =
+        this.walletButtons[permissionIndex] || {};
+      let { accountName } = this.state.userInfo;
+
+      if (!this.oreId.canDiscover(provider)) {
+        console.log(
+          'Provider doesn\'t support discover, so discover function will call wallet provider\'s login instead.'
+        );
+      }
+      await this.oreId.discover({
+        provider,
+        chainNetwork,
+        oreAccount: accountName
+      });
+      this.loadUserFromApi(this.state.userInfo.accountName); // reload user from ore id api - to show new keys discovered
+    } catch (error) {
+      this.setState({ errorMessage: error.message });
+    }
   }
 
   async handleLogin(provider) {
@@ -142,9 +202,51 @@ class App extends Component {
     }
   }
 
-  async getChainUrl(chainNetwork) {
-    const { host, protocol } = await this.oreId.getNetworkConfig(chainNetwork);
-    return `${protocol}://${host}`;
+  getChainUrl(chainNetwork) {
+    switch (chainNetwork) {
+    case 'ore_test':
+      return 'https://ore-staging.openrights.exchange:443';
+    case 'eos_kylin':
+      return 'https://api.kylin.alohaeos.com:443';
+    case 'eos_jungle':
+      return 'https://jungle2.cryptolions.io:443';
+    case 'eos_main':
+      return 'https://api.eosn.io:443';
+    case 'eth_ropsten':
+      return 'https://ropsten.infura.io/v3/a069a5004f2e4545a03e5c31285a3945';
+    default:
+      return '';
+    }
+  }
+
+  getChainType(chainNetwork) {
+    switch (chainNetwork) {
+    case 'algo_main':
+    case 'algo_test':
+    case 'algo_beta':
+      return 'algo';
+    case 'ore_test':
+    case 'eos_kylin':
+    case 'eos_jungle':
+    case 'eos_main':
+      return 'eos';
+    case 'eth_ropsten':
+    case 'eth_main':
+      return 'eth';
+    default:
+      return '';
+    }
+  }
+
+  // if oreid is signing the transaction, it expects the tx action to be wrapped in an array called actions
+  wrapTxActionArrayForOreId(provider, transaction) {
+    // wrap transaction in actions array for oreid
+    if (provider === 'oreid') {
+      transaction = {
+        actions: [transaction]
+      };
+    }
+    return transaction;
   }
 
   async handleSignSampleTransaction(
@@ -153,27 +255,63 @@ class App extends Component {
     chainAccount,
     chainNetwork,
     permission,
+    firstAuth = false,
     sendEthForGas
   ) {
     try {
       let transaction = null;
-      if (sendEthForGas) {
-        await this.fundEthereumAccountIfNeeded(chainAccount, chainNetwork);
-      }
-      transaction = this.createEthereumSampleTransaction(
-        chainAccount,
-        permission
-      );
+      let signedTransactionToSend = null;
 
-      // this.clearErrors();
+      if (this.getChainType(chainNetwork) === 'algo') {
+        transaction = this.createSampleTransactionAlgorand(
+          chainAccount,
+          permission
+        );
+        transaction = this.wrapTxActionArrayForOreId(provider, transaction);
+      }
+
+      if (this.getChainType(chainNetwork) === 'eth') {
+        if (sendEthForGas) {
+          await this.fundEthereumAccountIfNeeded(chainAccount, chainNetwork);
+        }
+        transaction = this.createSampleTransactionEthereum(
+          chainAccount,
+          permission
+        );
+        transaction = this.wrapTxActionArrayForOreId(provider, transaction);
+      }
+
+      if (this.getChainType(chainNetwork) === 'eos') {
+        if (firstAuth) {
+          signedTransactionToSend = this.createFirstAuthSampleTransactionEos(
+            firstAuthAccount,
+            chainAccount,
+            permission
+          );
+          const chainUrl = this.getChainUrl(chainNetwork);
+          transaction = await signTransaction(
+            signedTransactionToSend,
+            chainUrl,
+            firstAuthKey
+          );
+        } else {
+          transaction = this.createSampleTransactionEos(
+            chainAccount,
+            permission
+          );
+        }
+      }
+
+      // this.clearErrors();gi
       let signOptions = {
         provider: provider || '', // wallet type (e.g. 'scatter' or 'oreid')
         account: account || '',
-        broadcast: false, // if broadcast=true, ore id will broadcast the transaction to the chain network for you
+        broadcast: true, // if broadcast=true, ore id will broadcast the transaction to the chain network for you
         chainAccount: chainAccount || '',
         chainNetwork: chainNetwork || '',
         state: 'abc', // anything you'd like to remember after the callback
         transaction,
+        accountIsTransactionPermission: false,
         returnSignedTransaction: true,
         preventAutoSign: false // prevent auto sign even if transaction is auto signable
       };
@@ -198,16 +336,46 @@ class App extends Component {
     }
   }
 
-  createEthereumSampleTransaction(actor, permission = 'active') {
+  createSampleTransactionEos(actor, permission = 'active') {
+    const transaction = {
+      account: 'demoapphello',
+      name: 'hi',
+      authorization: [
+        {
+          actor,
+          permission
+        }
+      ],
+      data: {
+        user: actor
+      }
+    };
+    return transaction;
+  }
+
+  createFirstAuthSampleTransactionEos(
+    payer,
+    actor,
+    permission = 'active',
+    payerPermission = 'active'
+  ) {
     const transaction = {
       actions: [
         {
-          from: actor,
-          to: ethereumContractAddress,
-          contract: {
-            abi: ABI,
-            parameters: [ethereumContractAccountAddress, ERC20_TRANSFER_AMOUNT],
-            method: 'transfer'
+          account: 'demoapphello',
+          name: 'hi',
+          authorization: [
+            {
+              actor: payer,
+              permission: payerPermission
+            },
+            {
+              actor,
+              permission
+            }
+          ],
+          data: {
+            user: actor
           }
         }
       ]
@@ -215,8 +383,24 @@ class App extends Component {
     return transaction;
   }
 
+  createSampleTransactionEthereum(actor, permission = 'active') {
+    return {
+      from: actor,
+      to: ethereumContractAddress,
+      contract: {
+        abi: ABI,
+        parameters: [ethereumContractAccountAddress, ERC20_TRANSFER_AMOUNT],
+        method: 'transfer'
+      }
+    };
+  }
+
+  createSampleTransactionAlgorand(account) {
+    return composeAlgorandSampleTransaction(account, transferAlgoToAddress);
+  }
+
   async fundEthereumAccountIfNeeded(chainAccount, chainNetwork) {
-    const chainUrl = await this.getChainUrl(chainNetwork);
+    const chainUrl = this.getChainUrl(chainNetwork);
     const web3 = await init(chainUrl);
     const { gasPrice, gasLimit } = await getGasParams(
       chainAccount,
@@ -257,6 +441,10 @@ class App extends Component {
     }
   }
 
+  async toggleFirstAuth() {
+    this.setState({ firstAuth: !this.state.firstAuth });
+  }
+
   async toggleSendEthForGas() {
     this.setState({ sendEthForGas: !this.state.sendEthForGas });
   }
@@ -291,10 +479,14 @@ class App extends Component {
       } = await this.oreId.handleSignResponse(url);
       if (!errors) {
         if (state) this.setState({ signState: state });
-        if (signedTransaction) this.setState({
-          signedTransaction: JSON.stringify(signedTransaction)
-        });
-        if (transactionId) this.setState({ transactionId: JSON.stringify(transactionId) });
+        if (signedTransaction) {
+          this.setState({
+            signedTransaction: JSON.stringify(signedTransaction)
+          });
+        }
+        if (transactionId) {
+          this.setState({ transactionId: JSON.stringify(transactionId) });
+        }
       } else {
         this.setState({ errorMessage: errors.join(', ') });
       }
@@ -317,6 +509,7 @@ class App extends Component {
           {!isLoggedIn && this.renderLoginButtons()}
           {isLoggedIn && this.renderUserInfo()}
           {isLoggedIn && this.renderSigningOptions()}
+          {isLoggedIn && this.renderFirstAuthorizerCheckBox()}
           {isLoggedIn && this.renderEthereumGasCheckBox()}
         </div>
         <h3 style={{ color: 'green', margin: '50px' }}>
@@ -350,6 +543,7 @@ class App extends Component {
             {signState && `Returned state param: ${signState}`}
           </p>
         </div>
+        {isLoggedIn && this.renderDiscoverOptions()}
       </div>
     );
   }
@@ -398,6 +592,25 @@ class App extends Component {
     );
   }
 
+  renderFirstAuthorizerCheckBox() {
+    let { firstAuth } = this.state;
+
+    return (
+      <div style={{ marginLeft: 50, marginTop: 20 }}>
+        <input
+          type="checkbox"
+          onChange={this.toggleFirstAuth}
+          checked={firstAuth}
+        />
+        <p>
+          {
+            'For Eos - Check the box above if you want your transaction\'s CPU and NET to be payed by App.'
+          }
+        </p>
+      </div>
+    );
+  }
+
   renderEthereumGasCheckBox() {
     let { sendEthForGas } = this.state;
     return (
@@ -416,34 +629,79 @@ class App extends Component {
     );
   }
 
-  // render one sign transaction button for each chain
-  renderSignButtons = (permissions) => permissions
-    .filter((permission) => permission.chainNetwork.startsWith('eth'))
-    .map((permission, index) => {
-      let provider = permission.externalWalletType || 'oreid';
-      return (
-        <div style={{ alignContent: 'center' }} key={index}>
-          <LoginButton
-            provider={provider}
-            data-tag={index}
-            buttonStyle={{
-              width: 225,
-              marginLeft: -20,
-              marginTop: 20,
-              marginBottom: 10
-            }}
-            text={`Sign with ${provider}`}
-            onClick={() => {
-              this.handleSignButton(index);
-            }}
-          >{`Sign Sample Transaction with ${provider}`}</LoginButton>
-          {`Chain:${permission.chainNetwork} ---- Account:${permission.chainAccount} ---- Permission:${permission.permission}`}
+  renderDiscoverOptions() {
+    this.walletButtons = [
+      { provider: 'scatter', chainNetwork: EOS_CHAIN_NETWORK },
+      { provider: 'ledger', chainNetwork: EOS_CHAIN_NETWORK },
+      { provider: 'lynx', chainNetwork: EOS_CHAIN_NETWORK },
+      { provider: 'meetone', chainNetwork: EOS_CHAIN_NETWORK },
+      { provider: 'tokenpocket', chainNetwork: EOS_CHAIN_NETWORK },
+      { provider: 'portis', chainNetwork: EOS_CHAIN_NETWORK },
+      { provider: 'whalevault', chainNetwork: EOS_CHAIN_NETWORK },
+      { provider: 'simpleos', chainNetwork: EOS_CHAIN_NETWORK },
+      { provider: 'keycat', chainNetwork: EOS_CHAIN_NETWORK },
+      { provider: 'algosigner', chainNetwork: ALGO_CHAIN_NETWORK }
+    ];
+    return (
+      <div>
+        <div style={{ marginTop: 50, marginLeft: 20 }}>
+          <h3 style={{ marginTop: 50 }}>Or discover a key in your wallet</h3>
+          <ul>{this.renderWalletDiscoverButtons(this.walletButtons)}</ul>
         </div>
-      );
-    });
+      </div>
+    );
+  }
+
+  // render one sign transaction button for each chain
+  renderSignButtons = (permissions) => permissions.map((permission, index) => {
+    let provider = permission.externalWalletType || 'oreid';
+    return (
+      <div style={{ alignContent: 'center' }} key={index}>
+        <LoginButton
+          provider={provider}
+          data-tag={index}
+          buttonStyle={{
+            width: 225,
+            marginLeft: -20,
+            marginTop: 20,
+            marginBottom: 10
+          }}
+          text={`Sign with ${provider}`}
+          onClick={() => {
+            this.handleSignButton(index);
+          }}
+        >{`Sign Sample Transaction with ${provider}`}</LoginButton>
+        {`Chain:${permission.chainNetwork} ---- Account:${permission.chainAccount} ---- Permission:${permission.permission}`}
+      </div>
+    );
+  });
+
+  // render one sign transaction button for each chain
+  renderWalletDiscoverButtons = (walletButtons) => walletButtons.map((wallet, index) => {
+    let { provider } = wallet;
+    return (
+      <div style={{ alignContent: 'center' }} key={index}>
+        <LoginButton
+          provider={provider}
+          data-tag={index}
+          buttonStyle={{
+            width: 80,
+            marginLeft: -20,
+            marginTop: 20,
+            marginBottom: 10
+          }}
+          text={`${provider}`}
+          onClick={() => {
+            this.handleWalletDiscoverButton(index);
+          }}
+        >{`${provider}`}</LoginButton>
+      </div>
+    );
+  });
 
   renderLoginButtons() {
     const buttonStyle = { width: 200, marginTop: '24px' };
+    const logoStyle = { marginLeft: 0 };
     return (
       <div>
         <LoginButton
@@ -500,6 +758,51 @@ class App extends Component {
           provider="phone"
           buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('phone')}
+        />
+        <LoginButton
+          provider="scatter"
+          buttonStyle={buttonStyle}
+          onClick={() => this.handleLogin('scatter')}
+        />
+        <LoginButton
+          provider="ledger"
+          buttonStyle={buttonStyle}
+          onClick={() => this.handleLogin('ledger')}
+        />
+        <LoginButton
+          provider="meetone"
+          buttonStyle={buttonStyle}
+          onClick={() => this.handleLogin('meetone')}
+        />
+        <LoginButton
+          provider="lynx"
+          buttonStyle={buttonStyle}
+          onClick={() => this.handleLogin('lynx')}
+        />
+        <LoginButton
+          provider="portis"
+          buttonStyle={buttonStyle}
+          onClick={() => this.handleLogin('portis')}
+        />
+        <LoginButton
+          provider="whalevault"
+          buttonStyle={buttonStyle}
+          onClick={() => this.handleLogin('whalevault')}
+        />
+        <LoginButton
+          provider="simpleos"
+          buttonStyle={buttonStyle}
+          onClick={() => this.handleLogin('simpleos')}
+        />
+        <LoginButton
+          provider="keycat"
+          buttonStyle={buttonStyle}
+          onClick={() => this.handleLogin('keycat')}
+        />
+        <LoginButton
+          provider="algosigner"
+          buttonStyle={buttonStyle}
+          onClick={() => this.handleLogin('algosigner')}
         />
       </div>
     );

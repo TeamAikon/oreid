@@ -13,6 +13,7 @@ import {
   ModelsAlgorand
 } from '@open-rights-exchange/chainjs';
 import { isNullOrUndefined } from 'util';
+import algosdk from 'algosdk';
 
 dotenv.config();
 
@@ -21,6 +22,8 @@ const algoFundingPrivateKey =
   process.env.REACT_APP_ALGORAND_ALGO_FUNDING_PRIVATE_KEY;
 const multisigAccountSigningKey =
   process.env.REACT_APP_ALGORAND_MULTISIG_ACCOUNT;
+
+const server = 'http://testnet-algorand.api.purestake.io/ps1';
 
 const algoMainnetEndpoints = [
   {
@@ -40,6 +43,12 @@ const algoBetanetEndpoints = [
     options: { headers: [{ 'X-API-Key': algorandApiKey }] }
   }
 ];
+
+function getAlgod(endpoints) {
+  return new algosdk.Algodv2(algorandApiKey, 'http://algosigner.api.purestake.io/mainnet/algod', '');
+}
+
+// Check out https://github.com/algorand/js-algorand-sdk/blob/aef967394a4e6b169f7f5df1af3a06d77e38dd0e/src/client/algod.js
 
 /** Transfer Algos to account - on TestNet */
 export async function transferAlgosToAccount(
@@ -119,23 +128,28 @@ export const getMultisigChainAccountsForTransaction = (
 
 /** Send 1 microAlgos from the user's account to some other account */
 export async function composeAlgorandSampleTransaction(userAccount, toAddress) {
+  console.log('got to composeAlgorandSampleTransaction');
+  const algod = getAlgod(algoTestnetEndpoints);
+  console.log('algod:', algod);
+  let params = await algod.getTransactionParams().do();
   // return await preparePaymentTransaction({
   //   from: userAccount,
   //   to: toAddress,
   //   amount: 1,
   //   note: "transfer memo",
   // });
+  console.log('params:', params);
   return {
     from: userAccount,
     to: toAddress,
     amount: 1,
     note: 'transfer memo',
-    fee: 1000,
+    fee: params.fee,
     type: 'pay',
-    firstRound: 9468939,
-    lastRound: 9469939,
-    genesisID: 'testnet-v1.0',
-    genesisHash: 'SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI='
+    firstRound: params.firstRound,
+    lastRound: params.lastRound,
+    genesisID: params.genesisID,
+    genesisHash: params.genesisHash
   };
 }
 
