@@ -16,7 +16,9 @@ class App extends Component {
 
   authCallbackUrl = 'http://localhost:3000/authcallback'
 
-  // intialize oreId
+  // Intialize oreId
+  // IMPORTANT - For a production app, you must protect your api key. A create-react-app app will leak the key since it all runs in the browser. 
+  // To protect the key, you need to set-up a proxy server. See .../examples/react/advanced/react-server in this repo
   oreId = new OreId({
     appName: 'ORE ID Sample App',
     appId: process.env.REACT_APP_OREID_APP_ID,
@@ -27,10 +29,10 @@ class App extends Component {
 
   async componentWillMount() {
     await this.loadUserFromLocalStorage();
-    await this.handleAuthCallback(); // handles the auth callback url when 
+    await this.handleAuthCallback(); // handles the auth callback url 
   }
 
-  /* Call oreId.login() - this returns a redirect url which will launch the login flow (specified by provider) 
+  /* Call oreId.login() - this returns a redirect url which will launch the login flow (for the specified provider) 
      When complete, the browser will be redirected to the authCallbackUrl (specified in oredId options) */
   async handleLogin(event, provider) {
     event.preventDefault();
@@ -38,20 +40,20 @@ class App extends Component {
     window.location = loginUrl; // redirect browser to loginURL to start the login flow
   }
 
-  /** remove user info from local storage */
+  /** Remove user info from local storage */
   async handleLogout() {
     this.setState({ userInfo: {}, isLoggedIn: false });
     this.oreId.logout();
-    window.location = window.location.origin; // clear callback url
+    window.location = window.location.origin; // clear callback url in browser
   }
 
-  /** load the user from local storage - user info is automatically saved to local storage by oreId.getUserInfoFromApi() */
+  /** Load the user from local storage - user info is automatically saved to local storage by oreId.getUserInfoFromApi() */
   async loadUserFromLocalStorage() {
     let userInfo = (await this.oreId.getUser()) || {};
     if(userInfo.accountName) this.setState({ userInfo, isLoggedIn: true });
   }
 
-  /** retrieve user info from ORE ID service - user info is automatically saved to local storage */
+  /** Retrieve user info from ORE ID service - user info is automatically saved to local storage */
   async loadUserFromApi(account) {
     const userInfo = (await this.oreId.getUserInfoFromApi(account)) || {};
     if(userInfo.accountName) this.setState({ userInfo, isLoggedIn: true });
@@ -113,4 +115,5 @@ class App extends Component {
     );
   }
 }
+
 export default App;
