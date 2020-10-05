@@ -4,14 +4,15 @@ A simple ReactJS example that demonstrates use of the oreid-js and provides a fe
 
 To run sample code:
 
-- You'll need your App ID and API Key - you get them when you register your app with ORE ID
-- Populate .env file in root of project directory with your appId and apiKey
+- You'll need your App ID and API Key - you get them when you register your app with ORE ID [here](http://oreid.io/developer)
+- Get an Algorand API key [here](https://developer.purestake.io/)
+- Populate .env file in root of project directory with your ORE ID App Id and API key and algorand API key
 - OR - you can use the example app settings - copy the .env.example into a file named .env (in project root)
 
     ```
     cd examples/_algorand/react
-    npm install
-    npm run dev
+    yarn
+    yarn dev
     ```
 
 Open [http://localhost:3000](http://localhost:3000) to view the running app.
@@ -28,4 +29,3 @@ The sample Algorand transaction provided for the signing flow must be updated wi
 curl -X GET \\<br>
   'https://testnet-algorand.api.purestake.io/ps2/v2/transactions/params' \\<br>
   -H 'X-API-Key : *{your purestake.io api key}*'
-  
