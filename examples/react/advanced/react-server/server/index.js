@@ -33,17 +33,24 @@ app.use('/algorand/testnet/params', getParams)
 
 // ------- ORE ID api 
 app.use('/', addApiKeys)
+
 // Replaces any api key variable names with the actual secret value
 function addApiKeys(req, res, next) {
+  // remove api-key, and service-key from headers
   for (const [key, value] of Object.entries(req.headers)) {
-    if(key.toLowerCase() === 'api-key') req.headers['api-key'] = process.env.OREID_API_KEY
-    if(key.toLowerCase() === 'service-key') req.headers['service-key'] = process.env.OREID_SERVICE_KEY
+    const secretkey = key.toLowerCase()
+    if(secretkey === 'api-key' || secretkey  === 'service-key') {
+      delete req.headers[secretkey]
+    }
   }
+  // inject api-key and service-key(s) to header of request
+  if(process.env.OREID_API_KEY) req.headers['api-key'] = process.env.OREID_API_KEY
+  if(process.env.OREID_SERVICE_KEY) req.headers['service-key'] = process.env.OREID_SERVICE_KEY
   next()
 }
+
 // proxy all other requests to this server to OREID_URL
 app.use('/', createProxyMiddleware({ target: process.env.OREID_URL, changeOrigin: true }))
-
 
 app.listen(3001, () =>
   console.log('Express server is running on localhost:3001')
