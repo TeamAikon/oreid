@@ -20,14 +20,21 @@ class App extends Component {
   oreId = new OreId({
     appName: 'ORE ID Sample App',
     appId: process.env.REACT_APP_OREID_APP_ID,
-    apiKey: process.env.REACT_APP_OREID_API_KEY,
-    oreIdUrl: 'http://service.oreid.io',
+    apiKey: 'placeholder',
+    oreIdUrl: 'http://localhost:3001',
     authCallbackUrl: this.authCallbackUrl
   });
 
   async componentWillMount() {
+    await this.getAlgorandProps();
     await this.loadUserFromLocalStorage();
     await this.handleAuthCallback(); // handles the auth callback url when 
+  }
+
+  async getAlgorandProps() {
+    fetch('http://localhost:3000/algorand/testnet/ps2/v2/transactions/params')
+    .then(response => response.json())
+    .then(data => console.log('getAlgorandProps:',data));
   }
 
   /* Call oreId.login() - this returns a redirect url which will launch the login flow (specified by provider) 
