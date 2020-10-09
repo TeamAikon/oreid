@@ -21,7 +21,7 @@ class App extends Component {
     appName: 'ORE ID Sample App',
     appId: process.env.REACT_APP_OREID_APP_ID,
     apiKey: 'placeholder',
-    oreIdUrl: 'http://localhost:3001',
+    oreIdUrl: process.env.REACT_APP_OREID_URL,
     authCallbackUrl: this.authCallbackUrl
   });
 
