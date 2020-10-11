@@ -9,7 +9,7 @@
     "@testing-library/user-event": "^7.1.2",
     "cors": "^2.8.5",
     "http-proxy-middleware": "^1.0.5",
-    "oreid-js": "^2.6.1",
+    "oreid-js": "^2.7.1",
     "oreid-login-button": "^1.0.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
@@ -17,7 +17,7 @@
   },
   "scripts": {
     "dev": "run-p server start",
-    "server": "node-env-run server --exec nodemon | pino-colada",
+    "server": "node-env-run server --exec nodemon",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -41,10 +41,8 @@
   "devDependencies": {
     "body-parser": "^1.19.0",
     "express": "^4.17.1",
-    "express-pino-logger": "^5.0.0",
     "node-env-run": "^4.0.2",
     "nodemon": "^2.0.4",
-    "npm-run-all": "^4.1.5",
-    "pino-colada": "^2.1.0"
+    "npm-run-all": "^4.1.5"
   }
 }
