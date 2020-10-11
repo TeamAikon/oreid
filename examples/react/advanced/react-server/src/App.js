@@ -20,21 +20,22 @@ class App extends Component {
   oreId = new OreId({
     appName: 'ORE ID Sample App',
     appId: process.env.REACT_APP_OREID_APP_ID,
-    apiKey: 'placeholder',
+    // apiKey: 'demo_k_97b33a2f8c984fb5b119567ca19e4a49',  // We can only provide an apiKey here for a demo app - for your app, put it in the .env - OREID_API_KEY 
     oreIdUrl: process.env.REACT_APP_OREID_URL,
     authCallbackUrl: this.authCallbackUrl
   });
 
   async componentWillMount() {
-    await this.getAlgorandProps();
+    await this.temporaryGetAlgorandParams(); // this is just here for testing proxy server - should be removed once working
     await this.loadUserFromLocalStorage();
     await this.handleAuthCallback(); // handles the auth callback url when 
   }
 
-  async getAlgorandProps() {
-    fetch('http://localhost:3000/algorand/testnet/ps2/v2/transactions/params')
-    .then(response => response.json())
-    .then(data => console.log('getAlgorandProps:',data));
+  async temporaryGetAlgorandParams() {
+    const headers =  {} // { 'x-api-key': 'xxx'}
+    const response = await fetch('/algorand/testnet/ps2/v2/transactions/params', {headers})
+    const data = await response.json()
+    console.log('getAlgorandProps data:', data)
   }
 
   /* Call oreId.login() - this returns a redirect url which will launch the login flow (specified by provider) 
