@@ -1,11 +1,22 @@
-const { createProxyMiddleware } = require('http-proxy-middleware');
+const { createProxyMiddleware } = require('http-proxy-middleware')
+const crypto = require('crypto')
 
 // Replaces any api key variable names with the actual secret value
 function addOreIdApiKeys(req, res, next) {
-  // // inject api-key and service-key(s) to header of request
+  // inject api-key and service-key(s) to header of request
   if(process.env.OREID_API_KEY) req.headers['api-key'] = process.env.OREID_API_KEY
   if(process.env.OREID_SERVICE_KEY) req.headers["service-key"] = process.env.OREID_SERVICE_KEY
   next()
+}
+
+// Generates an HMAC using the full reqest url and returns a HTTP response
+function generateAndReturnHmac(req, res, next) {
+  const { targetUrl } = req.body
+  const hmac = crypto.createHmac('sha256', process.env.OREID_API_KEY).update(targetUrl).digest('base64')
+  res.set('Content-Type', 'application/json')
+  res.send(
+    JSON.stringify({ hmac })
+  )
 }
 
 // Appends Algorand api key to header
@@ -47,5 +58,6 @@ module.exports = {
   addAlgorandApiKeys,
   addOreIdApiKeys,
   algorandProxyMiddleware,
+  generateAndReturnHmac,
   oreidProxyMiddleware,
 }

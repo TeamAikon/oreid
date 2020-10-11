@@ -2,7 +2,7 @@
 // Project Template - https://github.com/philnash/react-express-starter
 
 const express = require('express');
-const { addAlgorandApiKeys, addOreIdApiKeys, oreidProxyMiddleware, algorandProxyMiddleware } = require('./configProxy');
+const { addAlgorandApiKeys, addOreIdApiKeys, algorandProxyMiddleware, generateAndReturnHmac, oreidProxyMiddleware } = require('./configProxy');
 
 const app = express();
 
@@ -10,13 +10,13 @@ const app = express();
 // proxy /algorand/xxx requests to Algorand API (purestake.io)
 app.use('/algorand', addAlgorandApiKeys, algorandProxyMiddleware())
 // ------- ORE ID API 
+// use the apiKey to generate an hmac for a provided url
+app.use('/oreid/hmac', express.json(), generateAndReturnHmac)
 // proxy all other requests to OREID_URL server
 app.use('/oreid', addOreIdApiKeys, oreidProxyMiddleware())
 
-// body-parser should be after proxy setup
-const bodyParser = require('body-parser');
-app.use(bodyParser.urlencoded({ extended: false }))
-
+// express.json cant be injected before the proxy setup
+app.use(express.json())
 app.listen(3001, () =>
   console.log('Express server is running on localhost:3001')
 );
