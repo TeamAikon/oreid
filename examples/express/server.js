@@ -4,7 +4,7 @@ import { displayUser, helpPrompt, loginHandler } from './serverRoutes';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { OreId, authCallbackHandler, signCallbackHandler } from 'eos-auth';
+import { OreId, authCallbackHandler, signCallbackHandler } from 'oreid-js';
 
 //Load settings from file
 var settings = process.env;
