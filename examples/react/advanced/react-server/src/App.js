@@ -26,7 +26,7 @@ class App extends Component {
   });
 
   async componentWillMount() {
-    await this.temporaryGetAlgorandParams(); // this is just here for testing proxy server - should be removed once working
+    // await this.temporaryGetAlgorandParams(); // this is just here for testing proxy server - should be removed once working
     await this.loadUserFromLocalStorage();
     await this.handleAuthCallback(); // handles the auth callback url when 
   }
