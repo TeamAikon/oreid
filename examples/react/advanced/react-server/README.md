@@ -4,6 +4,7 @@
 This example demonstrates the use of a simple Express proxy server with an ORE ID app.
 - Setting up a simple server using Express
 - Hooking up a proxy for requests
+- Running the server (and app) in production
 
 If your app runs completely in the browser (like a create-react-app does), using a proxy server is required to protect your api keys - otherwise they would be exposed in the browser console.
 <br><br>
@@ -15,7 +16,7 @@ If your app runs completely in the browser (like a create-react-app does), using
 <br><br>
 
 ### Simple Proxy Server setup using oreid-js
-The oreid-js library makes it easy to add all the proxy server settings with a single line of code. Just call addOreidExpressMiddleware() and pass in the express server instance and options that include your API key. It will automatically add the proxy routes to the ORE ID service and will inject your API key into the header of every call.
+The [oreid-js](https://www.npmjs.com/package/oreid-js) npm module makes it easy to add all the proxy server settings with a single line of code. Just call addOreidExpressMiddleware() and pass in the express server instance and options that include your API key. It will automatically add the proxy routes to the ORE ID service and will inject your API key into the header of every call.
 ```javascript 
 const { addOreidExpressMiddleware } = require('oreid-js/dist/expressMiddlewear');
 ...

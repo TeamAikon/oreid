@@ -90,23 +90,35 @@ console.log(signResponse.signedTransaction)
 
 ## Express Middleware
 
-This library includes Express middleware that you can use to simplify handling the callbacks from the ORE ID service. It extracts the results from the /auth and /sign callbacks and attaches info to the request object (e.g. req.user)
+The [oreid-js](https://www.npmjs.com/package/oreid-js) npm module includes Express middleware that you can use to simplify handling the callbacks from the ORE ID service. It extracts the results from the /auth and /sign callbacks and attaches info to the request object (e.g. req.user)
 
 ```javascript
 app.use('/authcallback', authCallbackHandler(oreId) );
 ```
 
-Take a look at examples/express for a complete example of use.
+## Proxy Server for Production Apps
+
+If you are building an app that runs entirely in the browser (like a create-react-app app does), you must run a simple proxy server to protect your api-key. When the React app tries to call an ORE ID API endpoint, the proxy server will inject your api-key into the request header.<br>
+The [oreid-js](https://www.npmjs.com/package/oreid-js) npm module includes Express middleware that makes it easy to configure your proxy server. 
+
+```javascript
+// proxy server middlewear that injects apikeys/secrets into request headers
+addOreidExpressMiddleware(expressApp, { apiKey: 'my secret api key' })
+```
+
+Take a look at the complete example of using a proxy server [here](https://github.com/TeamAikon/ore-id-docs/tree/master/examples/react/advanced/react-server).
 
 ## Example projects
 
 Refer to the examples folder for the following sample projects
 
-- ReactJS - A simple ReactJS website that includes React Login button component
+- ReactJS - Several ReactJS apps that includes React Login button component
 
 - React Native - A React Native app that includes a React OAuth flow modal component
 
 - Express Server - A simple Express server that includes the use of middleware to automate handling of callbacks
+  
+- Proxy Server - A complete example using a Proxy Server to run along side an app that runs completely in the browser (like a create-react-app app)
 
 If you are only using one chain in your app, check out examples just for that chain in its own directory. Ex: /examples/_ethereum
 
