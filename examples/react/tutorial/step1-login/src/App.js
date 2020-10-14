@@ -18,7 +18,7 @@ class App extends Component {
 
   // Intialize oreId
   // IMPORTANT - For a production app, you must protect your api key. A create-react-app app will leak the key since it all runs in the browser. 
-  // To protect the key, you need to set-up a proxy server. See .../examples/react/advanced/react-server in this repo
+  // To protect the key, you need to set-up a proxy server. See https://github.com/TeamAikon/ore-id-docs/tree/master/examples/react/advanced/react-server
   oreId = new OreId({
     appName: 'ORE ID Sample App',
     appId: process.env.REACT_APP_OREID_APP_ID,
@@ -92,7 +92,6 @@ class App extends Component {
   }
 
   renderLoggedOut() {
-    const { accountName, email, name, picture, username } = this.state.userInfo;
     return (
       <div>
         <LoginButton provider='facebook' onClick={(e) => this.handleLogin(e, 'facebook')}/>
