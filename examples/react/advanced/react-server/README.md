@@ -31,6 +31,7 @@ yarn dev
 
 - Runs React app frontend in development mode (on port 3000). <br>
 - Runs the proxy server (port 8080)
+- IMPORTANT: When running in dev mode, the value for "proxy" in package.json should match the port the proxy server is listening on
 
     The page will reload if you make edits.
 

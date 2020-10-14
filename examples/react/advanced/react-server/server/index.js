@@ -6,7 +6,7 @@ const path = require('path');
 const dotenv = require('dotenv');
 const { addOreidExpressMiddleware } = require('oreid-js/dist/expressMiddlewear');
 
-const PORT = 8080
+const PORT = 8080 // if you change this port, you should update "proxy" in package.json to match - "proxy" is used by React app during development only
 dotenv.config();
 const app = express();
 
