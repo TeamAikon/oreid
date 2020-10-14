@@ -13,8 +13,8 @@ class App extends Component {
     this.handleSubmit = this.renderLoggedOut.bind(this);
     this.handleLogout = this.handleLogout.bind(this)
   }
-
-  authCallbackUrl = 'http://localhost:3000/authcallback'
+  // current location
+  authCallbackUrl = `${window.location.origin}/authcallback`
 
   // intialize oreId
   oreId = new OreId({
@@ -98,7 +98,6 @@ class App extends Component {
   }
 
   renderLoggedOut() {
-    const { accountName, email, name, picture, username } = this.state.userInfo;
     return (
       <div>
         <LoginButton provider='facebook' onClick={(e) => this.handleLogin(e, 'facebook')}/>

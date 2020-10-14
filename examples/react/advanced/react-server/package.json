@@ -2,7 +2,7 @@
   "name": "react_server",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:3001",
+  "proxy": "http://localhost:8080",
   "dependencies": {
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
@@ -11,16 +11,17 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "http-proxy-middleware": "^1.0.5",
-    "oreid-js": "^2.7.4",
+    "oreid-js": "^2.7.6",
     "oreid-login-button": "^1.0.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.3"
   },
   "scripts": {
-    "dev": "run-p server start",
+    "dev": "run-p server frontend",
+    "start": "run-p server",
     "server": "node-env-run server --exec nodemon",
-    "start": "react-scripts start",
+    "frontend": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
