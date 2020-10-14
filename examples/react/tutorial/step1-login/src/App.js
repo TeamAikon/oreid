@@ -14,7 +14,7 @@ class App extends Component {
     this.handleLogout = this.handleLogout.bind(this)
   }
 
-  authCallbackUrl = 'http://localhost:3000/authcallback'
+  authCallbackUrl = `${window.location.origin}/authcallback`
 
   // Intialize oreId
   // IMPORTANT - For a production app, you must protect your api key. A create-react-app app will leak the key since it all runs in the browser. 
