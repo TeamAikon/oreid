@@ -2,19 +2,12 @@
 ## Overview
 
 This example demonstrates the use of a simple Express proxy server with an ORE ID app.
+<br>
+If your app runs completely in the browser (like a create-react-app does), using a proxy server is required to protect your api key(s) - otherwise they would be exposed in the browser console. This example covers:
 - Setting up a simple server using Express
 - Hooking up a proxy for requests
 - Running the server (and app) in production
-
-If your app runs completely in the browser (like a create-react-app does), using a proxy server is required to protect your api keys - otherwise they would be exposed in the browser console.
 <br><br>
-
-### Proxy Server Articles
-
-- See tutorial on using a proxy server with React [here](https://www.twilio.com/blog/react-app-with-node-js-server-proxy)
-- See Generic Project Template [here](https://github.com/philnash/react-express-starter)
-<br><br>
-
 ### Simple Proxy Server setup using oreid-js
 The [oreid-js](https://www.npmjs.com/package/oreid-js) npm module makes it easy to add all the proxy server settings with a single line of code. Just call addOreidExpressMiddleware() and pass in the express server instance and options that include your API key. It will automatically add the proxy routes to the ORE ID service and will inject your API key into the header of every call.
 ```javascript 
@@ -45,3 +38,10 @@ yarn start
 - Serves the React app from static files in the /build directory
 - IMPORTANT: You must first run yarn build to generate the /build files
 
+<br><br>
+
+### Proxy Server Articles
+
+- See tutorial on using a proxy server with React [here](https://www.twilio.com/blog/react-app-with-node-js-server-proxy)
+- See Generic Project Template [here](https://github.com/philnash/react-express-starter)
+<br><br>
