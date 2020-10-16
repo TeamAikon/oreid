@@ -3,7 +3,10 @@ import React, { Component } from 'react';
 import LoginButton from 'oreid-login-button';
 import algoSignerProvider from 'eos-transit-algosigner-provider';
 import { OreId } from 'oreid-js';
-import { composeAlgorandSampleTransaction, getMultisigChainAccountsForTransaction } from './algorand';
+import {
+  composeAlgorandSampleTransaction,
+  getMultisigChainAccountsForTransaction
+} from './algorand';
 
 dotenv.config();
 
@@ -13,16 +16,12 @@ const {
   REACT_APP_OREID_APP_ID: appId, // Provided when you register your app
   REACT_APP_OREID_API_KEY: apiKey, // Provided when you register your app
   REACT_APP_OREID_SERVICE_KEY: serviceKey, // Optional - required for some advanced features including autoSign and custodial accounts
-  REACT_APP_AUTH_CALLBACK: authCallbackUrl, // The url called by the server when login flow is finished - must match one of the callback strings listed in the App Registration
-  REACT_APP_SIGN_CALLBACK: signCallbackUrl, // The url called by the server when transaction signing flow is finished - must match one of the callback strings listed in the App Registration
-  REACT_APP_OREID_URL: oreIdUrl, // HTTPS Address of OREID server
-  REACT_APP_BACKGROUND_COLOR: backgroundColor, // Background color shown during login flow
   REACT_APP_ALGORAND_EXAMPLE_TO_ADDRESS: transferAlgoToAddress, // address of account to send Algos to (for sample transaction)
   REACT_APP_ALGORAND_ALGO_FUNDING_ADDRESS: transferAlgoFromFundingAddress, // address of account with Algos in it (for sample transaction)
   REACT_APP_ALGORAND_ALGO_FUNDING_PRIVATE_KEY: transferAlgoFromFundingPrivateKey // PK of account with Algos in it (used to send to other account)
 } = process.env;
 
-let eosTransitWalletProviders = [algoSignerProvider()];
+let eosTransitWalletProviders = [algoSignerProvider()]; // Wallet plug-in
 
 class App extends Component {
   constructor(props) {
@@ -36,23 +35,23 @@ class App extends Component {
     this.handleSignButton = this.handleSignButton.bind(this);
   }
 
-  // called by library to set local busy state
-  setBusyCallback = (isBusy, isBusyMessage) => {
-    this.setState({ isBusy, isBusyMessage });
-  };
+  authCallbackUrl = `${window.location.origin}/authcallback`; // The url called by the server when login flow is finished - must match one of the callback strings listed in the App Registration
+  signCallbackUrl = `${window.location.origin}/signcallback`; // The url called by the server when transaction signing flow is finished - must match one of the callback strings listed in the App Registration
+  oreIdUrl = 'http://service.oreid.io'; // HTTPS Address of OREID server
+  backgroundColor = '3F7BC7'; // Background color shown during login flow
 
   // intialize oreId
   oreId = new OreId({
-    appName: 'ORE ID Algorand Sample App',
+    appName: 'ORE ID Algorand Sample App', // Your app name
     appId,
     apiKey,
     serviceKey,
-    oreIdUrl,
-    authCallbackUrl,
-    signCallbackUrl,
-    backgroundColor,
-    eosTransitWalletProviders,
-    setBusyCallback: this.setBusyCallback
+    oreIdUrl: this.oreIdUrl,
+    authCallbackUrl: this.authCallbackUrl,
+    signCallbackUrl: this.signCallbackUrl,
+    backgroundColor: this.backgroundColor,
+    setBusyCallback: this.setBusyCallback,
+    eosTransitWalletProviders
   });
 
   async componentWillMount() {
@@ -60,6 +59,11 @@ class App extends Component {
     this.handleAuthCallback();
     this.handleSignCallback();
   }
+
+  // called by library to set local busy state
+  setBusyCallback = (isBusy, isBusyMessage) => {
+    this.setState({ isBusy, isBusyMessage });
+  };
 
   async loadUserFromLocalState() {
     const userInfo = (await this.oreId.getUser()) || {};
@@ -85,20 +89,55 @@ class App extends Component {
     });
   }
 
-  handleLogout() {
-    this.clearErrors();
-    this.setState({ userInfo: {}, isLoggedIn: false });
-    this.oreId.logout(); // clears local user state (stored in local storage or cookie)
+  async getChainUrl(chainNetwork) {
+    const { host, protocol } = await this.oreId.getNetworkConfig(chainNetwork);
+    return `${protocol}://${host}`;
   }
 
-  async handleSignButton(permissionIndex) {
+  // ------ Callback Handlers ------
+
+  /* Handle the authCallback coming back from ORE-ID with an "account" parameter indicating that a user has logged in */
+  async handleAuthCallback() {
+    const urlPath = `${window.location.origin}${window.location.pathname}`;
+    if (urlPath === this.authCallbackUrl) {
+      const { account, errors, state } = await this.oreId.handleAuthResponse(
+        window.location.href
+      );
+      if (state) console.log(`state returned with request:${state}`);
+      if (!errors) {
+        this.loadUserFromApi(account);
+      }
+    }
+  }
+
+  /* Handle the signCallback coming back from ORE-ID with a "signedTransaction" parameter providing the transaction object with signatures attached */
+  async handleSignCallback() {
+    const urlPath = `${window.location.origin}${window.location.pathname}`;
+    if (urlPath === this.signCallbackUrl) {
+      const signResponse = await this.oreId.handleSignResponse(
+        window.location.href
+      );
+      const { signedTransaction, state, transactionId, errors } = signResponse;
+      if (!errors) {
+        if (state) this.setState({ signState: state });
+        if (signedTransaction) {
+          this.setState({
+            signedTransaction: JSON.stringify(signedTransaction)
+          });
+        }
+        if (transactionId) {
+          this.setState({ transactionId: JSON.stringify(transactionId) });
+        }
+      } else {
+        this.setState({ errorMessage: errors.join(', ') });
+      }
+    }
+  }
+
+  // ------ Event Handlers ------
+
+  async handleSignButton(provider, chainAccount, chainNetwork) {
     this.clearErrors();
-    let {
-      chainAccount,
-      chainNetwork,
-      permission,
-      externalWalletType: provider
-    } = this.permissionsToRender[permissionIndex] || {};
     const { userInfo } = this.state;
     let { accountName } = userInfo;
     provider = provider || 'oreid'; // default to ore id
@@ -106,8 +145,7 @@ class App extends Component {
       provider,
       accountName,
       chainAccount,
-      chainNetwork,
-      permission
+      chainNetwork
     );
   }
 
@@ -128,17 +166,17 @@ class App extends Component {
     }
   }
 
-  async getChainUrl(chainNetwork) {
-    const { host, protocol } = await this.oreId.getNetworkConfig(chainNetwork);
-    return `${protocol}://${host}`;
+  handleLogout() {
+    this.clearErrors();
+    this.setState({ userInfo: {}, isLoggedIn: false });
+    this.oreId.logout(); // clears local user state (stored in local storage or cookie)
   }
 
   async handleSignSampleTransaction(
     provider,
     account,
     chainAccount,
-    chainNetwork,
-    permission
+    chainNetwork
   ) {
     try {
       let transaction = null;
@@ -160,9 +198,8 @@ class App extends Component {
         chainAccount
       );
 
-      // this.clearErrors();
       let signOptions = {
-        provider: provider || '', // wallet type (e.g. 'scatter' or 'oreid')
+        provider: provider || '', // wallet type (e.g. 'algosigner' or 'oreid')
         account: account || '',
         broadcast: true, // if broadcast=true, ore id will broadcast the transaction to the chain network for you
         chainAccount: chainAccount || '',
@@ -194,41 +231,24 @@ class App extends Component {
     }
   }
 
-  /* Handle the authCallback coming back from ORE-ID with an "account" parameter indicating that a user has logged in */
-  async handleAuthCallback() {
-    const url = window.location.href;
-    if (/authcallback/i.test(url)) {
-      const { account, errors, state } = await this.oreId.handleAuthResponse(
-        url
-      );
-      if (state) console.log(`state returned with request:${state}`);
-      if (!errors) {
-        this.loadUserFromApi(account);
-      }
+  // if oreid.discover finds any accounts in the wallet, it will automatically add them to the user's ORE ID account
+  // After discovering new keys, the next time you get the user's info, it will include them in the list of permissions
+  async handleWalletDiscoverButton(provider, chainNetwork) {
+    try {
+      this.clearErrors();
+      let { accountName } = this.state.userInfo;
+      await this.oreId.discover({
+        provider,
+        chainNetwork,
+        oreAccount: accountName
+      });
+      this.loadUserFromApi(this.state.userInfo.accountName); // reload user from ore id api - to show new keys discovered
+    } catch (error) {
+      this.setState({ errorMessage: error.message });
     }
   }
 
-  /* Handle the signCallback coming back from ORE-ID with a "signedTransaction" parameter providing the transaction object with signatures attached */
-  async handleSignCallback() {
-    const url = window.location.href;
-    if (/signcallback/i.test(url)) {
-      const signResponse = await this.oreId.handleSignResponse(url);
-      const { signedTransaction, state, transactionId, errors } = signResponse;
-      if (!errors) {
-        if (state) this.setState({ signState: state });
-        if (signedTransaction) {
-          this.setState({
-            signedTransaction: JSON.stringify(signedTransaction)
-          });
-        }
-        if (transactionId) {
-          this.setState({ transactionId: JSON.stringify(transactionId) });
-        }
-      } else {
-        this.setState({ errorMessage: errors.join(', ') });
-      }
-    }
-  }
+  // ------ Render App and Buttons ------
 
   render() {
     let {
@@ -282,75 +302,6 @@ class App extends Component {
       </div>
     );
   }
-
-  renderUserInfo() {
-    const { accountName, email, name, picture, username } = this.state.userInfo;
-    return (
-      <div style={{ marginTop: 50, marginLeft: 40 }}>
-        <h3>User Info</h3>
-        <img src={picture} style={{ width: 50, height: 50 }} alt={'user'} />
-        <br />
-        accountName: {accountName}
-        <br />
-        name: {name}
-        <br />
-        username: {username}
-        <br />
-        email: {email}
-        <br />
-        <button
-          onClick={this.handleLogout}
-          style={{
-            marginTop: 20,
-            padding: '10px',
-            backgroundColor: '#FFFBE6',
-            borderRadius: '5px'
-          }}
-        >
-          Logout
-        </button>
-      </div>
-    );
-  }
-
-  renderSigningOptions() {
-    let { permissions } = this.state.userInfo;
-    this.permissionsToRender = (permissions || []).slice(0);
-    return (
-      <div>
-        <div style={{ marginTop: 50, marginLeft: 20 }}>
-          <h3>Sign sample transaction with one of your keys</h3>
-          <ul>{this.renderSignButtons(this.permissionsToRender)}</ul>
-        </div>
-      </div>
-    );
-  }
-
-  // render one sign transaction button for each chain
-  renderSignButtons = (permissions) => permissions
-    .filter((permission) => permission.chainNetwork.startsWith('algo'))
-    .map((permission, index) => {
-      let provider = permission.externalWalletType || 'oreid';
-      return (
-        <div style={{ alignContent: 'center' }} key={index}>
-          <LoginButton
-            provider={provider}
-            data-tag={index}
-            buttonStyle={{
-              width: 225,
-              marginLeft: -20,
-              marginTop: 20,
-              marginBottom: 10
-            }}
-            text={`Sign with ${provider}`}
-            onClick={() => {
-              this.handleSignButton(index);
-            }}
-          >{`Sign Sample Transaction with ${provider}`}</LoginButton>
-          {`Chain:${permission.chainNetwork} ---- Account:${permission.chainAccount} ---- Permission:${permission.permission}`}
-        </div>
-      );
-    });
 
   renderLoginButtons() {
     const buttonStyle = { width: 200, marginTop: '24px' };
@@ -415,64 +366,103 @@ class App extends Component {
     );
   }
 
-  // render one sign transaction button for each chain
-  renderWalletDiscoverButtons = (walletButtons) => walletButtons.map((wallet, index) => {
-    let { provider } = wallet;
+  renderUserInfo() {
+    const { accountName, email, name, picture, username } = this.state.userInfo;
     return (
-      <div style={{ alignContent: 'center' }} key={index}>
-        <LoginButton
-          provider={provider}
-          data-tag={index}
-          buttonStyle={{
-            width: 80,
-            marginLeft: -20,
+      <div style={{ marginTop: 50, marginLeft: 40 }}>
+        <h3>User Info</h3>
+        <img src={picture} style={{ width: 50, height: 50 }} alt={'user'} />
+        <br />
+        accountName: {accountName}
+        <br />
+        name: {name}
+        <br />
+        username: {username}
+        <br />
+        email: {email}
+        <br />
+        <button
+          onClick={this.handleLogout}
+          style={{
             marginTop: 20,
-            marginBottom: 10
+            padding: '10px',
+            backgroundColor: '#FFFBE6',
+            borderRadius: '5px'
           }}
-          text={`${provider}`}
-          onClick={() => {
-            this.handleWalletDiscoverButton(index);
-          }}
-        >{`${provider}`}</LoginButton>
+        >
+          Logout
+        </button>
       </div>
     );
-  });
+  }
 
+  // render one discover button for each wallet and chain
   renderDiscoverOptions() {
-    this.walletButtons = [
-      { provider: 'algosigner', chainNetwork: ALGO_CHAIN_NETWORK }
-    ];
+    const provider = 'algosigner';
+    const chainNetwork = ALGO_CHAIN_NETWORK;
     return (
       <div>
         <div style={{ marginTop: 50, marginLeft: 20 }}>
           <h3 style={{ marginTop: 50 }}>Or discover a key in your wallet</h3>
-          <ul>{this.renderWalletDiscoverButtons(this.walletButtons)}</ul>
+          <div>
+            <LoginButton
+              provider={provider}
+              text={`Find Keys in ${provider}`}
+              onClick={() => {
+                this.handleWalletDiscoverButton(provider, chainNetwork);
+              }}
+            >{`${provider}`}</LoginButton>
+          </div>
         </div>
       </div>
     );
   }
 
-  async handleWalletDiscoverButton(permissionIndex) {
-    try {
-      this.clearErrors();
-      let { provider, chainNetwork } =
-        this.walletButtons[permissionIndex] || {};
-      let { accountName } = this.state.userInfo;
+  // Render a sign button for each permission (account/key) in the user's ORE ID wallet
+  // A permission is just a public key that use can sign with on the chain
+  renderSigningOptions() {
+    let { permissions } = this.state.userInfo;
+    this.permissionsToRender = (permissions || []).slice(0);
+    return (
+      <div>
+        <div style={{ marginTop: 50, marginLeft: 20 }}>
+          <h3>Sign sample transaction with one of your keys</h3>
+          <ul>{this.renderSignButtons(this.permissionsToRender)}</ul>
+        </div>
+      </div>
+    );
+  }
 
-      if (!this.oreId.canDiscover(provider)) {
-        console.log(
-          'Provider doesn\'t support discover, so discover function will call wallet provider\'s login instead.'
+  // render one sign transaction button for key (permission) found in the user's ORE ID wallet
+  renderSignButtons(permissions) {
+    const buttonStyle = {
+      width: 225,
+      marginLeft: -20,
+      marginTop: 20,
+      marginBottom: 10
+    };
+    return permissions
+      .filter((permission) => permission.chainNetwork.startsWith('algo'))
+      .map((permission, index) => {
+        let provider = permission.externalWalletType || 'oreid';
+        return (
+          <div style={{ alignContent: 'center' }} key={index}>
+            <LoginButton
+              provider={provider}
+              buttonStyle={buttonStyle}
+              text={`Sign with ${provider}`}
+              onClick={() => {
+                this.handleSignButton(
+                  provider,
+                  permission.chainAccount,
+                  permission.chainNetwork
+                );
+              }}
+            >{`Sign Sample Transaction with ${provider}`}</LoginButton>
+            {`Chain:${permission.chainNetwork} ---- Account:${permission.chainAccount} ---- Permission:${permission.permission}`}
+          </div>
         );
-      }
-      await this.oreId.discover({
-        provider,
-        chainNetwork,
-        oreAccount: accountName
       });
-      this.loadUserFromApi(this.state.userInfo.accountName); // reload user from ore id api - to show new keys discovered
-    } catch (error) {
-      this.setState({ errorMessage: error.message });
-    }
   }
 }
 

@@ -1,4 +1,4 @@
-# ReactJS Web App Example
+# ReactJS Algorand Web App Example
 
 A simple ReactJS example that demonstrates use of the oreid-js and provides a few reusable components. This example was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
