@@ -43,7 +43,7 @@
     "jest-watch-typeahead": "0.4.2",
     "mini-css-extract-plugin": "0.9.0",
     "optimize-css-assets-webpack-plugin": "5.0.3",
-    "oreid-js": "^2.6.1",
+    "oreid-js": "^2.6.7",
     "oreid-login-button": "^1.0.1",
     "path": "^0.12.7",
     "pnp-webpack-plugin": "1.6.4",

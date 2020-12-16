@@ -6,7 +6,7 @@ To run sample code:
 
 - You'll need your App ID and API Key - you get them when you register your app with ORE ID [here](http://oreid.io/developer)
 - Get an Algorand API key [here](https://developer.purestake.io/)
-- Populate .env file in root of project directory with your ORE ID App Id and API key and algorand API key
+- Populate .env file in root of project directory with your appId and apiKey and algorand API key - you can copy from .env.example to start with a demo app
 - OR - you can use the example app settings - copy the .env.example into a file named .env (in project root)
 
     ```
