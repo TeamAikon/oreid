@@ -11,7 +11,7 @@ If your app runs completely in the browser (like a create-react-app does), using
 ### Simple Proxy Server setup using oreid-js
 The [oreid-js](https://www.npmjs.com/package/oreid-js) npm module makes it easy to add all the proxy server settings with a single line of code. Just call addOreidExpressMiddleware() and pass in the express server instance and options that include your API key. It will automatically add the proxy routes to the ORE ID service and will inject your API key into the header of every call.
 ```javascript 
-const { addOreidExpressMiddleware } = require('oreid-js/dist/expressMiddlewear');
+const { addOreidExpressMiddleware } = require('oreid-js/dist/expressMiddleware');
 ...
 // adds api routes for /oreid, /algorand, etc. that can be called by the React App
 // also injects apikeys/secrets into request headers
