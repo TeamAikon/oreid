@@ -2,7 +2,14 @@ import React, { Component } from 'react';
 import './App.css';
 import { OreId } from 'oreid-js';
 import LoginButton from 'oreid-login-button'
+import algoSignerProvider, {
+  AlgoNetworkType
+} from 'eos-transit-algosigner-provider';
 
+const ALGO_TEST_NETWORK = 'algo_test';
+const eosTransitWalletProviders = [
+  algoSignerProvider()
+];
 class App extends Component {
   constructor(props) {
     super(props);
@@ -22,7 +29,8 @@ class App extends Component {
     appId: process.env.REACT_APP_OREID_APP_ID,
     // apiKey: 'demo_k_97b33a2f8c984fb5b119567ca19e4a49',  // We can only provide an apiKey here for a demo app - for your app, put it in the .env - OREID_API_KEY 
     oreIdUrl: process.env.REACT_APP_OREID_URL,
-    authCallbackUrl: this.authCallbackUrl
+    authCallbackUrl: this.authCallbackUrl,
+    eosTransitWalletProviders,
   });
 
   async componentWillMount() {
@@ -42,7 +50,7 @@ class App extends Component {
      When complete, the browser will be redirected to the authCallbackUrl (specified in oredId options) */
   async handleLogin(event, provider) {
     event.preventDefault();
-    let { loginUrl } = await this.oreId.login({provider})
+    let { loginUrl } = await this.oreId.login({provider, chainNetwork: ALGO_TEST_NETWORK, chainAccount:'23YKGWMKOFVGFLT66BS64URPHRNDVT4PLYYD5ZE537X6EX3IPQLSWUFVCU'})
     window.location = loginUrl; // redirect browser to loginURL to start the login flow
   }
 
@@ -102,6 +110,7 @@ class App extends Component {
       <div>
         <LoginButton provider='facebook' onClick={(e) => this.handleLogin(e, 'facebook')}/>
         <LoginButton provider='google' onClick={(e) => this.handleLogin(e, 'google')}/>
+        <LoginButton provider='algosigner' onClick={(e) => this.handleLogin(e, 'algosigner')}/>
       </div>
     )
   }
