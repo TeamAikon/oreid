@@ -17,8 +17,14 @@ const { addOreidExpressMiddleware } = require('oreid-js/dist/expressMiddleware')
 // also injects apikeys/secrets into request headers
 addOreidExpressMiddleware(expressApp, { apiKey: 'my secret api key' })
 ```
+### Setup your project
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app)
+Create an .env file in the root of the project with your REACT_APP_OREID_APP_ID and keys
+ - Hint: Copy the .env.example to .env in the same directory to start your .env
+<br>
+<br>
+
+
 ```
 yarn dev
 ```
@@ -38,6 +44,8 @@ yarn start
 - Serves the React app from static files in the /build directory
 - IMPORTANT: You must first run yarn build to generate the /build files
 
+<br><br>
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app)
 <br><br>
 
 ### Proxy Server Articles
