@@ -37,7 +37,7 @@ class App extends Component {
 
   authCallbackUrl = `${window.location.origin}/authcallback`; // The url called by the server when login flow is finished - must match one of the callback strings listed in the App Registration
   signCallbackUrl = `${window.location.origin}/signcallback`; // The url called by the server when transaction signing flow is finished - must match one of the callback strings listed in the App Registration
-  oreIdUrl = 'http://service.oreid.io'; // HTTPS Address of OREID server
+  oreIdUrl = 'https://service.oreid.io'; // HTTPS Address of OREID server
   backgroundColor = '3F7BC7'; // Background color shown during login flow
 
   // intialize oreId
