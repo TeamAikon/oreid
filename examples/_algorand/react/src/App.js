@@ -15,10 +15,7 @@ export const ALGO_CHAIN_NETWORK = 'algo_test';
 const {
   REACT_APP_OREID_APP_ID: appId, // Provided when you register your app
   REACT_APP_OREID_API_KEY: apiKey, // Provided when you register your app
-  REACT_APP_OREID_SERVICE_KEY: serviceKey, // Optional - required for some advanced features including autoSign and custodial accounts
-  REACT_APP_ALGORAND_EXAMPLE_TO_ADDRESS: transferAlgoToAddress, // address of account to send Algos to (for sample transaction)
-  REACT_APP_ALGORAND_ALGO_FUNDING_ADDRESS: transferAlgoFromFundingAddress, // address of account with Algos in it (for sample transaction)
-  REACT_APP_ALGORAND_ALGO_FUNDING_PRIVATE_KEY: transferAlgoFromFundingPrivateKey // PK of account with Algos in it (used to send to other account)
+  REACT_APP_OREID_SERVICE_KEY: serviceKey // Optional - required for some advanced features including autoSign and custodial accounts
 } = process.env;
 
 let eosTransitWalletProviders = [algoSignerProvider()]; // Wallet plug-in
@@ -39,6 +36,7 @@ class App extends Component {
   signCallbackUrl = `${window.location.origin}/signcallback`; // The url called by the server when transaction signing flow is finished - must match one of the callback strings listed in the App Registration
   oreIdUrl = 'https://service.oreid.io'; // HTTPS Address of OREID server
   backgroundColor = '3F7BC7'; // Background color shown during login flow
+  algorandExampleToAddress = 'VBS2IRDUN2E7FJGYEKQXUAQX3XWL6UNBJZZJHB7CJDMWHUKXAGSHU5NXNQ' // address of account to send Algos to (for sample transaction)
 
   // intialize oreId
   oreId = new OreId({
@@ -182,7 +180,7 @@ class App extends Component {
       let transaction = null;
       transaction = await composeAlgorandSampleTransaction(
         chainAccount,
-        transferAlgoToAddress
+        this.algorandExampleToAddress
       );
 
       // wrap transaction in actions array for oreid
