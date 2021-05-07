@@ -47,7 +47,7 @@ jobs:
 
       # install gcloud and login to it
       - run:
-          working_directory: ~/API-market/ore-id-docs/examples/react
+          working_directory: ~/API-market/ore-id-docs/examples/complete
           command: |
             if [ "$CIRCLE_BRANCH" == "master" ]
               then
@@ -61,7 +61,7 @@ jobs:
 
       # copy .env file from circleci injected environmental variables
       - run:
-          working_directory: ~/API-market/ore-id-docs/examples/react
+          working_directory: ~/API-market/ore-id-docs/examples/react/complete
           command: |
             if [ "$CIRCLE_BRANCH" == "master" ]
              then
@@ -71,7 +71,7 @@ jobs:
 
       # install npm dependencies and run build script
       - run:
-          working_directory: ~/API-market/ore-id-docs/examples/react
+          working_directory: ~/API-market/ore-id-docs/examples/react/complete
           command: |
             npm install
             npm run build
@@ -79,12 +79,12 @@ jobs:
 
       # # Unit Tests
       # - run:
-      #     working_directory: ~/API-market/ore-id-docs/examples/react
+      #     working_directory: ~/API-market/ore-id-docs/examples/react/complete
       #     command: npm test
 
       # deploy to Google Cloud
       - run:
-          working_directory: ~/API-market/ore-id-docs/examples/react
+          working_directory: ~/API-market/ore-id-docs/examples/react/complete
           command: |
             if [ "$CIRCLE_BRANCH" == "master" ]
               then
