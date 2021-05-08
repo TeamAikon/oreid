@@ -12,17 +12,14 @@ import {
   getEthBalance,
   getErc20Balance
 } from './eth';
-import algoSignerProvider, {
-  AlgoNetworkType
-} from 'eos-transit-algosigner-provider';
+import algoSignerProvider from 'eos-transit-algosigner-provider';
 import scatterProvider from 'eos-transit-scatter-provider';
-import ledgerProvider from 'eos-transit-ledger-provider';
+// import ledgerProvider from 'eos-transit-ledger-provider';
 import lynxProvider from 'eos-transit-lynx-provider';
 import meetoneProvider from 'eos-transit-meetone-provider';
 import tokenpocketProvider from 'eos-transit-tokenpocket-provider';
 import whalevaultProvider from 'eos-transit-whalevault-provider';
 import simpleosProvider from 'eos-transit-simpleos-provider';
-import keycatProvider from 'eos-transit-keycat-provider';
 import {
   EOS_CHAIN_NETWORK,
   ERC20_FUNDING_AMOUNT,
@@ -49,9 +46,7 @@ const {
   REACT_APP_ETHEREUM_CONTRACT_ACCOUNT_PRIVATE_KEY: ethereumContractAccountPrivateKey,
   REACT_APP_ETHEREUM_FUNDING_ACCOUNT_ADDRESS: ethereumFundingAddress,
   REACT_APP_ETHEREUM_FUNDING_ACCOUNT_PRIVATE_KEY: ethereumFundingAddressPrivateKey,
-  REACT_APP_ALGORAND_EXAMPLE_TO_ADDRESS: transferAlgoToAddress, // address of account to send Algos to (for sample transaction)
-  REACT_APP_ALGORAND_ALGO_FUNDING_ADDRESS: transferAlgoFromFundingAddress, // address of account with Algos in it (for sample transaction)
-  REACT_APP_ALGORAND_ALGO_FUNDING_PRIVATE_KEY: transferAlgoFromFundingPrivateKey // PK of account with Algos in it (used to send to other account)
+  REACT_APP_ALGORAND_EXAMPLE_TO_ADDRESS: transferAlgoToAddress // address of account to send Algos to (for sample transaction)
 } = process.env;
 
 let eosTransitWalletProviders = [
@@ -391,7 +386,8 @@ class App extends Component {
         abi: ABI,
         parameters: [ethereumContractAccountAddress, ERC20_TRANSFER_AMOUNT],
         method: 'transfer'
-      }
+      },
+      gasLimit: 145000
     };
   }
 
@@ -701,7 +697,6 @@ class App extends Component {
 
   renderLoginButtons() {
     const buttonStyle = { width: 200, marginTop: '24px' };
-    const logoStyle = { marginLeft: 0 };
     return (
       <div>
         <LoginButton
