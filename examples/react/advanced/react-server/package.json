@@ -11,7 +11,7 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "http-proxy-middleware": "^1.0.5",
-    "oreid-js": "^2.10.2",
+    "oreid-js": "^2.10.4",
     "oreid-login-button": "^1.0.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
