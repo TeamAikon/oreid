@@ -125,6 +125,7 @@ class App extends Component {
                   oreIdUrl: 'http://localhost:8080',
                   signCallbackUrl: this.authCallbackUrl,
                 }}
+                action="sign"
                 options={{
                     provider: 'oreid', // wallet type (e.g. 'algosigner' or 'oreid')
                     account: accountName || '',
@@ -158,7 +159,7 @@ class App extends Component {
                   this.setState({ oreIdResult: params })
                   this.onCloseModal()
                 }}
-                onError={(params) => {
+                onError={(result) => {
                   this.onCloseModal()
                 }}
               />
