@@ -6,13 +6,9 @@ import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import './component';
+import OreIdComponent from 'oreid-web-widget'
 import './App.css';
 
-const OreIdComponent = window.WrapperComponent.driver('react', {
-  React,
-  ReactDOM,
-});
 class App extends Component {
   constructor(props) {
     super(props);
