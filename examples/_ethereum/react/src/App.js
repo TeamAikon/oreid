@@ -17,7 +17,8 @@ import {
   EOS_CHAIN_NETWORK,
   ERC20_FUNDING_AMOUNT,
   ERC20_TRANSFER_AMOUNT,
-  ETH_TRANSFER_AMOUNT
+  ETH_TRANSFER_AMOUNT,
+  ETH_CHAIN_NETWORK
 } from './constants';
 
 dotenv.config();
@@ -518,32 +519,6 @@ class App extends Component {
           provider={provider}
           buttonStyle={{
             width: 225,
-            marginLeft: -20,
-            marginTop: 20,
-            marginBottom: 10
-          }}
-          text={`Connect with ${provider}`}
-          onClick={() => {
-            console.log('connectWithWeb3')
-          }}
-        />
-        <LoginButton
-          provider={provider}
-          buttonStyle={{
-            width: 225,
-            marginLeft: 10,
-            marginTop: 20,
-            marginBottom: 10,
-          }}
-          text={`Login with ${provider}`}
-          onClick={() => {
-            console.log('loginWithWeb3')
-          }}
-        />
-        <LoginButton
-          provider={provider}
-          buttonStyle={{
-            width: 225,
             marginLeft: 10,
             marginTop: 20,
             marginBottom: 10,
@@ -559,11 +534,24 @@ class App extends Component {
             width: 225,
             marginLeft: 10,
             marginTop: 20,
+            marginBottom: 10,
+          }}
+          text={`Send eth with ${provider}`}
+          onClick={() => {
+            console.log('sendEthWithWeb3')
+          }}
+        />
+        <LoginButton
+          provider={provider}
+          buttonStyle={{
+            width: 225,
+            marginLeft: 10,
+            marginTop: 20,
             marginBottom: 10
           }}
-          text={`Sign Transaction with ${provider}`}
+          text={`Sign Contract Transaction with ${provider}`}
           onClick={() => {
-            console.log('signTransactionWithWeb3')
+            console.log('signContractTransactionWithWeb3')
           }}
         />
       </div>
