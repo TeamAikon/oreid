@@ -102,7 +102,8 @@ class App extends Component {
     this.setState({
       errorMessage: null,
       signedTransaction: null,
-      signState: null
+      signState: null,
+      signedString: null,
     });
   }
 
