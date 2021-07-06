@@ -322,6 +322,7 @@ class App extends Component {
           {isLoggedIn && this.renderUserInfo()}
           {isLoggedIn && this.renderSigningOptions()}
           {isLoggedIn && this.renderEthereumGasCheckBox()}
+          {isLoggedIn && this.renderWeb3Buttons()}
         </div>
         <h3 style={{ color: 'green', margin: '50px' }}>
           {isBusy && (isBusyMessage || 'working...')}
@@ -508,6 +509,67 @@ class App extends Component {
       </div>
     );
   }
+
+  renderWeb3Buttons() {
+    const provider = 'web3' || 'oreid';
+    return (
+      <div style={{ alignContent: 'center', marginLeft: 60, marginTop: 20, display: 'flex' }}>
+        <LoginButton
+          provider={provider}
+          buttonStyle={{
+            width: 225,
+            marginLeft: -20,
+            marginTop: 20,
+            marginBottom: 10
+          }}
+          text={`Connect with ${provider}`}
+          onClick={() => {
+            console.log('connectWithWeb3')
+          }}
+        />
+        <LoginButton
+          provider={provider}
+          buttonStyle={{
+            width: 225,
+            marginLeft: 10,
+            marginTop: 20,
+            marginBottom: 10,
+          }}
+          text={`Login with ${provider}`}
+          onClick={() => {
+            console.log('loginWithWeb3')
+          }}
+        />
+        <LoginButton
+          provider={provider}
+          buttonStyle={{
+            width: 225,
+            marginLeft: 10,
+            marginTop: 20,
+            marginBottom: 10,
+          }}
+          text={`Sign String with ${provider}`}
+          onClick={() => {
+            console.log('signStringWithWeb3')
+          }}
+        />
+        <LoginButton
+          provider={provider}
+          buttonStyle={{
+            width: 225,
+            marginLeft: 10,
+            marginTop: 20,
+            marginBottom: 10
+          }}
+          text={`Sign Transaction with ${provider}`}
+          onClick={() => {
+            console.log('signTransactionWithWeb3')
+          }}
+        />
+      </div>
+    );
+  }
+
 }
 
 export default App;
