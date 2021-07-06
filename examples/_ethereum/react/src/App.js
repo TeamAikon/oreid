@@ -52,6 +52,9 @@ class App extends Component {
     this.handleLogout = this.handleLogout.bind(this);
     this.handleSignButton = this.handleSignButton.bind(this);
     this.toggleSendEthForGas = this.toggleSendEthForGas.bind(this);
+    this.signStringWithWeb3 = this.signStringWithWeb3.bind(this);
+    this.sendEthWithWeb3 = this.sendEthWithWeb3.bind(this);
+    this.signContractTransactionWithWeb3 = this.signContractTransactionWithWeb3.bind(this);
   }
 
   // called by library to set local busy state
@@ -302,8 +305,34 @@ class App extends Component {
     }
   }
 
+  /** sign a string with web3 - signArbitrary */
   async signStringWithWeb3() {
+    try {
+      this.clearErrors();
+      const provider = 'web3';
+      const chainAccount = 'ethereum';
+      const chainNetwork = ETH_CHAIN_NETWORK;
 
+      const signOptions = {
+        provider,
+        chainAccount,
+        chainNetwork,
+        string: 'Hello from ore-id-docs',
+        message: null,
+      }
+
+      const signResponse = await this.oreId.signString(signOptions);
+
+      if (signResponse) {
+        const { signedString } = signResponse;
+        this.setState({
+          signedString: JSON.stringify(signedString),
+        });
+      }
+
+    } catch (error) {
+      this.setState({ errorMessage: error.message });
+    }
   }
 
   async sendEthWithWeb3() {
@@ -314,8 +343,7 @@ class App extends Component {
   async signContractTransactionWithWeb3() {
     try {
       this.clearErrors();
-      const { sendEthForGas, userInfo } = this.state;
-      let { accountName } = userInfo;
+      const { userInfo: { accountName } } = this.state;
   
       const provider = 'web3';
       const chainNetwork = ETH_CHAIN_NETWORK;
@@ -328,7 +356,6 @@ class App extends Component {
         chainAccount,
         chainNetwork,
         permission,
-        sendEthForGas
       );  
     } catch (error) {
       this.setState({ errorMessage: error.message });
@@ -343,6 +370,7 @@ class App extends Component {
       isLoggedIn,
       signedTransaction,
       signState,
+      signedString,
       transactionId
     } = this.state;
     return (
@@ -375,6 +403,10 @@ class App extends Component {
           <p className="log">
             {signedTransaction &&
               `Returned signed transaction: ${signedTransaction}`}
+          </p>
+          <p className="log">
+            {signedString &&
+              `Returned signed string: ${signedString}`}
           </p>
         </div>
         <div
@@ -565,7 +597,7 @@ class App extends Component {
             marginTop: 20,
             marginBottom: 10,
           }}
-          text={`Send eth with ${provider}`}
+          text={`Send ETH with ${provider}`}
           onClick={() => {
             this.sendEthWithWeb3()
           }}
