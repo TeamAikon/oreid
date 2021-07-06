@@ -310,8 +310,29 @@ class App extends Component {
 
   }
 
+  /** sign a sample contract transaction with web3 */
   async signContractTransactionWithWeb3() {
-
+    try {
+      this.clearErrors();
+      const { sendEthForGas, userInfo } = this.state;
+      let { accountName } = userInfo;
+  
+      const provider = 'web3';
+      const chainNetwork = ETH_CHAIN_NETWORK;
+      const chainAccount = 'ethereum';
+      const permission = 'active';
+  
+      await this.handleSignSampleTransaction(
+        provider,
+        accountName,
+        chainAccount,
+        chainNetwork,
+        permission,
+        sendEthForGas
+      );  
+    } catch (error) {
+      this.setState({ errorMessage: error.message });
+    }
   }
 
   render() {
