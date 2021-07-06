@@ -1,22 +1,23 @@
-import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
-import { OreId } from 'oreid-js';
-import LoginButton from 'oreid-login-button';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import OreIdComponent from 'oreid-web-widget'
-import './App.css';
+import React, { Component } from "react";
+// import ReactDOM from 'react-dom';
+import { OreId } from "oreid-js";
+import LoginButton from "oreid-login-button";
+import Button from "@material-ui/core/Button";
+import Dialog from "@material-ui/core/Dialog";
+import DialogTitle from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import OreIdComponent from "oreid-react-web-widget";
+import "./App.css";
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
       userInfo: {},
+      errors: "",
       isLoggedIn: false,
       authInfo: {},
-      oreIdResult: {},
+      oreIdResult: '',
       showModal: false,
     };
     this.handleSubmit = this.handleLogin.bind(this);
@@ -33,7 +34,7 @@ class App extends Component {
     appName: "Viktor's app",
     appId: process.env.REACT_APP_OREID_APP_ID,
     apiKey: process.env.REACT_APP_OREID_API_KEY,
-    oreIdUrl: 'http://localhost:8080',
+    oreIdUrl: "http://localhost:8080",
     authCallbackUrl: this.authCallbackUrl,
   });
 
@@ -79,20 +80,49 @@ class App extends Component {
       if (!errors) {
         await this.loadUserFromApi(account);
         this.setState({ isLoggedIn: true });
+      } else {
+        this.setState({ errors });
       }
     }
   }
 
+  getFirstChainAccountForUserByChainType(chainNetwork) {
+    const matchingPermission = this.state?.userInfo?.permissions?.find(
+      (p) => p.chainNetwork === chainNetwork
+    );
+    const { chainAccount, permissionName } = matchingPermission || {};
+    return { chainAccount, permissionName };
+  }
+
+  createSampleTransactionEos(actor, permission = 'active') {
+    const transaction = {
+      account: 'demoapphello',
+      name: 'hi',
+      authorization: [
+        {
+          actor,
+          permission
+        }
+      ],
+      data: {
+        user: actor
+      }
+    };
+    return transaction;
+  }
+
   renderLoggedIn() {
+    const signWithChainNetwork = "eos_kylin";
     const { accountName, email, name, picture, username } = this.state.userInfo;
-    const chainAccount = accountName
+    const { chainAccount, permissionName } =
+      this.getFirstChainAccountForUserByChainType(signWithChainNetwork);
     return (
       <div style={{ marginTop: 50, marginLeft: 40 }}>
         <h4>User Info</h4>
         <img
           src={picture}
           style={{ width: 100, height: 100, paddingBottom: 30 }}
-          alt={'user'}
+          alt={"user"}
         />
         <br />
         OreId account: {accountName}
@@ -109,58 +139,43 @@ class App extends Component {
           Sign with modal
         </Button>
         <br />
-        <div><pre>{JSON.stringify(this.state.oreIdResult, null, '\t')}</pre></div>
+        <div className="App-success">
+          {this?.state?.oreIdResult}
+        </div>
         <Dialog open={this.state.showModal} onClose={this.onCloseModal}>
-            <DialogTitle>Authenticate</DialogTitle>
-            <DialogContent>
-              <OreIdComponent
-                oreIdOptions={{
-                  appName: "Viktor's app",
-                  appId: process.env.REACT_APP_OREID_APP_ID,
-                  apiKey: process.env.REACT_APP_OREID_API_KEY,
-                  oreIdUrl: 'http://localhost:8080',
-                  signCallbackUrl: this.authCallbackUrl,
-                }}
-                action="sign"
-                options={{
-                    provider: 'oreid', // wallet type (e.g. 'algosigner' or 'oreid')
-                    account: accountName || '',
-                    broadcast: true, // if broadcast=true, ore id will broadcast the transaction to the chain network for you
-                    chainAccount: chainAccount,
-                    chainNetwork: 'eos_kylin',
-                    state: 'test', // anything you'd like to remember after the callback
-                    transaction: {
-                      actions: [
-                        {
-                          account: 'demoapphello',
-                          name: 'hi',
-                          authorization: [
-                            {
-                              actor: 'demoapphello',
-                              permission: 'active'
-                            },
-                          ],
-                          data: {
-                            user: chainAccount
-                          }
-                        }
-                      ]
-                    },
-                    returnSignedTransaction: false,
-                    preventAutoSign: false, // prevent auto sign even if transaction is auto signable
-                }}
-                onSuccess={(result) => {
-                  const params = JSON.parse('{"' + decodeURI(result.split('?')[1]).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g,'":"') + '"}')
-                  console.log(params)
-                  this.setState({ oreIdResult: params })
-                  this.onCloseModal()
-                }}
-                onError={(result) => {
-                  this.onCloseModal()
-                }}
-              />
-            </DialogContent>
-          </Dialog>
+          <DialogTitle>Sign Transaction</DialogTitle>
+          <DialogContent>
+            <OreIdComponent
+              oreIdOptions={{
+                appName: "Viktor's app",
+                appId: process.env.REACT_APP_OREID_APP_ID,
+                apiKey: process.env.REACT_APP_OREID_API_KEY,
+                oreIdUrl: "http://localhost:8080",
+                signCallbackUrl: this.authCallbackUrl,
+              }}
+              action="sign"
+              options={{
+                provider: "oreid", // wallet type (e.g. 'algosigner' or 'oreid')
+                account: accountName,
+                broadcast: true, // if broadcast=true, ore id will broadcast the transaction to the chain network for you
+                chainAccount: chainAccount,
+                chainNetwork: signWithChainNetwork,
+                state: "test", // anything you'd like to remember after the callback
+                transaction: this.createSampleTransactionEos(chainAccount, permissionName),
+                returnSignedTransaction: false,
+                preventAutoSign: false, // prevent auto sign even if transaction is auto signable
+              }}
+              onSuccess={(result) => {
+                this.setState({ oreIdResult: JSON.stringify(result, null, '\t') });
+                this.onCloseModal();
+              }}
+              onError={(result) => {
+                this.setState({ errors: result?.errors });
+                this.onCloseModal();
+              }}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -178,11 +193,11 @@ class App extends Component {
       <div>
         <LoginButton
           provider="facebook"
-          onClick={e => this.handleLogin(e, 'facebook')}
+          onClick={(e) => this.handleLogin(e, "facebook")}
         />
         <LoginButton
           provider="google"
-          onClick={e => this.handleLogin(e, 'google')}
+          onClick={(e) => this.handleLogin(e, "google")}
         />
       </div>
     );
@@ -196,6 +211,9 @@ class App extends Component {
             <div>{this.renderLoggedIn()} </div>
           ) : (
             <div>{this.renderLoggedOut()} </div>
+          )}
+          {this.state.errors && (
+            <div className="App-error">Error: {this.state.errors}</div>
           )}
         </header>
       </div>
