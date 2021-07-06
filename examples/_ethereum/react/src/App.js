@@ -205,17 +205,13 @@ class App extends Component {
 
   createEthereumSampleTransaction(actor, permission = 'active') {
     const transaction = {
-      actions: [
-        {
-          from: actor,
-          to: ethereumContractAddress,
-          contract: {
-            abi: ABI,
-            parameters: [ethereumContractAccountAddress, ERC20_TRANSFER_AMOUNT],
-            method: 'transfer'
-          }
-        }
-      ]
+      from: actor,
+      to: ethereumContractAddress,
+      contract: {
+        abi: ABI,
+        parameters: [ethereumContractAccountAddress, ERC20_TRANSFER_AMOUNT],
+        method: 'transfer'
+      }
     };
     return transaction;
   }
