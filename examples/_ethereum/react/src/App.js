@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import React, { Component } from 'react';
 import LoginButton from 'oreid-login-button';
 import { OreId } from 'oreid-js';
+import web3Provider from 'eos-transit-web3-provider';
 import {
   ABI,
   addEthForGas,
@@ -36,6 +37,8 @@ const {
   REACT_APP_ETHEREUM_FUNDING_ACCOUNT_PRIVATE_KEY: ethereumFundingAddressPrivateKey
 } = process.env;
 
+const eosTransitWalletProviders = [web3Provider()]; // Wallet plug-in
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -65,7 +68,8 @@ class App extends Component {
     authCallbackUrl,
     signCallbackUrl,
     backgroundColor,
-    setBusyCallback: this.setBusyCallback
+    setBusyCallback: this.setBusyCallback,
+    eosTransitWalletProviders
   });
 
   async componentWillMount() {
