@@ -302,6 +302,18 @@ class App extends Component {
     }
   }
 
+  async signStringWithWeb3() {
+
+  }
+
+  async sendEthWithWeb3() {
+
+  }
+
+  async signContractTransactionWithWeb3() {
+
+  }
+
   render() {
     let {
       errorMessage,
@@ -521,7 +533,7 @@ class App extends Component {
           }}
           text={`Sign String with ${provider}`}
           onClick={() => {
-            console.log('signStringWithWeb3')
+            this.signStringWithWeb3()
           }}
         />
         <LoginButton
@@ -534,7 +546,7 @@ class App extends Component {
           }}
           text={`Send eth with ${provider}`}
           onClick={() => {
-            console.log('sendEthWithWeb3')
+            this.sendEthWithWeb3()
           }}
         />
         <LoginButton
@@ -547,7 +559,7 @@ class App extends Component {
           }}
           text={`Sign Contract Transaction with ${provider}`}
           onClick={() => {
-            console.log('signContractTransactionWithWeb3')
+            this.signContractTransactionWithWeb3()
           }}
         />
       </div>
