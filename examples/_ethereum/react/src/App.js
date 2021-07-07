@@ -336,8 +336,55 @@ class App extends Component {
     }
   }
 
+  /** send ether with web3 */
   async sendEthWithWeb3() {
+    try {
+      this.clearErrors();
+      const provider = 'web3';
+      const chainAccount = 'ethereum';
+      const chainNetwork = ETH_CHAIN_NETWORK;
 
+      const fromAddress = prompt(
+        `Please enter your From address
+        \nIf you don't specify from address, The address you're connected to our will connect to will be used instead.
+      `)
+
+      let toAddress = null
+      do { toAddress = prompt('Please enter To address') }
+      while (!toAddress)
+
+      let ethAmount = null
+      do { ethAmount = prompt('Enter the amount of ETH you want to send:', '0.001') }
+      while (!ethAmount)
+
+      let transaction = {
+        to: toAddress,
+        value: ethAmount,
+      };
+      if ( fromAddress ) { transaction['from'] = fromAddress; }
+
+      const signOptions = {
+        provider: provider,
+        chainAccount: chainAccount || '',
+        chainNetwork: chainNetwork || '',
+        transaction,
+        returnSignedTransaction: true,
+        preventAutoSign: false
+      };
+
+      let signResponse = await this.oreId.sign(signOptions);
+      console.log('sendEthWithWeb3 - signResponse', signResponse)
+
+      if (signResponse) {
+        const { signedTransaction } = signResponse;
+        this.setState({
+          signedTransaction: JSON.stringify(signedTransaction),
+        });
+      }
+
+    } catch (error) {
+      this.setState({ errorMessage: error.message });
+    }
   }
 
   /** sign a sample contract transaction with web3 */
