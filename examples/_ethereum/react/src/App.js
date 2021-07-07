@@ -373,7 +373,6 @@ class App extends Component {
       };
 
       let signResponse = await this.oreId.sign(signOptions);
-      console.log('sendEthWithWeb3 - signResponse', signResponse)
 
       if (signResponse) {
         const { signedTransaction } = signResponse;
