@@ -209,7 +209,7 @@ class App extends Component {
 
   createEthereumSampleTransaction(actor, permission = 'active') {
     const transaction = {
-      from: actor,
+      from: actor, // eth account contract address
       to: ethereumContractAddress,
       contract: {
         abi: ABI,
@@ -249,12 +249,12 @@ class App extends Component {
         this.setBusyCallback
       );
     }
-    if (parseInt(currentErc20Balance) < ERC20_TRANSFER_AMOUNT) {
+    if (parseInt(currentErc20Balance) < ERC20_FUNDING_AMOUNT) {
       await transferErc20Token(
         ethereumContractAddress,
         ethereumContractAccountAddress,
         chainAccount,
-        ERC20_FUNDING_AMOUNT,
+        ERC20_TRANSFER_AMOUNT,
         ethereumContractAccountPrivateKey,
         web3,
         this.setBusyCallback
@@ -387,15 +387,17 @@ class App extends Component {
   }
 
   /** sign a sample contract transaction with web3 */
-  async signContractTransactionWithWeb3() {
+  async signContractTransactionWithWeb3(params) {
     try {
+      const { actor } = params;
       this.clearErrors();
       const { userInfo: { accountName } } = this.state;
   
       const provider = 'web3';
       const chainNetwork = ETH_CHAIN_NETWORK;
-      const chainAccount = 'ethereum';
+      const chainAccount = actor;
       const permission = 'active';
+      const sendEthForGas = false;
   
       await this.handleSignSampleTransaction(
         provider,
@@ -403,6 +405,7 @@ class App extends Component {
         chainAccount,
         chainNetwork,
         permission,
+        sendEthForGas,
       );  
     } catch (error) {
       this.setState({ errorMessage: error.message });
@@ -659,7 +662,10 @@ class App extends Component {
           }}
           text={`Sign Contract Transaction with ${provider}`}
           onClick={() => {
-            this.signContractTransactionWithWeb3()
+            let actor = null;
+            do { actor = prompt('Please enter from / your wallet address'); }
+            while (!actor)
+            this.signContractTransactionWithWeb3({ actor });
           }}
         />
       </div>
