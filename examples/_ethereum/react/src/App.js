@@ -369,8 +369,8 @@ class App extends Component {
       if (fromAddress) {
         transaction['from'] = fromAddress;
       }
-
       const signOptions = {
+        account: this.state.userInfo.accountName,
         provider,
         chainAccount: chainAccount || '',
         chainNetwork: chainNetwork || '',
