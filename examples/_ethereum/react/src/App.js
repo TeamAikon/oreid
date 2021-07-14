@@ -319,6 +319,7 @@ class App extends Component {
       const chainNetwork = ETH_CHAIN_NETWORK;
 
       const signOptions = {
+        account: this.state.userInfo.accountName,
         provider,
         chainAccount,
         chainNetwork,
