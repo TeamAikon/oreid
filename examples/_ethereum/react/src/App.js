@@ -117,17 +117,12 @@ class App extends Component {
     this.oreId.logout(); // clears local user state (stored in local storage or cookie)
   }
 
-  async handleSignButton(permissionIndex) {
+  async handleSignButton(chainAccount, chainNetwork, permission, provider) {
     this.clearErrors();
-    let {
-      chainAccount,
-      chainNetwork,
-      permission,
-      externalWalletType: provider
-    } = this.permissionsToRender[permissionIndex] || {};
     const { sendEthForGas, userInfo } = this.state;
     let { accountName } = userInfo;
     provider = provider || 'oreid'; // default to ore id
+    debugger
     await this.handleSignSampleTransaction(
       provider,
       accountName,
@@ -550,6 +545,7 @@ class App extends Component {
     .filter((permission) => permission.chainNetwork.startsWith('eth'))
     .map((permission, index) => {
       let provider = permission.externalWalletType || 'oreid';
+      const { chainAccount, chainNetwork } = permission;
       return (
         <div style={{ alignContent: 'center' }} key={index}>
           <LoginButton
@@ -563,7 +559,7 @@ class App extends Component {
             }}
             text={`Sign with ${provider}`}
             onClick={() => {
-              this.handleSignButton(index);
+              this.handleSignButton(chainAccount, chainNetwork, permission, provider);
             }}
           >{`Sign Sample Transaction with ${provider}`}</LoginButton>
           {`Chain:${permission.chainNetwork} ---- Account:${permission.chainAccount} ---- Permission:${permission.permission}`}
