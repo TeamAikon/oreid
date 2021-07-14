@@ -2,6 +2,8 @@ import dotenv from 'dotenv';
 import React, { Component } from 'react';
 import LoginButton from 'oreid-login-button';
 import { OreId } from 'oreid-js';
+import web3Provider from 'eos-transit-web3-provider';
+import web3 from 'web3';
 import {
   ABI,
   addEthForGas,
@@ -16,7 +18,8 @@ import {
   EOS_CHAIN_NETWORK,
   ERC20_FUNDING_AMOUNT,
   ERC20_TRANSFER_AMOUNT,
-  ETH_TRANSFER_AMOUNT
+  ETH_TRANSFER_AMOUNT,
+  ETH_CHAIN_NETWORK
 } from './constants';
 
 dotenv.config();
@@ -31,10 +34,14 @@ const {
   REACT_APP_BACKGROUND_COLOR: backgroundColor, // Background color shown during login flow
   REACT_APP_ETHEREUM_CONTRACT_ADDRESS: ethereumContractAddress,
   REACT_APP_ETHEREUM_CONTRACT_ACCOUNT_ADDRESS: ethereumContractAccountAddress,
-  REACT_APP_ETHEREUM_CONTRACT_ACCOUNT_PRIVATE_KEY: ethereumContractAccountPrivateKey,
+  REACT_APP_ETHEREUM_CONTRACT_ACCOUNT_PRIVATE_KEY:
+    ethereumContractAccountPrivateKey,
   REACT_APP_ETHEREUM_FUNDING_ACCOUNT_ADDRESS: ethereumFundingAddress,
-  REACT_APP_ETHEREUM_FUNDING_ACCOUNT_PRIVATE_KEY: ethereumFundingAddressPrivateKey
+  REACT_APP_ETHEREUM_FUNDING_ACCOUNT_PRIVATE_KEY:
+    ethereumFundingAddressPrivateKey
 } = process.env;
+
+const eosTransitWalletProviders = [web3Provider()]; // Wallet plug-in
 
 class App extends Component {
   constructor(props) {
@@ -48,6 +55,10 @@ class App extends Component {
     this.handleLogout = this.handleLogout.bind(this);
     this.handleSignButton = this.handleSignButton.bind(this);
     this.toggleSendEthForGas = this.toggleSendEthForGas.bind(this);
+    this.signStringWithWeb3 = this.signStringWithWeb3.bind(this);
+    this.sendEthWithWeb3 = this.sendEthWithWeb3.bind(this);
+    this.signContractTransactionWithWeb3 =
+      this.signContractTransactionWithWeb3.bind(this);
   }
 
   // called by library to set local busy state
@@ -65,7 +76,8 @@ class App extends Component {
     authCallbackUrl,
     signCallbackUrl,
     backgroundColor,
-    setBusyCallback: this.setBusyCallback
+    setBusyCallback: this.setBusyCallback,
+    eosTransitWalletProviders
   });
 
   async componentWillMount() {
@@ -94,7 +106,8 @@ class App extends Component {
     this.setState({
       errorMessage: null,
       signedTransaction: null,
-      signState: null
+      signState: null,
+      signedString: null
     });
   }
 
@@ -127,6 +140,9 @@ class App extends Component {
 
   async handleLogin(provider) {
     let chainNetwork = EOS_CHAIN_NETWORK;
+    if (provider === 'web3') {
+      chainNetwork = ETH_CHAIN_NETWORK;
+    }
     try {
       this.clearErrors();
       let loginResponse = await this.oreId.login({ provider, chainNetwork });
@@ -200,18 +216,14 @@ class App extends Component {
 
   createEthereumSampleTransaction(actor, permission = 'active') {
     const transaction = {
-      actions: [
-        {
-          from: actor,
-          to: ethereumContractAddress,
-          contract: {
-            abi: ABI,
-            parameters: [ethereumContractAccountAddress, ERC20_TRANSFER_AMOUNT],
-            method: 'transfer'
-          }
-        }
-      ]
+      to: ethereumContractAddress,
+      contract: {
+        abi: ABI,
+        parameters: [ethereumContractAccountAddress, ERC20_TRANSFER_AMOUNT],
+        method: 'transfer'
+      }
     };
+    if (actor) transaction.from = actor; // from is optional
     return transaction;
   }
 
@@ -263,7 +275,7 @@ class App extends Component {
 
   /*
    Handle the authCallback coming back from ORE-ID with an "account" parameter indicating that a user has logged in
-*/
+  */
   async handleAuthCallback() {
     const url = window.location.href;
     if (/authcallback/i.test(url)) {
@@ -279,16 +291,12 @@ class App extends Component {
 
   /*
    Handle the signCallback coming back from ORE-ID with a "signedTransaction" parameter providing the transaction object with signatures attached
-*/
+  */
   async handleSignCallback() {
     const url = window.location.href;
     if (/signcallback/i.test(url)) {
-      const {
-        signedTransaction,
-        state,
-        transactionId,
-        errors
-      } = await this.oreId.handleSignResponse(url);
+      const { signedTransaction, state, transactionId, errors } =
+        await this.oreId.handleSignResponse(url);
       if (!errors) {
         if (state) this.setState({ signState: state });
         if (signedTransaction) this.setState({
@@ -301,6 +309,122 @@ class App extends Component {
     }
   }
 
+  /** sign a string with web3 - signArbitrary */
+  async signStringWithWeb3(params) {
+    const { actor } = params;
+    try {
+      this.clearErrors();
+      const provider = 'web3';
+      const chainAccount = actor;
+      const chainNetwork = ETH_CHAIN_NETWORK;
+
+      const signOptions = {
+        account: this.state.userInfo.accountName,
+        provider,
+        chainAccount,
+        chainNetwork,
+        string: 'Hello from ore-id-docs',
+        message: null
+      };
+
+      const signResponse = await this.oreId.signString(signOptions);
+
+      if (signResponse) {
+        const { signedString } = signResponse;
+        this.setState({
+          signedString: JSON.stringify(signedString)
+        });
+      }
+    } catch (error) {
+      this.setState({ errorMessage: error.message });
+    }
+  }
+
+  /** send ether with web3 */
+  async sendEthWithWeb3(params) {
+    const { actor, sendEthForGas } = params;
+    try {
+      this.clearErrors();
+      const provider = 'web3';
+      const chainAccount = actor;
+      const chainNetwork = ETH_CHAIN_NETWORK;
+
+      const fromAddress = prompt(
+        `Please enter your From address
+        \nIf you don't specify from address, The address you're connected to our will connect to will be used instead.
+      `
+      );
+
+      let toAddress = prompt('Please enter To address', ethereumContractAddress);
+      if (!toAddress) return;
+
+      let ethAmount = null;
+      ethAmount = prompt('Enter the amount of ETH you want to send:', '.000000000000000001');
+      if (!ethAmount) return;
+      let transaction = {
+        to: toAddress,
+        value: web3.utils.toHex(web3.utils.toWei(ethAmount)),
+        gasLimit: web3.utils.toHex('1000000')
+      };
+      if (fromAddress) {
+        transaction['from'] = fromAddress;
+      }
+      const signOptions = {
+        account: this.state.userInfo.accountName,
+        provider,
+        chainAccount: chainAccount || '',
+        chainNetwork: chainNetwork || '',
+        transaction,
+        returnSignedTransaction: true,
+        preventAutoSign: false
+      };
+      if (sendEthForGas) await this.fundEthereumAccountIfNeeded(chainAccount, chainNetwork);
+      let signResponse = await this.oreId.sign(signOptions);
+
+      if (signResponse) {
+        const { signedTransaction } = signResponse;
+        this.setState({
+          signedTransaction: JSON.stringify(signedTransaction)
+        });
+      }
+    } catch (error) {
+      this.setState({ errorMessage: error.message });
+    }
+  }
+
+  /** sign a sample contract transaction with web3 */
+  async signContractTransactionWithWeb3(params) {
+    const { actor, sendEthForGas } = params;
+    try {
+      this.clearErrors();
+      const {
+        userInfo: { accountName }
+      } = this.state;
+
+      const provider = 'web3';
+      const chainNetwork = ETH_CHAIN_NETWORK;
+      let chainAccount = actor;
+      const permission = 'active';
+
+      chainAccount = prompt(
+        `Please enter your From address
+        \nIf you don't specify from address, The address you're connected to our will connect to will be used instead.
+      `, chainAccount
+      );
+
+      await this.handleSignSampleTransaction(
+        provider,
+        accountName,
+        chainAccount,
+        chainNetwork,
+        permission,
+        sendEthForGas
+      );
+    } catch (error) {
+      this.setState({ errorMessage: error.message });
+    }
+  }
+
   render() {
     let {
       errorMessage,
@@ -309,6 +433,7 @@ class App extends Component {
       isLoggedIn,
       signedTransaction,
       signState,
+      signedString,
       transactionId
     } = this.state;
     return (
@@ -318,6 +443,7 @@ class App extends Component {
           {isLoggedIn && this.renderUserInfo()}
           {isLoggedIn && this.renderSigningOptions()}
           {isLoggedIn && this.renderEthereumGasCheckBox()}
+          {isLoggedIn && this.renderWeb3Buttons()}
         </div>
         <h3 style={{ color: 'green', margin: '50px' }}>
           {isBusy && (isBusyMessage || 'working...')}
@@ -340,6 +466,9 @@ class App extends Component {
           <p className="log">
             {signedTransaction &&
               `Returned signed transaction: ${signedTransaction}`}
+          </p>
+          <p className="log">
+            {signedString && `Returned signed string: ${signedString}`}
           </p>
         </div>
         <div
@@ -500,6 +629,54 @@ class App extends Component {
           provider="phone"
           buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('phone')}
+        />
+      </div>
+    );
+  }
+
+  renderWeb3Buttons() {
+    const provider = 'web3' || 'oreid';
+    const ethAccount = undefined; // should be set with a specific account, if desired (optional)
+    return (
+      <div style={{ alignContent: 'center', marginLeft: 60, marginTop: 20, display: 'flex' }}>
+        <LoginButton
+          provider={provider}
+          buttonStyle={{
+            width: 225,
+            marginLeft: 10,
+            marginTop: 20,
+            marginBottom: 10
+          }}
+          text={`Sign String with ${provider}`}
+          onClick={() => {
+            this.signStringWithWeb3({ actor: ethAccount });
+          }}
+        />
+        <LoginButton
+          provider={provider}
+          buttonStyle={{
+            width: 225,
+            marginLeft: 10,
+            marginTop: 20,
+            marginBottom: 10
+          }}
+          text={`Send ETH with ${provider}`}
+          onClick={() => {
+            this.sendEthWithWeb3({ actor: ethAccount, sendEthForGas: this.state?.sendEthForGas });
+          }}
+        />
+        <LoginButton
+          provider={provider}
+          buttonStyle={{
+            width: 225,
+            marginLeft: 10,
+            marginTop: 20,
+            marginBottom: 10
+          }}
+          text={`Sign Contract Transaction with ${provider}`}
+          onClick={() => {
+            this.signContractTransactionWithWeb3({ actor: ethAccount, sendEthForGas: this.state?.sendEthForGas });
+          }}
         />
       </div>
     );
