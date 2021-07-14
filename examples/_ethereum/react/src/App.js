@@ -122,7 +122,6 @@ class App extends Component {
     const { sendEthForGas, userInfo } = this.state;
     let { accountName } = userInfo;
     provider = provider || 'oreid'; // default to ore id
-    debugger
     await this.handleSignSampleTransaction(
       provider,
       accountName,
