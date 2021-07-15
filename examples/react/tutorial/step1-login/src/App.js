@@ -7,6 +7,7 @@ import Dialog from "@material-ui/core/Dialog";
 import DialogTitle from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import OreIdComponent from "oreid-react-web-widget";
+import OreIdModal from 'oreid-react-web-widget-modal';
 import "./App.css";
 
 class App extends Component {
@@ -176,6 +177,33 @@ class App extends Component {
             />
           </DialogContent>
         </Dialog>
+        <OreIdModal oreIdOptions={{
+            appName: "Viktor's app",
+            appId: process.env.REACT_APP_OREID_APP_ID,
+            apiKey: process.env.REACT_APP_OREID_API_KEY,
+            oreIdUrl: "http://localhost:8080",
+            signCallbackUrl: this.authCallbackUrl,
+          }}
+          action="sign"
+          options={{
+            provider: "oreid", // wallet type (e.g. 'algosigner' or 'oreid')
+            account: accountName,
+            broadcast: true, // if broadcast=true, ore id will broadcast the transaction to the chain network for you
+            chainAccount: chainAccount,
+            chainNetwork: signWithChainNetwork,
+            state: "test", // anything you'd like to remember after the callback
+            transaction: this.createSampleTransactionEos(chainAccount, permissionName),
+            returnSignedTransaction: false,
+            preventAutoSign: false, // prevent auto sign even if transaction is auto signable
+            accessToken: 'sometoken',
+            idToken: 'someothertoken'
+          }}
+          onSuccess={(result) => {
+            this.setState({ oreIdResult: JSON.stringify(result, null, '\t') });
+          }}
+          onError={(result) => {
+            this.setState({ errors: result?.errors });
+          }} />
       </div>
     );
   }
