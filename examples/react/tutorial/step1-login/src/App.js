@@ -24,7 +24,7 @@ class App extends Component {
     appName: 'ORE ID Sample App',
     appId: process.env.REACT_APP_OREID_APP_ID,
     // apiKey: process.env.REACT_APP_OREID_API_KEY,
-    oreIdUrl: 'http://localhost:8080',
+    oreIdUrl: 'https://staging.service.oreid.io',
     authCallbackUrl: this.authCallbackUrl
   });
 
@@ -37,8 +37,18 @@ class App extends Component {
      When complete, the browser will be redirected to the authCallbackUrl (specified in oredId options) */
   async handleLogin(event, provider) {
     event.preventDefault();
-    let { loginUrl } = await this.oreId.login({provider})
+    if(provider === 'idtoken') return await this.handleLoginWithIdToken(this.idToken)
+    let { loginUrl } = await this.oreId.login({ provider });
     window.location = loginUrl; // redirect browser to loginURL to start the login flow
+  }
+
+  // get idTokens from Google using Oauth playground - https://stackoverflow.com/questions/25657190/how-to-get-dummy-google-access-token-to-test-oauth-google-api
+  idToken = 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjdmNTQ4ZjY3MDg2OTBjMjExMjBiMGFiNjY4Y2FhMDc5YWNiYzJiMmYiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI0MDc0MDg3MTgxOTIuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI0MDc0MDg3MTgxOTIuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTU3MzU2MzI4MjU2NzMwNDQyOTYiLCJlbWFpbCI6InNoYXJlYWlrb25AZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImF0X2hhc2giOiIxTXRER0FfTmZyTzloazlMRF9FTjJ3IiwibmFtZSI6IkxlYXJuIFNoYXJlIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FBVFhBSnd2aDZlbjRiMGo2eHFzVVlVeVNzUG5vbzVOV3UwRXM0WEdMYTVUPXM5Ni1jIiwiZ2l2ZW5fbmFtZSI6IkxlYXJuIiwiZmFtaWx5X25hbWUiOiJTaGFyZSIsImxvY2FsZSI6ImVuIiwiaWF0IjoxNjI2NjY5NzU2LCJleHAiOjE2MjY2NzMzNTZ9.KCawZW71KjBTt8qjEaYR-lyJ-LVw962JyAMESV6wnhiYuG49yDmCDvmmBI_oVJvIwTXC0F3fOaFzEbyf4soW0M0b4OnGnSGn7qxjdjavMdYAz4ZkrjtO-emCB7OmikoI-RliEivS6jna2wmjU6vSnAbB_LP2CvqMl7HXpTSVO8vCrN8Qqz5gyvS_MPOt5d1GAr2fknW_yI6jlIYzntP9rhwdCrxK3wFNeOSMk9FClmFUiplNZXep4aol7UzHUE3Q9Sr6ob17RCQO_HLzvDMK831V3gIXG9hpKcXa6hBL3leRdPi5YZVmf39NJ5adoBRbghl8ny5n6YKk88XsOP76kQ'
+  /** login to oreid using an idToken from a 3rd party OAuth flow (e.g. google) */
+  async handleLoginWithIdToken(idToken) {
+    let { accessToken } = await this.oreId.login({idToken})
+    this.oreId.accessToken = accessToken
+    await this.loadUserFromLocalStorage()
   }
 
   /** Remove user info from local storage */
@@ -99,6 +109,7 @@ class App extends Component {
       <div>
         <LoginButton provider='facebook' onClick={(e) => this.handleLogin(e, 'facebook')}/>
         <LoginButton provider='google' onClick={(e) => this.handleLogin(e, 'google')}/>
+        <LoginButton provider='google' text='Login with idToken' onClick={(e) => this.handleLogin(e, 'idtoken')}/>
       </div>
     )
   }
