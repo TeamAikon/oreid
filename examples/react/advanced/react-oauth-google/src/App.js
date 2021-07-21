@@ -25,9 +25,13 @@ function App() {
   /** Load the user from local storage - user info is automatically saved to local storage by oreId.getUserInfoFromApi() */
   const fetchOreIdUser = async () => {
     let userInfo = (await oreId.getUser()) || {};
-    delete userInfo.permissions
-    window.alert(`Your ORE ID: ${JSON.stringify(userInfo, null, 2)}`)
-    return userInfo
+    if( userInfo.accountName ) {
+      delete userInfo.permissions
+      window.alert(`Your ORE ID: ${JSON.stringify(userInfo, null, 2)}`)
+      return userInfo  
+    }
+    window.alert('Your ORE ID was not found')
+    return null
   }
 
   const oreId = new OreId({
