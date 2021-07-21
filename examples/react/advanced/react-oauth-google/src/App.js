@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { GoogleLogin, useGoogleLogin, GoogleLogout, useGoogleLogout } from 'react-google-login';
 import { OreId } from 'oreid-js'
 import logo from './logo.svg';
+import { ReactComponent as OreLogo } from './logo-ore.svg';
 import './App.css';
 
 function App() {
@@ -21,20 +22,28 @@ function App() {
 
   const userAuthCallbackUrl = `${window.location.origin}/oreid/authcallback`
 
-  const handleOreIdLogin = async (event, provider) => {
-    event.preventDefault();
-    let { loginUrl } = await oreId.login({provider})
-    window.location.href = loginUrl; // redirect browser to loginURL to start the login flow
+  /** Load the user from local storage - user info is automatically saved to local storage by oreId.getUserInfoFromApi() */
+  const fetchOreIdUser = async () => {
+    let userInfo = (await oreId.getUser()) || {};
+    delete userInfo.permissions
+    window.alert(`Your ORE ID: ${JSON.stringify(userInfo, null, 2)}`)
+    return userInfo
   }
 
   const oreId = new OreId({
-    appName: 'ORE ID - Auth0 Sample App',
+    appName: 'ORE ID - Google OAuth Sample App',
     appId: process.env.REACT_APP_OREID_APP_ID,
-    apiKey: process.env.REACT_APP_OREID_API_KEY,
     oreIdUrl: process.env.REACT_APP_OREID_URL,
     authCallbackUrl: userAuthCallbackUrl
   });
 
+
+  const handleOreIdLogin = async () => {
+    const idToken = googleLoginResponse.tokenId;
+    let { accessToken } = await oreId.login({ idToken });
+    console.log('accessToken', accessToken)
+    await fetchOreIdUser()
+  }
   const googleAPIprops = {
     clientId: process.env.REACT_APP_GOOGLE_OAUTH_CLIENT_ID,
     onFailure
@@ -57,24 +66,35 @@ function App() {
   const [signedIn, setSignedIn] = useState(isSignedIn)
   const [googleLoginResponse, setGoogleLoginResponse] = useState(null)
 
-  console.group('State:')
-  console.log('isSignedIn', isSignedIn || signedIn)
-  console.log('canLogin', canLogin)
-  console.log('canLogout', canLogout)
-  console.groupEnd()
-  if(signedIn && googleLoginResponse) console.log('googleLoginResponse', googleLoginResponse)
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <button onClick={(e) => handleOreIdLogin(e, 'google')}>Login to ORE ID</button>
-          {!signedIn && canLogin && <GoogleLogin {...googleLoginProps} />}
+        <img src={logo} className="App-logo" alt="ORE ID" />
+      </header>
+      <section className="App-section" >
+          {!signedIn && canLogin &&
+            <div className="google-login-button">
+              <GoogleLogin {...googleLoginProps} />
+            </div>
+          }
           {signedIn && (
             <>
-              {canLogout && <GoogleLogout {...googleLogoutProps} />}
+              <div className="oreid-login-button">
+                <button onClick={handleOreIdLogin}>
+                  <div>
+                    <OreLogo />
+                  </div>
+                  <span>Login to ORE ID </span>
+                </button>
+              </div>
+              {canLogout && 
+                <div className="google-logout-button">
+                  <GoogleLogout {...googleLogoutProps} />
+                </div>
+              }
             </>
           )}
-      </header>
+      </section>
     </div>
   );
 }
