@@ -36,3 +36,44 @@
     transform: rotate(360deg);
   }
 }
+
+.App-section button > div {
+  display: flex;
+}
+
+.google-login-button {
+  margin: 10px;
+  position: absolute;
+  top: 0;
+}
+
+.oreid-login-button {
+  margin: 10px;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, 0%);
+}
+
+.oreid-login-button button {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center ;
+}
+
+.oreid-login-button button > div {
+  margin-right: 10px;
+  padding: 7px;
+}
+
+.oreid-login-button svg {
+  height: 25px;
+  width: 25px;
+}
+
+.google-logout-button {
+  margin: 10px;
+  position: absolute;
+  top: 0;
+  right: 0;
+}
