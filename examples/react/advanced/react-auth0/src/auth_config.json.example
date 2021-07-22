@@ -1,0 +1,6 @@
+{
+  "domain": "{DOMAIN}",
+  "clientId": "{CLIENT_ID}",
+  "audience": "{API_IDENTIFIER}",
+  "appOrigin": "{APP_ORIGIN}"
+}
