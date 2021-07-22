@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import LoginButton from 'oreid-login-button';
 import { OreId } from 'oreid-js';
 import web3Provider from 'eos-transit-web3-provider';
+import walletConnectProvider from 'eos-transit-walletconnect-provider';
 import web3 from 'web3';
 import {
   ABI,
@@ -41,7 +42,7 @@ const {
     ethereumFundingAddressPrivateKey
 } = process.env;
 
-const eosTransitWalletProviders = [web3Provider()]; // Wallet plug-in
+const eosTransitWalletProviders = [web3Provider(), walletConnectProvider()]; // Wallet plug-in
 
 class App extends Component {
   constructor(props) {
@@ -305,10 +306,9 @@ class App extends Component {
 
   /** sign a string with web3 - signArbitrary */
   async signStringWithWeb3(params) {
-    const { actor } = params;
+    const { actor, provider } = params;
     try {
       this.clearErrors();
-      const provider = 'web3';
       const chainAccount = actor;
       const chainNetwork = ETH_CHAIN_NETWORK;
 
@@ -336,10 +336,9 @@ class App extends Component {
 
   /** send ether with web3 */
   async sendEthWithWeb3(params) {
-    const { actor, sendEthForGas } = params;
+    const { actor, provider, sendEthForGas } = params;
     try {
       this.clearErrors();
-      const provider = 'web3';
       const chainAccount = actor;
       const chainNetwork = ETH_CHAIN_NETWORK;
 
@@ -388,14 +387,13 @@ class App extends Component {
 
   /** sign a sample contract transaction with web3 */
   async signContractTransactionWithWeb3(params) {
-    const { actor, sendEthForGas } = params;
+    const { actor, provider, sendEthForGas } = params;
     try {
       this.clearErrors();
       const {
         userInfo: { accountName }
       } = this.state;
 
-      const provider = 'web3';
       const chainNetwork = ETH_CHAIN_NETWORK;
       let chainAccount = actor;
       const permission = 'active';
@@ -438,6 +436,7 @@ class App extends Component {
           {isLoggedIn && this.renderSigningOptions()}
           {isLoggedIn && this.renderEthereumGasCheckBox()}
           {isLoggedIn && this.renderWeb3Buttons()}
+          {isLoggedIn && this.renderWalletConnectButtons()}
         </div>
         <h3 style={{ color: 'green', margin: '50px' }}>
           {isBusy && (isBusyMessage || 'working...')}
@@ -644,7 +643,7 @@ class App extends Component {
           }}
           text={`Sign String with ${provider}`}
           onClick={() => {
-            this.signStringWithWeb3({ actor: ethAccount });
+            this.signStringWithWeb3({ actor: ethAccount, provider });
           }}
         />
         <LoginButton
@@ -657,7 +656,7 @@ class App extends Component {
           }}
           text={`Send ETH with ${provider}`}
           onClick={() => {
-            this.sendEthWithWeb3({ actor: ethAccount, sendEthForGas: this.state?.sendEthForGas });
+            this.sendEthWithWeb3({ actor: ethAccount, provider, sendEthForGas: this.state?.sendEthForGas });
           }}
         />
         <LoginButton
@@ -670,7 +669,56 @@ class App extends Component {
           }}
           text={`Sign Contract Transaction with ${provider}`}
           onClick={() => {
-            this.signContractTransactionWithWeb3({ actor: ethAccount, sendEthForGas: this.state?.sendEthForGas });
+            this.signContractTransactionWithWeb3({ actor: ethAccount, provider, sendEthForGas: this.state?.sendEthForGas });
+          }}
+        />
+      </div>
+    );
+  }
+
+  // render walletConnect buttons
+  renderWalletConnectButtons() {
+    const provider = 'walletconnect' || 'oreid';
+    const ethAccount = undefined; // should be set with a specific account, if desired (optional)
+    return (
+      <div style={{ alignContent: 'center', marginLeft: 60, marginTop: 20, display: 'flex' }}>
+        <LoginButton
+          provider={provider}
+          buttonStyle={{
+            width: 225,
+            marginLeft: 10,
+            marginTop: 20,
+            marginBottom: 10
+          }}
+          text={`Sign String with ${provider}`}
+          onClick={() => {
+            this.signStringWithWeb3({ actor: ethAccount, provider });
+          }}
+        />
+        <LoginButton
+          provider={provider}
+          buttonStyle={{
+            width: 225,
+            marginLeft: 10,
+            marginTop: 20,
+            marginBottom: 10
+          }}
+          text={`Send ETH with ${provider}`}
+          onClick={() => {
+            this.sendEthWithWeb3({ actor: ethAccount, provider, sendEthForGas: this.state?.sendEthForGas });
+          }}
+        />
+        <LoginButton
+          provider={provider}
+          buttonStyle={{
+            width: 225,
+            marginLeft: 10,
+            marginTop: 20,
+            marginBottom: 10
+          }}
+          text={`Sign Contract Transaction with ${provider}`}
+          onClick={() => {
+            this.signContractTransactionWithWeb3({ actor: ethAccount, provider, sendEthForGas: this.state?.sendEthForGas });
           }}
         />
       </div>
