@@ -6,7 +6,8 @@ import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import DialogTitle from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
-import OreIdComponent from "oreid-react-web-widget";
+import OreIdWebWidget from "oreid-react-web-widget";
+import {encode as base64Encode} from 'base-64';
 import "./App.css";
 
 class App extends Component {
@@ -145,7 +146,7 @@ class App extends Component {
         <Dialog open={this.state.showModal} onClose={this.onCloseModal}>
           <DialogTitle>Sign Transaction</DialogTitle>
           <DialogContent>
-            <OreIdComponent
+            <OreIdWebWidget
               oreIdOptions={{
                 appName: "Viktor's app",
                 appId: process.env.REACT_APP_OREID_APP_ID,
@@ -162,7 +163,7 @@ class App extends Component {
                 chainAccount: chainAccount,
                 chainNetwork: signWithChainNetwork,
                 state: "test", // anything you'd like to remember after the callback
-                transaction: this.createSampleTransactionEos(chainAccount, permissionName),
+                transaction: base64Encode(JSON.stringify(this.createSampleTransactionEos(chainAccount, permissionName))),
                 returnSignedTransaction: false,
                 preventAutoSign: false, // prevent auto sign even if transaction is auto signable
               }}
@@ -182,6 +183,7 @@ class App extends Component {
   }
 
   openInModal() {
+    this.setState({ errors: null });
     this.setState({ showModal: true });
   }
 
