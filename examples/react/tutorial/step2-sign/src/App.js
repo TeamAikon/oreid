@@ -54,7 +54,7 @@ class App extends Component {
 
   /** Remove user info from local storage */
   async handleLogout() {
-    this.setState({ userInfo: {}, isLoggedIn: false });
+    this.setState({ errors: {}, userInfo: {}, isLoggedIn: false });
     this.oreId.logout();
     window.location = window.location.origin; // clear callback url in browser
   }
@@ -157,7 +157,7 @@ class App extends Component {
               action="sign"
               options={{
                 accessToken: this.oreId.accessToken,
-                provider: "oreid", // wallet type (e.g. 'algosigner' or 'oreid')
+                // provider: "google", // optional - must be a login provider supported by ORE ID
                 account: accountName,
                 broadcast: true, // if broadcast=true, ore id will broadcast the transaction to the chain network for you
                 chainAccount: chainAccount,
