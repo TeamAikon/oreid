@@ -9,29 +9,27 @@ import { OreId } from "oreid-js";
 import logo from "./logo-oreid.svg";
 import "./App.css";
 
+// Google Oauth clientId from registering your app with Google
 const googleOauthClientId = "571262146536-le7c8genogladg68ubqb5l0f8nijhgr5.apps.googleusercontent.com";
 
 function App() {
-  const [loggedIn, setLoggedIn] = useState({});
+  const [loggedIn, setLoggedIn] = useState(false);
   const [user, setUser] = useState({});
-  const [googleLoginResponse, setGoogleLoginResponse] = useState(null);
 
   useEffect(() => {
     fetchOreIdUser();
   }, []);
 
-  const onSuccess = async (e) => {
+  const onLoginSuccess = async (e) => {
     setLoggedIn(true);
     fetchOreIdUser().then(() => {
       const googleUser = {...e?.profileObj, idToken: e?.tokenId }
-      setGoogleLoginResponse(googleUser)
       loginToOreId(googleUser.idToken);
     });
   };
 
   const onLogoutSuccess = (e) => {
     setLoggedIn(false);
-    setGoogleLoginResponse(null);
     oreId.logout(); // clears ORE ID accessToken
   };
 
@@ -44,8 +42,8 @@ function App() {
     onFailure,
   };
 
-  const { loaded: canLogin, isSignedIn: googleSignedIn } = useGoogleLogin({...googleOauthProps, onSuccess});
-  const { loaded: canLogout } = useGoogleLogout({ ...googleOauthProps, onLogoutSuccess });
+  useGoogleLogin({...googleOauthProps, onSuccess: onLoginSuccess});
+  useGoogleLogout({ ...googleOauthProps, onLogoutSuccess });
 
   /** Initialize Ore Id */
   const oreId = new OreId({
@@ -65,7 +63,6 @@ function App() {
 
   //** Convert Google IdToken to ORE ID accessToken */
   const loginToOreId = async (idToken) => {
-    console.log("got to handleOreIdLogin");
     oreId.login({ idToken }).then(({ accessToken }) => {
       oreId.accessToken = accessToken // saves accessToken in local storage
       fetchOreIdUser();
@@ -99,9 +96,9 @@ function App() {
   const renderLoggedOut = () => {
     return (
       <div>
-        {!loggedIn && canLogin && (
+        {!loggedIn && (
           <div className="google-login-button">
-            <GoogleLogin { ...{ ...googleOauthProps, onSuccess }} />
+            <GoogleLogin { ...{ ...googleOauthProps, onSuccess: onLoginSuccess }} />
           </div>
         )}
       </div>
@@ -117,7 +114,6 @@ function App() {
         ) : (
           <div>{renderLoggedOut()} </div>
         )}
-        <section className="App-section"></section>
       </header>
     </div>
   );
