@@ -51,7 +51,7 @@ function App() {
   const oreId = new OreId({
     appName: "ORE ID - Google OAuth Sample App",
     appId: "demo_0097ed83e0a54e679ca46d082ee0e33a",
-    oreIdUrl: "http://localhost:8080",
+    oreIdUrl: "https://service.oreid.io",
   });
 
   /** Load the user from local storage - user info is automatically saved to local storage by oreId.getUserInfoFromApi() */
