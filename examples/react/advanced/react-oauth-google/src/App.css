@@ -3,8 +3,10 @@
 }
 
 .App-logo {
-  height: 40vmin;
+  height: 10vmin;
   pointer-events: none;
+  flex-direction: row;
+  align-items: center ;
 }
 
 /* @media (prefers-reduced-motion: no-preference) {
@@ -42,33 +44,10 @@
 }
 
 .google-login-button {
-  margin: 10px;
-  position: absolute;
-  top: 0;
-}
-
-.oreid-login-button {
-  margin: 10px;
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translate(-50%, 0%);
-}
-
-.oreid-login-button button {
-  display: inline-flex;
+  margin: 40px;
   flex-direction: row;
   align-items: center ;
-}
-
-.oreid-login-button button > div {
-  margin-right: 10px;
-  padding: 7px;
-}
-
-.oreid-login-button svg {
-  height: 25px;
-  width: 25px;
+  top: 0;
 }
 
 .google-logout-button {
