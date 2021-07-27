@@ -112,28 +112,13 @@ class App extends Component {
     return transaction;
   }
 
-  renderLoggedIn() {
+  render() {
     const signWithChainNetwork = 'eos_kylin';
-    const { accountName, email, name, picture, username } = this.state.userInfo;
-    const { chainAccount, permissionName } =
-      this.getFirstChainAccountForUserByChainType(signWithChainNetwork);
+    // const { accountName, email, name, picture, username } = this.state.userInfo;
+    // const { chainAccount, permissionName } =
+    //   this.getFirstChainAccountForUserByChainType(signWithChainNetwork);
     return (
       <div style={{ marginTop: 50, marginLeft: 40 }}>
-        <h4>User Info</h4>
-        <img
-          src={picture}
-          style={{ width: 100, height: 100, paddingBottom: 30 }}
-          alt={'user'}
-        />
-        <br />
-        OreId account: {accountName}
-        <br />
-        name: {name}
-        <br />
-        username: {username}
-        <br />
-        email: {email}
-        <br />
         <div className="App-success">{this?.state?.oreIdResult}</div>
         <OreIdWebWidget
           oreIdOptions={{
@@ -143,23 +128,7 @@ class App extends Component {
             oreIdUrl: 'http://localhost:8080',
             signCallbackUrl: this.authCallbackUrl,
           }}
-          action="sign"
-          options={{
-            accessToken: this.oreId.accessToken,
-            // provider: "google", // optional - must be a login provider supported by ORE ID
-            account: accountName,
-            broadcast: true, // if broadcast=true, ore id will broadcast the transaction to the chain network for you
-            chainAccount: chainAccount,
-            chainNetwork: signWithChainNetwork,
-            state: 'test', // anything you'd like to remember after the callback
-            transaction: base64Encode(
-              JSON.stringify(
-                this.createSampleTransactionEos(chainAccount, permissionName)
-              )
-            ),
-            returnSignedTransaction: false,
-            preventAutoSign: true, // prevent auto sign even if transaction is auto signable
-          }}
+          action="newAccount"
           onSuccess={result => {
             this.setState({ oreIdResult: JSON.stringify(result, null, '\t') });
             this.onCloseModal();
@@ -201,14 +170,37 @@ class App extends Component {
     return (
       <div className="App">
         <header className="App-header">
-          {this.state.isLoggedIn ? (
+          {/* {this.state.isLoggedIn ? (
             <div>{this.renderLoggedIn()} </div>
           ) : (
             <div>{this.renderLoggedOut()} </div>
           )}
-          {this.state.errors && (
-            <div className="App-error">Error: {this.state.errors}</div>
-          )}
+           */}
+          <div style={{ marginTop: 50, marginLeft: 40 }}>
+            <div className="App-success">{this?.state?.oreIdResult}</div>
+            <OreIdWebWidget
+              oreIdOptions={{
+                appName: "Viktor's app",
+                appId: process.env.REACT_APP_OREID_APP_ID,
+                apiKey: process.env.REACT_APP_OREID_API_KEY,
+                oreIdUrl: 'http://localhost:8080',
+                signCallbackUrl: this.authCallbackUrl,
+              }}
+              action="newAccount"
+              options={{}}
+              onSuccess={result => {
+                this.setState({ oreIdResult: JSON.stringify(result, null, '\t') });
+                this.onCloseModal();
+              }}
+              onError={result => {
+                this.setState({ errors: result?.errors });
+                this.onCloseModal();
+              }}
+            />
+            {this.state.errors && (
+              <div className="App-error">Error: {this.state.errors}</div>
+            )}
+          </div>
         </header>
       </div>
     );
