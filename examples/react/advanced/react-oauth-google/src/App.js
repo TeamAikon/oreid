@@ -1,3 +1,5 @@
+/* eslint react-hooks/exhaustive-deps: 0 */
+
 import React, { useEffect, useState } from "react";
 import {
   GoogleLogin,
@@ -16,14 +18,15 @@ function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [user, setUser] = useState({});
 
+  // load user on startup
   useEffect(() => {
     fetchOreIdUser();
   }, []);
 
-  const onLoginSuccess = async (e) => {
+  const onLoginSuccess = (e) => {
     setLoggedIn(true);
     fetchOreIdUser().then(() => {
-      const googleUser = {...e?.profileObj, idToken: e?.tokenId }
+      const googleUser = { ...e?.profileObj, idToken: e?.tokenId };
       loginToOreId(googleUser.idToken);
     });
   };
@@ -42,7 +45,7 @@ function App() {
     onFailure,
   };
 
-  useGoogleLogin({...googleOauthProps, onSuccess: onLoginSuccess});
+  useGoogleLogin({ ...googleOauthProps, onSuccess: onLoginSuccess });
   useGoogleLogout({ ...googleOauthProps, onLogoutSuccess });
 
   /** Initialize Ore Id */
@@ -62,9 +65,9 @@ function App() {
   };
 
   //** Convert Google IdToken to ORE ID accessToken */
-  const loginToOreId = async (idToken) => {
+  const loginToOreId = (idToken) => {
     oreId.login({ idToken }).then(({ accessToken }) => {
-      oreId.accessToken = accessToken // saves accessToken in local storage
+      oreId.accessToken = accessToken; // saves accessToken in local storage
       fetchOreIdUser();
     });
   };
@@ -74,11 +77,11 @@ function App() {
     return (
       <div>
         <div className="google-logout-button">
-          <GoogleLogout { ...{...googleOauthProps, onLogoutSuccess} } />
+          <GoogleLogout {...{ ...googleOauthProps, onLogoutSuccess }} />
         </div>
         <div style={{ marginTop: 40 }}>
           <h4>User Info</h4>
-          <img src={picture} />
+          <img src={picture} alt="user" />
           <br />
           OreId account: {accountName}
           <br />
@@ -98,7 +101,7 @@ function App() {
       <div>
         {!loggedIn && (
           <div className="google-login-button">
-            <GoogleLogin { ...{ ...googleOauthProps, onSuccess: onLoginSuccess }} />
+            <GoogleLogin {...{ ...googleOauthProps, onSuccess: onLoginSuccess }} />
           </div>
         )}
       </div>
