@@ -1,14 +1,31 @@
 import React, { Component } from 'react';
-// import ReactDOM from 'react-dom';
 import { OreId } from 'oreid-js';
 import LoginButton from 'oreid-login-button';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
+import { withStyles } from '@material-ui/core/styles';
 import OreIdWebWidget from 'oreid-react-web-widget';
+import Select from '@material-ui/core/Select'
+import MenuItem from '@material-ui/core/MenuItem'
+import InputLabel from '@material-ui/core/InputLabel'
+import Button from '@material-ui/core/Button'
+import FormControl from '@material-ui/core/FormControl'
 import { encode as base64Encode } from 'base-64';
 import './App.css';
+
+const styles = theme => ({
+  formControl: {
+    margin: theme.spacing(1),
+    minWidth: 120,
+  },
+  whiteText: {
+    color: 'white'
+  },
+  select: {
+    width: '200px'
+  },
+  selectEmpty: {
+    marginTop: theme.spacing(2),
+  },
+});
 
 class App extends Component {
   constructor(props) {
@@ -20,11 +37,13 @@ class App extends Component {
       authInfo: {},
       oreIdResult: '',
       showModal: false,
+      dappAction: 'sign',
+      dappOptions: {}
     };
     this.handleSubmit = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
-    this.openInModal = this.openInModal.bind(this);
-    this.onCloseModal = this.onCloseModal.bind(this);
+    this.handleChangeAction = this.handleChangeAction.bind(this);
+    this.setDappOptionsForAction = this.setDappOptionsForAction.bind(this);
   }
   authCallbackUrl = `http://localhost:3000/authcallback`;
 
@@ -81,6 +100,7 @@ class App extends Component {
       if (!errors) {
         await this.loadUserFromApi(account);
         this.setState({ isLoggedIn: true });
+        this.setDappOptionsForAction('sign')
       } else {
         this.setState({ errors });
       }
@@ -112,14 +132,89 @@ class App extends Component {
     return transaction;
   }
 
-  render() {
+  handleChangeAction(e) {
+    this.setState({ dappAction: e.target.value })
+    this.setDappOptionsForAction(e.target.value)
+  }
+
+  setDappOptionsForAction(action) {
     const signWithChainNetwork = 'eos_kylin';
-    // const { accountName, email, name, picture, username } = this.state.userInfo;
-    // const { chainAccount, permissionName } =
-    //   this.getFirstChainAccountForUserByChainType(signWithChainNetwork);
+    const { accountName, email, name, picture, username } = this.state.userInfo;
+    const { chainAccount, permissionName } =
+      this.getFirstChainAccountForUserByChainType(signWithChainNetwork);
+    const OptionsMap = {
+      sign: {
+        accessToken: this.oreId.accessToken,
+        account: accountName,
+        broadcast: true, // if broadcast=true, ore id will broadcast the transaction to the chain network for you
+        chainAccount: chainAccount,
+        chainNetwork: signWithChainNetwork,
+        state: 'test', // anything you'd like to remember after the callback
+        transaction: base64Encode(
+          JSON.stringify(
+            this.createSampleTransactionEos(chainAccount, permissionName)
+          )
+        ),
+        returnSignedTransaction: false,
+        preventAutoSign: true, // prevent auto sign even if transaction is auto signable
+      },
+      newAccount: {
+        accessToken: this.oreId.accessToken,
+        chainNetwork: signWithChainNetwork,
+        accountType: 'native',
+        account: accountName,
+        provider: 'google'
+      },
+      recoverAccount: {}
+    }
+
+    this.setState({ dappOptions: OptionsMap[action] })
+    console.log(OptionsMap[action], action)
+  }
+
+  renderLoggedIn() {
+    const { accountName, email, name, picture, username } = this.state.userInfo;
+    const { classes } = this.props
     return (
       <div style={{ marginTop: 50, marginLeft: 40 }}>
+        <h4>User Info</h4>
+        <img
+          src={picture}
+          style={{ width: 100, height: 100, paddingBottom: 30 }}
+          alt={'user'}
+        />
+        <br />
+        OreId account: {accountName}
+        <br />
+        name: {name}
+        <br />
+        username: {username}
+        <br />
+        email: {email}
+        <br />
         <div className="App-success">{this?.state?.oreIdResult}</div>
+        <FormControl variant="filled" className={classes.formControl}>
+          <InputLabel id="action-selector-label" className={classes.whiteText}>Select action</InputLabel>
+          <Select
+            labelId="action-selector-label"
+            onChange={this.handleChangeAction}
+            className={classes.select}
+            value={this.state.dappAction}
+            inputProps={{
+              classes: {
+                icon: classes.whiteText,
+                root: classes.whiteText
+              }
+            }}
+          >
+            <MenuItem value="sign">Sign</MenuItem>
+            <MenuItem value="newAccount">New Account</MenuItem>
+            <MenuItem value="recoverAccount">Recover Account</MenuItem>
+          </Select>
+        </FormControl>
+        <div>
+          <Button onClick={this.handleLogout} color="secondary">Logout</Button>
+        </div>
         <OreIdWebWidget
           oreIdOptions={{
             appName: "Viktor's app",
@@ -128,27 +223,17 @@ class App extends Component {
             oreIdUrl: 'http://localhost:8080',
             signCallbackUrl: this.authCallbackUrl,
           }}
-          action="newAccount"
+          options={this.state.dappOptions}
+          action={this.state.dappAction}
           onSuccess={result => {
             this.setState({ oreIdResult: JSON.stringify(result, null, '\t') });
-            this.onCloseModal();
           }}
           onError={result => {
             this.setState({ errors: result?.errors });
-            this.onCloseModal();
           }}
         />
       </div>
     );
-  }
-
-  openInModal() {
-    this.setState({ errors: null });
-    this.setState({ showModal: true });
-  }
-
-  onCloseModal() {
-    this.setState({ showModal: false });
   }
 
   renderLoggedOut() {
@@ -170,41 +255,18 @@ class App extends Component {
     return (
       <div className="App">
         <header className="App-header">
-          {/* {this.state.isLoggedIn ? (
+          {this.state.isLoggedIn ? (
             <div>{this.renderLoggedIn()} </div>
           ) : (
             <div>{this.renderLoggedOut()} </div>
           )}
-           */}
-          <div style={{ marginTop: 50, marginLeft: 40 }}>
-            <div className="App-success">{this?.state?.oreIdResult}</div>
-            <OreIdWebWidget
-              oreIdOptions={{
-                appName: "Viktor's app",
-                appId: process.env.REACT_APP_OREID_APP_ID,
-                apiKey: process.env.REACT_APP_OREID_API_KEY,
-                oreIdUrl: 'http://localhost:8080',
-                signCallbackUrl: this.authCallbackUrl,
-              }}
-              action="newAccount"
-              options={{}}
-              onSuccess={result => {
-                this.setState({ oreIdResult: JSON.stringify(result, null, '\t') });
-                this.onCloseModal();
-              }}
-              onError={result => {
-                this.setState({ errors: result?.errors });
-                this.onCloseModal();
-              }}
-            />
-            {this.state.errors && (
-              <div className="App-error">Error: {this.state.errors}</div>
-            )}
-          </div>
+          {this.state.errors && (
+            <div className="App-error">Error: {this.state.errors}</div>
+          )}
         </header>
       </div>
     );
   }
 }
 
-export default App;
+export default withStyles(styles)(App);
