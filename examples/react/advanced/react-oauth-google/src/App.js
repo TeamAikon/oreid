@@ -14,6 +14,13 @@ import "./App.css";
 // Google Oauth clientId from registering your app with Google
 const googleOauthClientId = "571262146536-le7c8genogladg68ubqb5l0f8nijhgr5.apps.googleusercontent.com";
 
+  /** Initialize Ore Id */
+  const oreId = new OreId({
+    appName: "ORE ID - Google OAuth Sample App",
+    appId: "demo_0097ed83e0a54e679ca46d082ee0e33a",
+    oreIdUrl: "https://staging.service.oreid.io",
+  });
+
 function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [user, setUser] = useState({});
@@ -47,13 +54,6 @@ function App() {
 
   useGoogleLogin({ ...googleOauthProps, onSuccess: onLoginSuccess });
   useGoogleLogout({ ...googleOauthProps, onLogoutSuccess });
-
-  /** Initialize Ore Id */
-  const oreId = new OreId({
-    appName: "ORE ID - Google OAuth Sample App",
-    appId: "demo_0097ed83e0a54e679ca46d082ee0e33a",
-    oreIdUrl: "https://service.oreid.io",
-  });
 
   /** Load the user from local storage - user info is automatically saved to local storage by oreId.getUserInfoFromApi() */
   const fetchOreIdUser = async () => {
