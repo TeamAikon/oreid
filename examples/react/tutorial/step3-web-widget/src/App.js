@@ -38,7 +38,8 @@ class App extends Component {
       oreIdResult: '',
       showModal: false,
       dappAction: 'sign',
-      dappOptions: {}
+      dappOptions: {},
+      loggedProvider: ''
     };
     this.handleSubmit = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
@@ -53,7 +54,7 @@ class App extends Component {
   oreId = new OreId({
     appName: "Viktor's app",
     appId: process.env.REACT_APP_OREID_APP_ID,
-    apiKey: process.env.REACT_APP_OREID_API_KEY,
+    // apiKey: process.env.REACT_APP_OREID_API_KEY,
     oreIdUrl: 'http://localhost:8080',
     authCallbackUrl: this.authCallbackUrl,
   });
@@ -68,6 +69,7 @@ class App extends Component {
   async handleLogin(event, provider) {
     event.preventDefault();
     let { loginUrl } = await this.oreId.login({ provider });
+    this.setState({ loggedProvider: provider }); // Save the provider to send in test flows
     window.location = loginUrl; // redirect browser to loginURL to start the login flow
   }
 
@@ -169,7 +171,6 @@ class App extends Component {
     }
 
     this.setState({ dappOptions: OptionsMap[action] })
-    console.log(OptionsMap[action], action)
   }
 
   renderLoggedIn() {
