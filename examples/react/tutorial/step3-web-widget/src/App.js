@@ -54,8 +54,7 @@ class App extends Component {
   oreId = new OreId({
     appName: "Viktor's app",
     appId: process.env.REACT_APP_OREID_APP_ID,
-    // apiKey: process.env.REACT_APP_OREID_API_KEY,
-    oreIdUrl: 'http://localhost:8080',
+    oreIdUrl: process.env.REACT_APP_OREID_URL,
     authCallbackUrl: this.authCallbackUrl,
   });
 
@@ -141,7 +140,7 @@ class App extends Component {
 
   setDappOptionsForAction(action) {
     const signWithChainNetwork = 'eos_kylin';
-    const { accountName, email, name, picture, username } = this.state.userInfo;
+    const { accountName } = this.state.userInfo;
     const { chainAccount, permissionName } =
       this.getFirstChainAccountForUserByChainType(signWithChainNetwork);
     const OptionsMap = {
@@ -210,7 +209,6 @@ class App extends Component {
           >
             <MenuItem value="sign">Sign</MenuItem>
             <MenuItem value="newAccount">New Account</MenuItem>
-            <MenuItem value="recoverAccount">Recover Account</MenuItem>
           </Select>
         </FormControl>
         <div>
@@ -221,7 +219,7 @@ class App extends Component {
             appName: "Viktor's app",
             appId: process.env.REACT_APP_OREID_APP_ID,
             apiKey: process.env.REACT_APP_OREID_API_KEY,
-            oreIdUrl: 'http://localhost:8080',
+            oreIdUrl: process.env.REACT_APP_OREID_URL,
             signCallbackUrl: this.authCallbackUrl,
           }}
           options={this.state.dappOptions}
