@@ -44,15 +44,15 @@ class App extends Component {
     this.handleSubmit = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
     this.handleChangeAction = this.handleChangeAction.bind(this);
-    this.setDappOptionsForAction = this.setDappOptionsForAction.bind(this);
+    this.setDappOptionsForAction = this.setWidgetOptionsForAction.bind(this);
   }
-  authCallbackUrl = `http://localhost:3000/authcallback`;
+  authCallbackUrl = `${window.location.origin}/authcallback`
 
   // Intialize oreId
   // IMPORTANT - For a production app, you must protect your api key. A create-react-app app will leak the key since it all runs in the browser.
   // To protect the key, you need to set-up a proxy server. See https://github.com/TeamAikon/ore-id-docs/tree/master/examples/react/advanced/react-server
   oreId = new OreId({
-    appName: "Viktor's app",
+    appName: "my app",
     appId: process.env.REACT_APP_OREID_APP_ID,
     oreIdUrl: process.env.REACT_APP_OREID_URL,
     authCallbackUrl: this.authCallbackUrl,
@@ -101,7 +101,7 @@ class App extends Component {
       if (!errors) {
         await this.loadUserFromApi(account);
         this.setState({ isLoggedIn: true });
-        this.setDappOptionsForAction('sign')
+        this.setWidgetOptionsForAction('sign')
       } else {
         this.setState({ errors });
       }
@@ -135,10 +135,10 @@ class App extends Component {
 
   handleChangeAction(e) {
     this.setState({ dappAction: e.target.value })
-    this.setDappOptionsForAction(e.target.value)
+    this.setWidgetOptionsForAction(e.target.value)
   }
 
-  setDappOptionsForAction(action) {
+  setWidgetOptionsForAction(action) {
     const signWithChainNetwork = 'eos_kylin';
     const { accountName } = this.state.userInfo;
     const { chainAccount, permissionName } =
@@ -150,7 +150,7 @@ class App extends Component {
         broadcast: true, // if broadcast=true, ore id will broadcast the transaction to the chain network for you
         chainAccount: chainAccount,
         chainNetwork: signWithChainNetwork,
-        state: 'test', // anything you'd like to remember after the callback
+        state: 'abc', // anything you'd like to remember after the callback
         transaction: base64Encode(
           JSON.stringify(
             this.createSampleTransactionEos(chainAccount, permissionName)
