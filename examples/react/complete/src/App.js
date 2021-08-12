@@ -12,23 +12,23 @@ import {
   getEthBalance,
   getErc20Balance
 } from './eth';
-import algoSignerProvider, {
-  AlgoNetworkType
-} from 'eos-transit-algosigner-provider';
+import algoSignerProvider from 'eos-transit-algosigner-provider';
 import scatterProvider from 'eos-transit-scatter-provider';
-import ledgerProvider from 'eos-transit-ledger-provider';
+// import ledgerProvider from 'eos-transit-ledger-provider';
 import lynxProvider from 'eos-transit-lynx-provider';
 import meetoneProvider from 'eos-transit-meetone-provider';
 import tokenpocketProvider from 'eos-transit-tokenpocket-provider';
 import whalevaultProvider from 'eos-transit-whalevault-provider';
 import simpleosProvider from 'eos-transit-simpleos-provider';
-import keycatProvider from 'eos-transit-keycat-provider';
+import web3Provider from 'eos-transit-web3-provider';
+import walletconnectProvider from 'eos-transit-walletconnect-provider';
 import {
   EOS_CHAIN_NETWORK,
   ERC20_FUNDING_AMOUNT,
   ERC20_TRANSFER_AMOUNT,
   ETH_TRANSFER_AMOUNT,
-  ALGO_CHAIN_NETWORK
+  ALGO_CHAIN_NETWORK,
+  ETH_CHAIN_NETWORK
 } from './constants';
 import { composeAlgorandSampleTransaction } from './algorand';
 
@@ -49,9 +49,7 @@ const {
   REACT_APP_ETHEREUM_CONTRACT_ACCOUNT_PRIVATE_KEY: ethereumContractAccountPrivateKey,
   REACT_APP_ETHEREUM_FUNDING_ACCOUNT_ADDRESS: ethereumFundingAddress,
   REACT_APP_ETHEREUM_FUNDING_ACCOUNT_PRIVATE_KEY: ethereumFundingAddressPrivateKey,
-  REACT_APP_ALGORAND_EXAMPLE_TO_ADDRESS: transferAlgoToAddress, // address of account to send Algos to (for sample transaction)
-  REACT_APP_ALGORAND_ALGO_FUNDING_ADDRESS: transferAlgoFromFundingAddress, // address of account with Algos in it (for sample transaction)
-  REACT_APP_ALGORAND_ALGO_FUNDING_PRIVATE_KEY: transferAlgoFromFundingPrivateKey // PK of account with Algos in it (used to send to other account)
+  REACT_APP_ALGORAND_EXAMPLE_TO_ADDRESS: transferAlgoToAddress // address of account to send Algos to (for sample transaction)
 } = process.env;
 
 let eosTransitWalletProviders = [
@@ -63,10 +61,12 @@ let eosTransitWalletProviders = [
   whalevaultProvider(),
   simpleosProvider(),
   // keycatProvider(),
-  algoSignerProvider()
+  algoSignerProvider(),
   // portisProvider({
   //   DappId: 'ENTER_YOUR_DappId_HERE'
   // }),
+  web3Provider(),
+  walletconnectProvider()
 ];
 
 class App extends Component {
@@ -185,8 +185,7 @@ class App extends Component {
     }
   }
 
-  async handleLogin(provider) {
-    let chainNetwork = EOS_CHAIN_NETWORK;
+  async handleLogin(provider, chainNetwork = EOS_CHAIN_NETWORK) {
     try {
       this.clearErrors();
       let loginResponse = await this.oreId.login({ provider, chainNetwork });
@@ -391,7 +390,8 @@ class App extends Component {
         abi: ABI,
         parameters: [ethereumContractAccountAddress, ERC20_TRANSFER_AMOUNT],
         method: 'transfer'
-      }
+      },
+      gasLimit: 145000
     };
   }
 
@@ -450,14 +450,12 @@ class App extends Component {
   }
 
   /*
-   Handle the authCallback coming back from ORE-ID with an "account" parameter indicating that a user has logged in
+  Handle the authCallback coming back from ORE-ID with an "account" parameter indicating that a user has logged in
 */
   async handleAuthCallback() {
     const url = window.location.href;
     if (/authcallback/i.test(url)) {
-      const { account, errors, state } = await this.oreId.handleAuthResponse(
-        url
-      );
+      const { account, errors, state } = this.oreId.handleAuthResponse(url);
       if (state) console.log(`state returned with request:${state}`);
       if (!errors) {
         this.loadUserFromApi(account);
@@ -466,17 +464,12 @@ class App extends Component {
   }
 
   /*
-   Handle the signCallback coming back from ORE-ID with a "signedTransaction" parameter providing the transaction object with signatures attached
+  Handle the signCallback coming back from ORE-ID with a "signedTransaction" parameter providing the transaction object with signatures attached
 */
   async handleSignCallback() {
     const url = window.location.href;
     if (/signcallback/i.test(url)) {
-      const {
-        signedTransaction,
-        state,
-        transactionId,
-        errors
-      } = await this.oreId.handleSignResponse(url);
+      const { signedTransaction, state, transactionId, errors } = this.oreId.handleSignResponse(url);
       if (!errors) {
         if (state) this.setState({ signState: state });
         if (signedTransaction) {
@@ -640,7 +633,8 @@ class App extends Component {
       { provider: 'whalevault', chainNetwork: EOS_CHAIN_NETWORK },
       { provider: 'simpleos', chainNetwork: EOS_CHAIN_NETWORK },
       { provider: 'keycat', chainNetwork: EOS_CHAIN_NETWORK },
-      { provider: 'algosigner', chainNetwork: ALGO_CHAIN_NETWORK }
+      { provider: 'algosigner', chainNetwork: ALGO_CHAIN_NETWORK },
+      { provider: 'web3', chainNetwork: ETH_CHAIN_NETWORK }
     ];
     return (
       <div>
@@ -701,7 +695,6 @@ class App extends Component {
 
   renderLoginButtons() {
     const buttonStyle = { width: 200, marginTop: '24px' };
-    const logoStyle = { marginLeft: 0 };
     return (
       <div>
         <LoginButton
@@ -798,11 +791,6 @@ class App extends Component {
           provider="keycat"
           buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('keycat')}
-        />
-        <LoginButton
-          provider="algosigner"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('algosigner')}
         />
       </div>
     );
