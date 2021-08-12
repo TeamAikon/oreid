@@ -9,9 +9,9 @@
     "@testing-library/user-event": "^7.1.2",
     "base-64": "^1.0.0",
     "loadjs": "^4.2.0",
-    "oreid-js": "^2.12.5",
-    "oreid-login-button": "^1.0.1",
-    "oreid-react-web-widget": "^1.0.0",
+    "oreid-js": "^2.13.3",
+    "oreid-login-button": "^1.0.3",
+    "oreid-react-web-widget": "^1.0.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.3"
