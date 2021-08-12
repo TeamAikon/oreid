@@ -20,12 +20,15 @@ import meetoneProvider from 'eos-transit-meetone-provider';
 import tokenpocketProvider from 'eos-transit-tokenpocket-provider';
 import whalevaultProvider from 'eos-transit-whalevault-provider';
 import simpleosProvider from 'eos-transit-simpleos-provider';
+import web3Provider from 'eos-transit-web3-provider';
+import walletconnectProvider from 'eos-transit-walletconnect-provider';
 import {
   EOS_CHAIN_NETWORK,
   ERC20_FUNDING_AMOUNT,
   ERC20_TRANSFER_AMOUNT,
   ETH_TRANSFER_AMOUNT,
-  ALGO_CHAIN_NETWORK
+  ALGO_CHAIN_NETWORK,
+  ETH_CHAIN_NETWORK
 } from './constants';
 import { composeAlgorandSampleTransaction } from './algorand';
 
@@ -58,10 +61,12 @@ let eosTransitWalletProviders = [
   whalevaultProvider(),
   simpleosProvider(),
   // keycatProvider(),
-  algoSignerProvider()
+  algoSignerProvider(),
   // portisProvider({
   //   DappId: 'ENTER_YOUR_DappId_HERE'
   // }),
+  web3Provider(),
+  walletconnectProvider()
 ];
 
 class App extends Component {
@@ -180,8 +185,7 @@ class App extends Component {
     }
   }
 
-  async handleLogin(provider) {
-    let chainNetwork = EOS_CHAIN_NETWORK;
+  async handleLogin(provider, chainNetwork = EOS_CHAIN_NETWORK) {
     try {
       this.clearErrors();
       let loginResponse = await this.oreId.login({ provider, chainNetwork });
@@ -446,14 +450,12 @@ class App extends Component {
   }
 
   /*
-   Handle the authCallback coming back from ORE-ID with an "account" parameter indicating that a user has logged in
+  Handle the authCallback coming back from ORE-ID with an "account" parameter indicating that a user has logged in
 */
   async handleAuthCallback() {
     const url = window.location.href;
     if (/authcallback/i.test(url)) {
-      const { account, errors, state } = await this.oreId.handleAuthResponse(
-        url
-      );
+      const { account, errors, state } = this.oreId.handleAuthResponse(url);
       if (state) console.log(`state returned with request:${state}`);
       if (!errors) {
         this.loadUserFromApi(account);
@@ -462,17 +464,12 @@ class App extends Component {
   }
 
   /*
-   Handle the signCallback coming back from ORE-ID with a "signedTransaction" parameter providing the transaction object with signatures attached
+  Handle the signCallback coming back from ORE-ID with a "signedTransaction" parameter providing the transaction object with signatures attached
 */
   async handleSignCallback() {
     const url = window.location.href;
     if (/signcallback/i.test(url)) {
-      const {
-        signedTransaction,
-        state,
-        transactionId,
-        errors
-      } = await this.oreId.handleSignResponse(url);
+      const { signedTransaction, state, transactionId, errors } = this.oreId.handleSignResponse(url);
       if (!errors) {
         if (state) this.setState({ signState: state });
         if (signedTransaction) {
@@ -636,7 +633,8 @@ class App extends Component {
       { provider: 'whalevault', chainNetwork: EOS_CHAIN_NETWORK },
       { provider: 'simpleos', chainNetwork: EOS_CHAIN_NETWORK },
       { provider: 'keycat', chainNetwork: EOS_CHAIN_NETWORK },
-      { provider: 'algosigner', chainNetwork: ALGO_CHAIN_NETWORK }
+      { provider: 'algosigner', chainNetwork: ALGO_CHAIN_NETWORK },
+      { provider: 'web3', chainNetwork: ETH_CHAIN_NETWORK }
     ];
     return (
       <div>
@@ -793,11 +791,6 @@ class App extends Component {
           provider="keycat"
           buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('keycat')}
-        />
-        <LoginButton
-          provider="algosigner"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('algosigner')}
         />
       </div>
     );
