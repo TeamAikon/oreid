@@ -24,7 +24,6 @@ class App extends Component {
     appName: 'ORE ID Sample App',
     appId: process.env.REACT_APP_OREID_APP_ID,
     // apiKey: process.env.REACT_APP_OREID_API_KEY,
-    oreIdUrl: 'https://staging.service.oreid.io',
     authCallbackUrl: this.authCallbackUrl
   });
 
