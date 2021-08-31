@@ -35,7 +35,6 @@ class App extends Component {
     appName: "Viktor's app",
     appId: process.env.REACT_APP_OREID_APP_ID,
     apiKey: process.env.REACT_APP_OREID_API_KEY,
-    oreIdUrl: 'http://localhost:8080',
     authCallbackUrl: this.authCallbackUrl,
   });
 
@@ -48,6 +47,7 @@ class App extends Component {
      When complete, the browser will be redirected to the authCallbackUrl (specified in oredId options) */
   async handleLogin(event, provider) {
     event.preventDefault();
+    this.setState({ errors: null });
     let { loginUrl } = await this.oreId.login({ provider });
     window.location = loginUrl; // redirect browser to loginURL to start the login flow
   }
@@ -61,8 +61,10 @@ class App extends Component {
 
   /** Load the user from local storage - user info is automatically saved to local storage by oreId.getUserInfoFromApi() */
   async loadUserFromLocalStorage() {
+    let accessToken = this.oreId.accessToken
+    if(!accessToken) return
     let userInfo = (await this.oreId.getUser()) || {};
-    if (userInfo.accountName) this.setState({ userInfo, isLoggedIn: true });
+    this.setState({ userInfo, isLoggedIn: true });
   }
 
   /** Retrieve user info from ORE ID service - user info is automatically saved to local storage */
@@ -140,7 +142,6 @@ class App extends Component {
             appName: "Viktor's app",
             appId: process.env.REACT_APP_OREID_APP_ID,
             apiKey: process.env.REACT_APP_OREID_API_KEY,
-            oreIdUrl: 'http://localhost:8080',
             signCallbackUrl: this.authCallbackUrl,
           }}
           action="sign"

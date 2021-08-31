@@ -54,7 +54,6 @@ class App extends Component {
   oreId = new OreId({
     appName: "my app",
     appId: process.env.REACT_APP_OREID_APP_ID,
-    oreIdUrl: process.env.REACT_APP_OREID_URL,
     authCallbackUrl: this.authCallbackUrl,
   });
 
@@ -81,10 +80,11 @@ class App extends Component {
 
   /** Load the user from local storage - user info is automatically saved to local storage by oreId.getUserInfoFromApi() */
   async loadUserFromLocalStorage() {
+    let accessToken = this.oreId.accessToken
+    if(!accessToken) return
     let userInfo = (await this.oreId.getUser()) || {};
-    if (userInfo.accountName) this.setState({ userInfo, isLoggedIn: true });
+    this.setState({ userInfo, isLoggedIn: true });
   }
-
   /** Retrieve user info from ORE ID service - user info is automatically saved to local storage */
   async loadUserFromApi(account) {
     const userInfo = (await this.oreId.getUserInfoFromApi(account)) || {};
@@ -218,8 +218,6 @@ class App extends Component {
           oreIdOptions={{
             appName: "Viktor's app",
             appId: process.env.REACT_APP_OREID_APP_ID,
-            apiKey: process.env.REACT_APP_OREID_API_KEY,
-            oreIdUrl: process.env.REACT_APP_OREID_URL,
             signCallbackUrl: this.authCallbackUrl,
           }}
           options={this.state.dappOptions}

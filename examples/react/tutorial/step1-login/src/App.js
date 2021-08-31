@@ -59,8 +59,10 @@ class App extends Component {
 
   /** Load the user from local storage - user info is automatically saved to local storage by oreId.getUserInfoFromApi() */
   async loadUserFromLocalStorage() {
+    let accessToken = this.oreId.accessToken
+    if(!accessToken) return
     let userInfo = (await this.oreId.getUser()) || {};
-    if(userInfo?.accountName) this.setState({ userInfo, isLoggedIn: true });
+    this.setState({ userInfo, isLoggedIn: true });
   }
 
   /** Retrieve user info from ORE ID service - user info is automatically saved to local storage */
