@@ -10,9 +10,9 @@ const PORT = 8080 // if you change this port, you should update "proxy" in packa
 dotenv.config();
 const app = express();
 
-// adds api routes for /oreid, /oreid/hmac, /algorand, etc.
+// adds api routes for /oreid/api, /oreid/prepare-url, /algorand, etc.
 // also injects apikeys/secrets into request headers
-addOreidExpressMiddleware(app, { apiKey: process.env.OREID_API_KEY })
+addOreidExpressMiddleware(app, { apiKey: process.env.OREID_API_KEY, oreidUrl: process.env.REACT_APP_OREID_URL })
 
 // frontend - static web files - /build must first be created by: yarn build
 app.use('/', express.static(`${__dirname}/../build`));
