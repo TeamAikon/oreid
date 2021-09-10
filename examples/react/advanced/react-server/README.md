@@ -8,7 +8,7 @@ If your app runs completely in the browser (like a create-react-app does), using
 - Hooking up a proxy for requests
 - Running the server (and app) in production
 <br><br>
-### Simple Proxy Server setup using oreid-js
+### Server Setup - Simple Proxy Server using oreid-js
 The [oreid-js](https://www.npmjs.com/package/oreid-js) npm module makes it easy to add all the proxy server settings with a single line of code. Just call addOreidExpressMiddleware() and pass in the express server instance and options that include your API key. It will automatically add the proxy routes to the ORE ID service and will inject your API key into the header of every call.
 ```javascript 
 const { addOreidExpressMiddleware } = require('oreid-js/dist/expressMiddleware');
@@ -17,6 +17,16 @@ const { addOreidExpressMiddleware } = require('oreid-js/dist/expressMiddleware')
 // also injects apikeys/secrets into request headers
 addOreidExpressMiddleware(expressApp, { apiKey: 'my secret api key' })
 ```
+
+### Client Setup
+Enable proxy server for [oreid-js](https://www.npmjs.com/package/oreid-js) using isUsingProxyServer param
+```
+  const oreId = new OreId({
+    ...
+    isUsingProxyServer: true,
+  })
+```
+
 ### Setup your project
 
 Create an .env file in the root of the project with your REACT_APP_OREID_APP_ID and keys

@@ -22,7 +22,8 @@ class App extends Component {
     appId: process.env.REACT_APP_OREID_APP_ID,
     // apiKey: 'demo_k_97b33a2f8c984fb5b119567ca19e4a49',  // We can only provide an apiKey here for a demo app - for your app, put it in the .env - OREID_API_KEY 
     oreIdUrl: process.env.REACT_APP_OREID_URL,
-    authCallbackUrl: this.authCallbackUrl
+    authCallbackUrl: this.authCallbackUrl,
+    isUsingProxyServer: true,
   });
 
   async componentWillMount() {
