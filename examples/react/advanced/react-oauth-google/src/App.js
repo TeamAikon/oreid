@@ -18,7 +18,9 @@ const googleOauthClientId = "571262146536-le7c8genogladg68ubqb5l0f8nijhgr5.apps.
   const oreId = new OreId({
     appName: "ORE ID - Google OAuth Sample App",
     appId: "demo_0097ed83e0a54e679ca46d082ee0e33a",
-    oreIdUrl: "https://staging.service.oreid.io",
+    apiKey: "demo_k_97b33a2f8c984fb5b119567ca19e4a49",
+    oreIdUrl: "http://localahost:8080",
+    isUsingProxyServer: true,
   });
 
 function App() {
@@ -32,9 +34,13 @@ function App() {
 
   const onLoginSuccess = (e) => {
     setLoggedIn(true);
+    console.log('Successful Login, ')
+
     fetchOreIdUser().then(() => {
       const googleUser = { ...e?.profileObj, idToken: e?.tokenId };
-      loginToOreId(googleUser.idToken);
+      console.log(googleUser);
+      let loginOutput = loginToOreId(googleUser.googleId);
+      console.log(loginOutput);
     });
   };
 
@@ -49,6 +55,7 @@ function App() {
 
   const googleOauthProps = {
     clientId: googleOauthClientId,
+    buttonText: "hello",
     onFailure,
   };
 
@@ -66,10 +73,12 @@ function App() {
 
   //** Convert Google IdToken to ORE ID accessToken */
   const loginToOreId = (idToken) => {
-    oreId.login({ idToken }).then(({ accessToken }) => {
+    console.log(idToken);
+    let loginOutputOreId = oreId.login({ idToken }).then(({ accessToken }) => {
       oreId.accessToken = accessToken; // saves accessToken in local storage
       fetchOreIdUser();
     });
+    console.log(loginOutputOreId);
   };
 
   const renderLoggedIn = () => {
