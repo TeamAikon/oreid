@@ -621,6 +621,7 @@ class App extends Component {
     return (
       <div style={{ alignContent: 'center' }} key={index}>
         <LoginButton
+          data-testid={`sign-button-${provider}-${permission.chainNetwork}`}
           provider={provider}
           data-tag={index}
           buttonStyle={{
@@ -635,6 +636,7 @@ class App extends Component {
           }}
         >{`Sign Sample Transaction with ${provider}`}</LoginButton>
         <OreIdWebWidget
+          data-testid={`sign-widget-${provider}-${permission.chainNetwork}`}
           oreIdOptions={{
             appName: permission.permission,
             appId: process.env.REACT_APP_OREID_APP_ID,
