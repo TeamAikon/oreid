@@ -30,6 +30,7 @@
     "node-sass": "^4.12.0",
     "oreid-js": "^2.13.4",
     "oreid-login-button": "^1.0.3",
+    "oreid-react-web-widget": "^1.0.2",
     "path": "^0.12.7",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
