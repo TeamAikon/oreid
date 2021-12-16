@@ -12,8 +12,10 @@ import {
   getEthBalance,
   getErc20Balance
 } from './eth';
+import { encode as base64Encode } from 'base-64';
 import algoSignerProvider from 'eos-transit-algosigner-provider';
 import scatterProvider from 'eos-transit-scatter-provider';
+import OreIdWebWidget from 'oreid-react-web-widget';
 // import ledgerProvider from 'eos-transit-ledger-provider';
 import lynxProvider from 'eos-transit-lynx-provider';
 import meetoneProvider from 'eos-transit-meetone-provider';
@@ -54,17 +56,12 @@ const {
 
 let eosTransitWalletProviders = [
   scatterProvider(),
-  // ledgerProvider({ pathIndexList: [0, 1, 2, 35] }),
   lynxProvider(),
   meetoneProvider(),
   tokenpocketProvider(),
   whalevaultProvider(),
   simpleosProvider(),
-  // keycatProvider(),
   algoSignerProvider(),
-  // portisProvider({
-  //   DappId: 'ENTER_YOUR_DappId_HERE'
-  // }),
   web3Provider(),
   walletconnectProvider()
 ];
@@ -76,7 +73,9 @@ class App extends Component {
       isLoggedIn: false,
       userInfo: {},
       firstAuth: false,
-      sendEthForGas: false
+      sendEthForGas: false,
+      currentSignOptions: {},
+      showWidget: false,
     };
     this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
@@ -195,7 +194,7 @@ class App extends Component {
         // redirect browser to loginURL
         window.location = loginUrl;
       }
-      this.setState({ userInfo: { accountName: account }, isLoggedIn });
+      this.setState({ userInfo: { accountName: account }, isLoggedIn, loggedProvider: provider });
     } catch (error) {
       this.setState({ errorMessage: error.message });
     }
@@ -258,62 +257,7 @@ class App extends Component {
     sendEthForGas
   ) {
     try {
-      let transaction = null;
-      let signedTransactionToSend = null;
-
-      if (this.getChainType(chainNetwork) === 'algo') {
-        transaction = this.createSampleTransactionAlgorand(
-          chainAccount,
-          permission
-        );
-        transaction = this.wrapTxActionArrayForOreId(provider, transaction);
-      }
-
-      if (this.getChainType(chainNetwork) === 'eth') {
-        if (sendEthForGas) {
-          await this.fundEthereumAccountIfNeeded(chainAccount, chainNetwork);
-        }
-        transaction = this.createSampleTransactionEthereum(
-          chainAccount,
-          permission
-        );
-        transaction = this.wrapTxActionArrayForOreId(provider, transaction);
-      }
-
-      if (this.getChainType(chainNetwork) === 'eos') {
-        if (firstAuth) {
-          signedTransactionToSend = this.createFirstAuthSampleTransactionEos(
-            firstAuthAccount,
-            chainAccount,
-            permission
-          );
-          const chainUrl = this.getChainUrl(chainNetwork);
-          transaction = await signTransaction(
-            signedTransactionToSend,
-            chainUrl,
-            firstAuthKey
-          );
-        } else {
-          transaction = this.createSampleTransactionEos(
-            chainAccount,
-            permission
-          );
-        }
-      }
-
-      // this.clearErrors();gi
-      let signOptions = {
-        provider: provider || '', // wallet type (e.g. 'scatter' or 'oreid')
-        account: account || '',
-        broadcast: true, // if broadcast=true, ore id will broadcast the transaction to the chain network for you
-        chainAccount: chainAccount || '',
-        chainNetwork: chainNetwork || '',
-        state: 'abc', // anything you'd like to remember after the callback
-        transaction,
-        accountIsTransactionPermission: false,
-        returnSignedTransaction: true,
-        preventAutoSign: false // prevent auto sign even if transaction is auto signable
-      };
+      let signOptions = await this.prepareSignOptions(chainNetwork, chainAccount, permission, provider, sendEthForGas, firstAuth, account);
 
       let signResponse = await this.oreId.sign(signOptions);
       // if the sign responds with a signUrl, then redirect the browser to it to call the signing flow
@@ -325,14 +269,73 @@ class App extends Component {
       }
       if (signedTransaction) {
         this.setState({
-          signedTransaction: JSON.stringify(signedTransaction),
-          state
+          signedTransaction: JSON.stringify(signedTransaction)
         });
       }
       if (transactionId) this.setState({ transactionId });
     } catch (error) {
       this.setState({ errorMessage: error.message });
     }
+  }
+
+  async prepareSignOptions(chainNetwork, chainAccount, permission, provider, sendEthForGas, firstAuth, account) {
+    let transaction = null;
+    let signedTransactionToSend = null;
+
+    if (this.getChainType(chainNetwork) === 'algo') {
+      transaction = this.createSampleTransactionAlgorand(
+        chainAccount,
+        permission
+      );
+      transaction = this.wrapTxActionArrayForOreId(provider, transaction);
+    }
+
+    if (this.getChainType(chainNetwork) === 'eth') {
+      if (sendEthForGas) {
+        await this.fundEthereumAccountIfNeeded(chainAccount, chainNetwork);
+      }
+      transaction = this.createSampleTransactionEthereum(
+        chainAccount,
+        permission
+      );
+      transaction = this.wrapTxActionArrayForOreId(provider, transaction);
+    }
+
+    if (this.getChainType(chainNetwork) === 'eos') {
+      if (firstAuth) {
+        signedTransactionToSend = this.createFirstAuthSampleTransactionEos(
+          firstAuthAccount,
+          chainAccount,
+          permission
+        );
+        const chainUrl = this.getChainUrl(chainNetwork);
+        transaction = await signTransaction(
+          signedTransactionToSend,
+          chainUrl,
+          firstAuthKey
+        );
+      } else {
+        transaction = this.createSampleTransactionEos(
+          chainAccount,
+          permission
+        );
+      }
+    }
+
+    // this.clearErrors();gi
+    let signOptions = {
+      provider: provider || '',
+      account: account || '',
+      broadcast: true,
+      chainAccount: chainAccount || '',
+      chainNetwork: chainNetwork || '',
+      state: 'abc',
+      transaction,
+      accountIsTransactionPermission: false,
+      returnSignedTransaction: true,
+      preventAutoSign: false // prevent auto sign even if transaction is auto signable
+    };
+    return signOptions;
   }
 
   createSampleTransactionEos(actor, permission = 'active') {
@@ -494,7 +497,8 @@ class App extends Component {
       isLoggedIn,
       signedTransaction,
       signState,
-      transactionId
+      transactionId,
+      showWidget
     } = this.state;
     return (
       <div>
@@ -504,6 +508,36 @@ class App extends Component {
           {isLoggedIn && this.renderSigningOptions()}
           {isLoggedIn && this.renderFirstAuthorizerCheckBox()}
           {isLoggedIn && this.renderEthereumGasCheckBox()}
+          {isLoggedIn && showWidget && (
+            <OreIdWebWidget
+              show={this.state.showWidget}
+              oreIdOptions={{
+                appName: "Demo app",
+                appId: process.env.REACT_APP_OREID_APP_ID,
+                oreIdUrl,
+                accessToken: this.oreId.accessToken
+              }}
+              action={{
+                name: 'sign',
+                params: this.state.currentSignOptions
+              }}
+              onSuccess={result => {
+                this.setState({
+                  signedTransaction: JSON.stringify(result.data.signedTransaction),
+                });
+                this.setState({showWidget: false})
+              }}
+              onError={result => {
+                console.log(result, this.state.currentSignOptions);
+                if (typeof result.errors === 'string') {
+                  this.setState({ errorMessage: result.errors.replace(', ') });
+                } else {
+                  this.setState({ errorMessage: result.errors.join(', ') });
+                }
+                this.setState({ showWidget: false })
+              }}
+            />
+          )}
         </div>
         <h3 style={{ color: 'green', margin: '50px' }}>
           {isBusy && (isBusyMessage || 'working...')}
@@ -576,10 +610,10 @@ class App extends Component {
     this.permissionsToRender = (permissions || []).slice(0);
 
     return (
-      <div>
-        <div style={{ marginTop: 50, marginLeft: 20 }}>
-          <h3>Sign sample transaction with one of your keys</h3>
-          <ul>{this.renderSignButtons(this.permissionsToRender)}</ul>
+      <div style={{marginTop: 50, marginLeft: 20}}>
+        <h3>Sign sample transaction with one of your keys</h3>
+        <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+          {this.renderSignButtons(this.permissionsToRender)}
         </div>
       </div>
     );
@@ -589,17 +623,16 @@ class App extends Component {
     let { firstAuth } = this.state;
 
     return (
-      <div style={{ marginLeft: 50, marginTop: 20 }}>
+      <div style={{ marginLeft: 20, marginTop: 20 }}>
         <input
+          id="eos"
           type="checkbox"
           onChange={this.toggleFirstAuth}
           checked={firstAuth}
         />
-        <p>
-          {
-            'For Eos - Check the box above if you want your transaction\'s CPU and NET to be payed by App.'
-          }
-        </p>
+        <label for="eos" style={{ paddingLeft: 10 }}>
+          {'For Eos - Check the box above if you want your transaction\'s CPU and NET to be payed by App.'}
+        </label>
       </div>
     );
   }
@@ -607,17 +640,16 @@ class App extends Component {
   renderEthereumGasCheckBox() {
     let { sendEthForGas } = this.state;
     return (
-      <div style={{ marginLeft: 50, marginTop: 20 }}>
+      <div style={{ marginLeft: 20, marginTop: 20 }}>
         <input
+          id="eth"
           type="checkbox"
           onChange={this.toggleSendEthForGas}
           checked={sendEthForGas}
         />
-        <p>
-          {
-            'For Ethereum - Check the box above if you want to automatically send Eth for gas required for sample transaction if needed'
-          }
-        </p>
+        <label for="eth" style={{ paddingLeft: 10 }}>
+          For Ethereum - Check the box above if you want to automatically send Eth for gas required for sample transaction if needed
+        </label>
       </div>
     );
   }
@@ -637,35 +669,90 @@ class App extends Component {
       { provider: 'web3', chainNetwork: ETH_CHAIN_NETWORK }
     ];
     return (
-      <div>
-        <div style={{ marginTop: 50, marginLeft: 20 }}>
-          <h3 style={{ marginTop: 50 }}>Or discover a key in your wallet</h3>
-          <ul>{this.renderWalletDiscoverButtons(this.walletButtons)}</ul>
+      <div style={{marginTop: 50, marginLeft: 20}}>
+        <h3>Or discover a key in your wallet</h3>
+        <div style={{ display: 'flex' }}>
+          {this.renderWalletDiscoverButtons(this.walletButtons)}
         </div>
       </div>
     );
+  }
+
+  async handleOpenWidget(permissionIndex) {
+    let {
+      chainAccount,
+      chainNetwork,
+      permission,
+    } = this.permissionsToRender[permissionIndex] || {};
+    const { firstAuth, sendEthForGas, userInfo, loggedProvider } = this.state;
+    let { accountName } = userInfo;
+    const provider = loggedProvider || 'google';
+    const signOptions =  await this.prepareSignOptions(
+      chainNetwork,
+      chainAccount,
+      permission,
+      provider,
+      sendEthForGas,
+      firstAuth,
+      accountName,
+    );
+    this.setState({
+      currentSignOptions: {
+        ...signOptions,
+        accessToken: this.oreId.accessToken,
+        transaction: base64Encode(JSON.stringify(signOptions.transaction))
+      },
+      showWidget: true
+    });
   }
 
   // render one sign transaction button for each chain
   renderSignButtons = (permissions) => permissions.map((permission, index) => {
     let provider = permission.externalWalletType || 'oreid';
     return (
-      <div style={{ alignContent: 'center' }} key={index}>
+      <div key={index} style={{
+        width: '200px',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        margin: '5px',
+        padding: '5px',
+        border: '1px solid lightgray',
+        borderRadius: '10px'
+      }}>
+        <div>
+          <strong>Chain:</strong> {permission.chainNetwork}
+        </div>
+        <div style={{
+          width: '100%',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+        }}>
+          <strong>Account:</strong>{permission.chainAccount}
+        </div>
+        <div>
+          <strong>Permission:</strong> {permission.permission}
+        </div>
         <LoginButton
           provider={provider}
           data-tag={index}
           buttonStyle={{
-            width: 225,
-            marginLeft: -20,
-            marginTop: 20,
-            marginBottom: 10
+            margin: '2px'
           }}
-          text={`Sign with ${provider}`}
+          text="Sign with callback"
           onClick={() => {
             this.handleSignButton(index);
           }}
-        >{`Sign Sample Transaction with ${provider}`}</LoginButton>
-        {`Chain:${permission.chainNetwork} ---- Account:${permission.chainAccount} ---- Permission:${permission.permission}`}
+        >Sign Sample Transaction with {provider}</LoginButton>
+        <LoginButton
+          provider={provider}
+          text="Sign with Widget"
+          buttonStyle={{
+            margin: '2px'
+          }}
+          onClick={() => this.handleOpenWidget(index)}
+        />
       </div>
     );
   });
@@ -674,15 +761,13 @@ class App extends Component {
   renderWalletDiscoverButtons = (walletButtons) => walletButtons.map((wallet, index) => {
     let { provider } = wallet;
     return (
-      <div style={{ alignContent: 'center' }} key={index}>
+      <div style={{ margin: '5px' }} key={index}>
         <LoginButton
           provider={provider}
           data-tag={index}
           buttonStyle={{
-            width: 80,
-            marginLeft: -20,
-            marginTop: 20,
-            marginBottom: 10
+            width: '100%',
+            minHeight: '75px'
           }}
           text={`${provider}`}
           onClick={() => {
