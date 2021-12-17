@@ -44,8 +44,6 @@ const {
   REACT_APP_SIGN_CALLBACK: signCallbackUrl, // The url called by the server when transaction signing flow is finished - must match one of the callback strings listed in the App Registration
   REACT_APP_OREID_URL: oreIdUrl, // HTTPS Address of OREID server
   REACT_APP_BACKGROUND_COLOR: backgroundColor, // Background color shown during login flow
-  REACT_APP_FIRST_AUTH_ACCOUNT_NAME: firstAuthAccount, // First auth account for ore_test
-  REACT_APP_FIRST_AUTH_KEY: firstAuthKey,
   REACT_APP_ETHEREUM_CONTRACT_ADDRESS: ethereumContractAddress,
   REACT_APP_ETHEREUM_CONTRACT_ACCOUNT_ADDRESS: ethereumContractAccountAddress,
   REACT_APP_ETHEREUM_CONTRACT_ACCOUNT_PRIVATE_KEY: ethereumContractAccountPrivateKey,
@@ -72,7 +70,6 @@ class App extends Component {
     this.state = {
       isLoggedIn: false,
       userInfo: {},
-      firstAuth: false,
       sendEthForGas: false,
       showWidget: false,
       webWidgetProps: {}
@@ -80,7 +77,6 @@ class App extends Component {
     this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
     this.handleSignButton = this.handleSignButton.bind(this);
-    this.toggleFirstAuth = this.toggleFirstAuth.bind(this);
     this.toggleSendEthForGas = this.toggleSendEthForGas.bind(this);
   }
 
@@ -146,7 +142,7 @@ class App extends Component {
     externalWalletType: provider
   }) {
     this.clearErrors();
-    const { firstAuth, sendEthForGas, userInfo } = this.state;
+    const { sendEthForGas, userInfo } = this.state;
     let { accountName } = userInfo;
     provider = provider || 'oreid'; // default to ore id
     await this.handleSignSampleTransaction(
@@ -155,7 +151,6 @@ class App extends Component {
       chainAccount,
       chainNetwork,
       permission,
-      firstAuth,
       sendEthForGas
     );
   }
@@ -250,11 +245,10 @@ class App extends Component {
     chainAccount,
     chainNetwork,
     permission,
-    firstAuth = false,
     sendEthForGas
   ) {
     try {
-      let signOptions = await this.prepareSignOptions({ chainNetwork, chainAccount, permission, provider, sendEthForGas, firstAuth, account });
+      let signOptions = await this.prepareSignOptions({ chainNetwork, chainAccount, permission, provider, sendEthForGas, account });
       this.setResponseSignTransaction('','','','');
       let signResponse = await this.oreId.sign(signOptions);
       // if the sign responds with a signUrl, then redirect the browser to it to call the signing flow
@@ -275,7 +269,7 @@ class App extends Component {
     }
   }
 
-  async prepareSignOptions({ chainNetwork, chainAccount, permission, provider, sendEthForGas, firstAuth, account }) {
+  async prepareSignOptions({ chainNetwork, chainAccount, permission, provider, sendEthForGas, account }) {
     const transaction = await this.composeSampleTransaction({ chainNetwork, chainAccount, permission, provider, sendEthForGas });
 
     let signOptions = {
@@ -293,7 +287,7 @@ class App extends Component {
     return signOptions;
   }
 
-  async composeSampleTransaction({ chainNetwork, chainAccount, permission, provider, firstAuth, sendEthForGas }) {
+  async composeSampleTransaction({ chainNetwork, chainAccount, permission, provider, sendEthForGas }) {
     let transaction;
     if (this.getChainType(chainNetwork) === 'algo') {
       transaction = this.createSampleTransactionAlgorand(chainAccount, permission);
@@ -307,26 +301,11 @@ class App extends Component {
       transaction = this.wrapTxActionArrayForOreId(provider, transaction);
     }
     if (this.getChainType(chainNetwork) === 'eos') {
-      if (firstAuth) {
-        const signedTransactionToSend = this.createFirstAuthSampleTransactionEos(
-          firstAuthAccount,
-          chainAccount,
-          permission
-        );
-        const chainUrl = this.getChainUrl(chainNetwork);
-        transaction = await signTransaction(
-          signedTransactionToSend,
-          chainUrl,
-          firstAuthKey
-        );
-      } else {
-        transaction = this.createSampleTransactionEos(
-          chainAccount,
-          permission
-        );
-      }
+      transaction = this.createSampleTransactionEos(
+        chainAccount,
+        permission
+      );
     }
-
     return transaction;
   }
 
@@ -343,36 +322,6 @@ class App extends Component {
       data: {
         user: actor
       }
-    };
-    return transaction;
-  }
-
-  createFirstAuthSampleTransactionEos(
-    payer,
-    actor,
-    permission = 'active',
-    payerPermission = 'active'
-  ) {
-    const transaction = {
-      actions: [
-        {
-          account: 'demoapphello',
-          name: 'hi',
-          authorization: [
-            {
-              actor: payer,
-              permission: payerPermission
-            },
-            {
-              actor,
-              permission
-            }
-          ],
-          data: {
-            user: actor
-          }
-        }
-      ]
     };
     return transaction;
   }
@@ -434,10 +383,6 @@ class App extends Component {
         this.setBusyCallback
       );
     }
-  }
-
-  async toggleFirstAuth() {
-    this.setState({ firstAuth: !this.state.firstAuth });
   }
 
   async toggleSendEthForGas() {
@@ -546,7 +491,6 @@ class App extends Component {
           {!isLoggedIn && this.renderLoginButtons()}
           {isLoggedIn && this.renderUserInfo()}
           {isLoggedIn && this.renderSigningOptions()}
-          {isLoggedIn && this.renderFirstAuthorizerCheckBox()}
           {isLoggedIn && this.renderEthereumGasCheckBox()}
           {isLoggedIn && showWidget && (
             <OreIdWebWidget
@@ -635,24 +579,6 @@ class App extends Component {
     );
   }
 
-  renderFirstAuthorizerCheckBox() {
-    let { firstAuth } = this.state;
-
-    return (
-      <div style={{ marginLeft: 20, marginTop: 20 }}>
-        <input
-          id="eos"
-          type="checkbox"
-          onChange={this.toggleFirstAuth}
-          checked={firstAuth}
-        />
-        <label for="eos" style={{ paddingLeft: 10 }}>
-          {'For Eos - Check the box above if you want your transaction\'s CPU and NET to be payed by App.'}
-        </label>
-      </div>
-    );
-  }
-
   renderEthereumGasCheckBox() {
     let { sendEthForGas } = this.state;
     return (
@@ -695,7 +621,7 @@ class App extends Component {
   }
 
   async handleSignWithWidget({ chainAccount, chainNetwork, permission }) {
-    const { firstAuth, sendEthForGas, userInfo, loggedProvider } = this.state;
+    const { sendEthForGas, userInfo, loggedProvider } = this.state;
     let { accountName } = userInfo;
     const provider = loggedProvider || 'google';
     const signOptions = await this.prepareSignOptions(
@@ -704,7 +630,6 @@ class App extends Component {
         permission,
         provider,
         sendEthForGas,
-        firstAuth,
         account: accountName
       }
     );
