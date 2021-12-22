@@ -2,7 +2,6 @@ import dotenv from 'dotenv';
 import React, { Component } from 'react';
 import LoginButton from 'oreid-login-button';
 import { OreId } from 'oreid-js';
-import { signTransaction } from './eos';
 import {
   ABI,
   addEthForGas,
@@ -72,7 +71,8 @@ class App extends Component {
       userInfo: {},
       sendEthForGas: false,
       showWidget: false,
-      webWidgetProps: {}
+      webWidgetProps: {},
+      widgetResponse: null
     };
     this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
@@ -133,6 +133,7 @@ class App extends Component {
     this.clearErrors();
     this.setState({ userInfo: {}, isLoggedIn: false });
     this.oreId.logout(); // clears local user state (stored in local storage or cookie)
+    window.location = `${oreIdUrl}/logout?app_id=${this.oreId.options.appId}&providers=all&callback_url=${oreIdUrl}`
   }
 
   async handleSignButton({
@@ -252,7 +253,7 @@ class App extends Component {
       this.setResponseSignTransaction('','','','');
       let signResponse = await this.oreId.sign(signOptions);
       // if the sign responds with a signUrl, then redirect the browser to it to call the signing flow
-      let { signUrl, signedTransaction, state, transactionId } =
+      let { signUrl, signedTransaction, transactionId } =
         signResponse || {};
       if (signUrl) {
         // redirect browser to signUrl
@@ -438,6 +439,10 @@ class App extends Component {
     }
   }
 
+  setWidgetSuccess({ data }) {
+    this.setState({ widgetResponse: JSON.stringify(data) })
+  }
+
   /** compose object of properties that can be added to WebWidget React component */
   composePropsForWebWidget(action, actionParams) {
     const oreIdOptions = {
@@ -456,6 +461,7 @@ class App extends Component {
       onSuccess: (result) => {
         console.log('widget results:', result);
         this.setState({ showWidget: false });
+        this.setWidgetSuccess(result)
       },
       onError: (result) => {
         this.setResponseErrors(result.errors);
@@ -482,7 +488,8 @@ class App extends Component {
       signedTransaction,
       signState,
       transactionId,
-      showWidget
+      showWidget,
+      widgetResponse
     } = this.state;
 
     return (
@@ -515,11 +522,20 @@ class App extends Component {
         </div>
         <div
           id="signedTransaction"
+          data-testid="signed-transaction-result"
           style={{ color: 'blue', marginLeft: '50px', marginTop: '10px' }}
         >
           <p className="log">
             {signedTransaction &&
               `Returned signed transaction: ${signedTransaction}`}
+          </p>
+        </div>
+        <div
+          style={{ color: 'green', marginLeft: '50px', marginTop: '10px' }}
+        >
+          <p data-testid="web-widget-response" className="log">
+            {widgetResponse &&
+              `Web Widget Response: ${widgetResponse}`}
           </p>
         </div>
         <div
@@ -645,6 +661,20 @@ class App extends Component {
     });
   }
 
+  async handleCreateNewAccount({ chainNetwork, permission }) {
+    const newAccountActionParams = {
+      accessToken: this.oreId.accessToken,
+      chainNetwork,
+      accountType: 'native',
+      provider: 'google'
+    }
+    const webWidgetProps = this.composePropsForWebWidget('newAccount', newAccountActionParams);
+    this.setState({
+      showWidget: true,
+      webWidgetProps
+    });
+  }
+
   // render one sign transaction button for each chain
   renderSignButtons = (permissions) => permissions.map((permission, index) => {
     let provider = permission.externalWalletType || 'oreid';
@@ -678,7 +708,8 @@ class App extends Component {
           provider={provider}
           data-tag={index}
           buttonStyle={{
-            margin: '2px'
+            margin: '2px',
+            width: '50%'
           }}
           text={`Sign with ${providerButtonDescription}`}
           onClick={() => {
@@ -689,11 +720,24 @@ class App extends Component {
           !permission.externalWalletType &&
           <LoginButton
             provider={provider}
-            text="Sign with Widget"
+            text="Sign with Web Widget"
             buttonStyle={{
-              margin: '2px'
+              margin: '2px',
+              width: '50%'
             }}
             onClick={() => this.handleSignWithWidget(permission)}
+          />
+        }
+        { /* Show button to sign with OREID WebWidget (don't show if the key is in a local wallet app)*/
+          !permission.externalWalletType &&
+          <LoginButton
+            provider={provider}
+            text="Create account with Web Widget"
+            buttonStyle={{
+              margin: '2px',
+              width: '50%'
+            }}
+            onClick={() => this.handleCreateNewAccount(permission)}
           />
         }
       </div>
