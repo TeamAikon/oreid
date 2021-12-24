@@ -23,7 +23,11 @@ If you use the callback handler, it stores the basic user info in a cookie (or l
 
 ### Deploying React Example to Google Cloud
 
+1) Make sure values in .env are correct
+2) Be sure to build before deployment - build and test deployed code using  ```npm run serve```
 ```
+# be sure to build before deploying
+# update app.yaml 'service' (to react-example or react-example-staging)
 cd examples/react
 gcloud -q app deploy app.yaml
 ```
