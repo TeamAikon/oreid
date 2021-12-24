@@ -2,10 +2,6 @@ import React, { Component } from 'react';
 // import ReactDOM from 'react-dom';
 import { OreId } from 'oreid-js';
 import LoginButton from 'oreid-login-button';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
 import OreIdWebWidget from 'oreid-react-web-widget';
 import { encode as base64Encode } from 'base-64';
 import './App.css';
@@ -26,7 +22,8 @@ class App extends Component {
     this.openInModal = this.openInModal.bind(this);
     this.onCloseModal = this.onCloseModal.bind(this);
   }
-  authCallbackUrl = `http://localhost:3000/authcallback`;
+
+  authCallbackUrl = `${window.location.origin}/authcallback`;
 
   // Intialize oreId
   // IMPORTANT - For a production app, you must protect your api key. A create-react-app app will leak the key since it all runs in the browser.

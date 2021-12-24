@@ -55,6 +55,7 @@ class App extends Component {
     appName: "my app",
     appId: process.env.REACT_APP_OREID_APP_ID,
     authCallbackUrl: this.authCallbackUrl,
+    backgroundColor: "#eb8f34"
   });
 
   async componentWillMount() {

@@ -39,8 +39,6 @@ const {
   REACT_APP_OREID_APP_ID: appId, // Provided when you register your app
   REACT_APP_OREID_API_KEY: apiKey, // Provided when you register your app
   REACT_APP_OREID_SERVICE_KEY: serviceKey, // Optional - required for some advanced features including autoSign and custodial accounts
-  REACT_APP_AUTH_CALLBACK: authCallbackUrl, // The url called by the server when login flow is finished - must match one of the callback strings listed in the App Registration
-  REACT_APP_SIGN_CALLBACK: signCallbackUrl, // The url called by the server when transaction signing flow is finished - must match one of the callback strings listed in the App Registration
   REACT_APP_OREID_URL: oreIdUrl, // HTTPS Address of OREID server
   REACT_APP_BACKGROUND_COLOR: backgroundColor, // Background color shown during login flow
   REACT_APP_ETHEREUM_CONTRACT_ADDRESS: ethereumContractAddress,
@@ -50,6 +48,9 @@ const {
   REACT_APP_ETHEREUM_FUNDING_ACCOUNT_PRIVATE_KEY: ethereumFundingAddressPrivateKey,
   REACT_APP_ALGORAND_EXAMPLE_TO_ADDRESS: transferAlgoToAddress // address of account to send Algos to (for sample transaction)
 } = process.env;
+
+const authCallbackUrl = `${window.location.origin}/authcallback`; // The url called by the server when login flow is finished - must match one of the callback strings listed in the App Registration
+const signCallbackUrl = `${window.location.origin}/signcallback`; // The url called by the server when transaction signing flow is finished - must match one of the callback strings listed in the App Registration
 
 let eosTransitWalletProviders = [
   scatterProvider(),
@@ -131,9 +132,10 @@ class App extends Component {
 
   handleLogout() {
     this.clearErrors();
-    this.setState({ userInfo: {}, isLoggedIn: false });
     this.oreId.logout(); // clears local user state (stored in local storage or cookie)
-    window.location = `${oreIdUrl}/logout?app_id=${this.oreId.options.appId}&providers=all&callback_url=${oreIdUrl}`
+    // this.setState({ userInfo: {}, isLoggedIn: false });
+    // call logout on ORE ID to delete OAuth tokens
+    window.location = `${oreIdUrl}/logout?app_id=${this.oreId.options.appId}&providers=all&callback_url=${window.location.origin}`;
   }
 
   async handleSignButton({
@@ -440,7 +442,7 @@ class App extends Component {
   }
 
   setWidgetSuccess({ data }) {
-    this.setState({ widgetResponse: JSON.stringify(data) })
+    this.setState({ widgetResponse: JSON.stringify(data) });
   }
 
   /** compose object of properties that can be added to WebWidget React component */
@@ -461,7 +463,7 @@ class App extends Component {
       onSuccess: (result) => {
         console.log('widget results:', result);
         this.setState({ showWidget: false });
-        this.setWidgetSuccess(result)
+        this.setWidgetSuccess(result);
       },
       onError: (result) => {
         this.setResponseErrors(result.errors);
@@ -667,7 +669,7 @@ class App extends Component {
       chainNetwork,
       accountType: 'native',
       provider: 'google'
-    }
+    };
     const webWidgetProps = this.composePropsForWebWidget('newAccount', newAccountActionParams);
     this.setState({
       showWidget: true,
