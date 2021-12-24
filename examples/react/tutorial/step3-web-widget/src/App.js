@@ -36,34 +36,35 @@ class App extends Component {
       isLoggedIn: false,
       authInfo: {},
       oreIdResult: '',
-      showModal: false,
-      dappAction: 'sign',
-      dappOptions: {},
+      showWidget: false,
+      widgetActionProps: {},
       loggedProvider: ''
     };
     this.handleSubmit = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
-    this.handleChangeAction = this.handleChangeAction.bind(this);
-    this.setDappOptionsForAction = this.setWidgetOptionsForAction.bind(this);
+    this.handleSelectAction = this.handleSelectAction.bind(this);
+    this.composeWidgetOptionsForAction = this.composeWidgetOptionsForAction.bind(this);
   }
   authCallbackUrl = `${window.location.origin}/authcallback`
 
   // Intialize oreId
   // IMPORTANT - For a production app, you must protect your api key. A create-react-app app will leak the key since it all runs in the browser.
   // To protect the key, you need to set-up a proxy server. See https://github.com/TeamAikon/ore-id-docs/tree/master/examples/react/advanced/react-server
-  oreId = new OreId({
+
+  myOreIdOptions = {
     appName: "my app",
     appId: process.env.REACT_APP_OREID_APP_ID,
     authCallbackUrl: this.authCallbackUrl,
-    backgroundColor: "#eb8f34"
-  });
+    signCallbackUrl: this.authCallbackUrl,
+  }
+  oreId = new OreId(this.myOreIdOptions);
 
   async componentWillMount() {
     await this.loadUserFromLocalStorage();
     await this.handleAuthCallback(); // handles the auth callback url
   }
 
-  /* Call oreId.login() - this returns a redirect url which will launch the login flow (for the specified provider)
+  /** Call oreId.login() - this returns a redirect url which will launch the login flow (for the specified provider)
      When complete, the browser will be redirected to the authCallbackUrl (specified in oredId options) */
   async handleLogin(event, provider) {
     event.preventDefault();
@@ -92,7 +93,7 @@ class App extends Component {
     if (userInfo.accountName) this.setState({ userInfo, isLoggedIn: true });
   }
 
-  /* Handle the authCallback coming back from ORE ID with an "account" parameter indicating that a user has logged in */
+  /** Handle the authCallback coming back from ORE ID with an "account" parameter indicating that a user has logged in */
   async handleAuthCallback() {
     const urlPath = `${window.location.origin}${window.location.pathname}`;
     if (urlPath === this.authCallbackUrl) {
@@ -102,18 +103,26 @@ class App extends Component {
       if (!errors) {
         await this.loadUserFromApi(account);
         this.setState({ isLoggedIn: true });
-        this.setWidgetOptionsForAction('sign')
       } else {
         this.setState({ errors });
       }
     }
   }
 
+  /** Set widget properties for selected action */
+  handleSelectAction(e) {
+    const action = e.target.value
+    const widgetActionProps = this.composeWidgetOptionsForAction(action)
+    this.setState({ widgetActionProps, showWidget: true })
+  }
+
+  // Compose sample data
+
   getFirstChainAccountForUserByChainType(chainNetwork) {
     const matchingPermission = this.state?.userInfo?.permissions?.find(
       p => p.chainNetwork === chainNetwork
     );
-    const { chainAccount, permissionName } = matchingPermission || {};
+    const { chainAccount, permission: permissionName } = matchingPermission || {};
     return { chainAccount, permissionName };
   }
 
@@ -134,45 +143,49 @@ class App extends Component {
     return transaction;
   }
 
-  handleChangeAction(e) {
-    this.setState({ dappAction: e.target.value })
-    this.setWidgetOptionsForAction(e.target.value)
-  }
-
-  setWidgetOptionsForAction(action) {
+  composeWidgetOptionsForAction(action) {
     const signWithChainNetwork = 'eos_kylin';
     const { accountName } = this.state.userInfo;
     const { chainAccount, permissionName } =
       this.getFirstChainAccountForUserByChainType(signWithChainNetwork);
-    const OptionsMap = {
-      sign: {
-        accessToken: this.oreId.accessToken,
-        account: accountName,
-        broadcast: true, // if broadcast=true, ore id will broadcast the transaction to the chain network for you
-        chainAccount: chainAccount,
-        chainNetwork: signWithChainNetwork,
-        state: 'abc', // anything you'd like to remember after the callback
-        transaction: base64Encode(
-          JSON.stringify(
-            this.createSampleTransactionEos(chainAccount, permissionName)
-          )
-        ),
-        returnSignedTransaction: false,
-        preventAutoSign: true, // prevent auto sign even if transaction is auto signable
-      },
-      newAccount: {
-        accessToken: this.oreId.accessToken,
-        chainNetwork: signWithChainNetwork,
-        accountType: 'native',
-        account: accountName,
-        provider: 'google'
-      },
-      recoverAccount: {}
-    }
 
-    this.setState({ dappOptions: OptionsMap[action] })
+    // compose params for sign
+    if(action === 'sign') {
+      return {
+        name: 'sign',
+        params: {
+          account: accountName,
+          broadcast: true, // if broadcast=true, ore id will broadcast the transaction to the chain network for you
+          chainAccount: chainAccount,
+          chainNetwork: signWithChainNetwork,
+          state: 'yourstate', // anything you'd like to remember after the callback
+          transaction: base64Encode(
+            JSON.stringify(
+              this.createSampleTransactionEos(chainAccount, permissionName)
+            )
+          ),
+          returnSignedTransaction: false,
+          preventAutoSign: true, // prevent auto sign even if transaction is auto signable
+        },
+      }
+    }
+    // compose params to create an additional blockchain account
+    // IMPORTANT: newAccount is for creating an ADDITIONAL blockchain account for an existing ORE ID wallet - you normally would not need to do this
+    if(action === 'newAccount') {
+      return {
+        name: 'newAccount',
+        params: {
+          account: accountName,
+          chainNetwork: signWithChainNetwork,
+          accountType: 'native',
+          provider: 'google'
+        },
+      }
+    }
+    return {}
   }
 
+  /** Show user info and options (after logging in )*/
   renderLoggedIn() {
     const { accountName, email, name, picture, username } = this.state.userInfo;
     const { classes } = this.props
@@ -198,7 +211,7 @@ class App extends Component {
           <InputLabel id="action-selector-label" className={classes.whiteText}>Select action</InputLabel>
           <Select
             labelId="action-selector-label"
-            onChange={this.handleChangeAction}
+            onChange={this.handleSelectAction}
             className={classes.select}
             value={this.state.dappAction}
             inputProps={{
@@ -217,23 +230,23 @@ class App extends Component {
         </div>
         <OreIdWebWidget
           oreIdOptions={{
-            appName: "Viktor's app",
-            appId: process.env.REACT_APP_OREID_APP_ID,
-            signCallbackUrl: this.authCallbackUrl,
+            ...this.myOreIdOptions,
+            accessToken: this.oreId.accessToken,
           }}
-          options={this.state.dappOptions}
-          action={this.state.dappAction}
+          show={this.state.showWidget}
+          action={this.state.widgetActionProps}
           onSuccess={result => {
-            this.setState({ oreIdResult: JSON.stringify(result, null, '\t') });
+            this.setState({ oreIdResult: JSON.stringify(result, null, '\t'), showWidget:false });
           }}
           onError={result => {
-            this.setState({ errors: result?.errors });
+            this.setState({ errors: result?.errors, showWidget:false });
           }}
         />
       </div>
     );
   }
 
+  /** Show login options */
   renderLoggedOut() {
     return (
       <div>

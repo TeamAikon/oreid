@@ -15,12 +15,12 @@ class App extends Component {
       isLoggedIn: false,
       authInfo: {},
       oreIdResult: '',
-      showModal: false,
+      showWidget: false,
     };
     this.handleSubmit = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
-    this.openInModal = this.openInModal.bind(this);
-    this.onCloseModal = this.onCloseModal.bind(this);
+    this.showWidget = this.showWidget.bind(this);
+    this.onCloseModal = this.onCloseWidget.bind(this);
   }
 
   authCallbackUrl = `${window.location.origin}/authcallback`;
@@ -28,12 +28,14 @@ class App extends Component {
   // Intialize oreId
   // IMPORTANT - For a production app, you must protect your api key. A create-react-app app will leak the key since it all runs in the browser.
   // To protect the key, you need to set-up a proxy server. See https://github.com/TeamAikon/ore-id-docs/tree/master/examples/react/advanced/react-server
-  oreId = new OreId({
-    appName: "Viktor's app",
+  myOreIdOptions = {
+    appName: "My app",
     appId: process.env.REACT_APP_OREID_APP_ID,
     apiKey: process.env.REACT_APP_OREID_API_KEY,
     authCallbackUrl: this.authCallbackUrl,
-  });
+    signCallbackUrl: this.authCallbackUrl
+  }
+  oreId = new OreId(this.myOreIdOptions);
 
   async componentWillMount() {
     await this.loadUserFromLocalStorage();
@@ -90,7 +92,7 @@ class App extends Component {
     const matchingPermission = this.state?.userInfo?.permissions?.find(
       p => p.chainNetwork === chainNetwork
     );
-    const { chainAccount, permissionName } = matchingPermission || {};
+    const { chainAccount, permission: permissionName } = matchingPermission || {};
     return { chainAccount, permissionName };
   }
 
@@ -134,50 +136,55 @@ class App extends Component {
         email: {email}
         <br />
         <div className="App-success">{this?.state?.oreIdResult}</div>
+        <LoginButton
+          provider="oreid"
+          text="Sign with OreID"
+          onClick={e => this.showWidget()}
+        />
         <OreIdWebWidget
+          show={this.state.showWidget}
           oreIdOptions={{
-            appName: "Viktor's app",
-            appId: process.env.REACT_APP_OREID_APP_ID,
-            apiKey: process.env.REACT_APP_OREID_API_KEY,
-            signCallbackUrl: this.authCallbackUrl,
-          }}
-          action="sign"
-          options={{
+            ...this.myOreIdOptions,
             accessToken: this.oreId.accessToken,
-            // provider: "google", // optional - must be a login provider supported by ORE ID
-            account: accountName,
-            broadcast: true, // if broadcast=true, ore id will broadcast the transaction to the chain network for you
-            chainAccount: chainAccount,
-            chainNetwork: signWithChainNetwork,
-            state: 'test', // anything you'd like to remember after the callback
-            transaction: base64Encode(
-              JSON.stringify(
-                this.createSampleTransactionEos(chainAccount, permissionName)
-              )
-            ),
-            returnSignedTransaction: false,
-            preventAutoSign: true, // prevent auto sign even if transaction is auto signable
+          }}
+          action={{
+            name: 'sign',
+            params: {
+              // provider: "google", // optional - must be a login provider supported by ORE ID
+              account: accountName,
+              broadcast: true, // if broadcast=true, ore id will broadcast the transaction to the chain network for you
+              chainAccount: chainAccount,
+              chainNetwork: signWithChainNetwork,
+              state: 'yourstate', // anything you'd like to remember after the callback
+              transaction: base64Encode(
+                JSON.stringify(
+                  this.createSampleTransactionEos(chainAccount, permissionName)
+                )
+              ),
+              returnSignedTransaction: false,
+              preventAutoSign: true, // prevent auto sign even if transaction is auto signable
+            }
           }}
           onSuccess={result => {
             this.setState({ oreIdResult: JSON.stringify(result, null, '\t') });
-            this.onCloseModal();
+            this.onCloseWidget();
           }}
           onError={result => {
             this.setState({ errors: result?.errors });
-            this.onCloseModal();
+            this.onCloseWidget();
           }}
         />
       </div>
     );
   }
 
-  openInModal() {
+  showWidget() {
     this.setState({ errors: null });
-    this.setState({ showModal: true });
+    this.setState({ showWidget: true });
   }
 
-  onCloseModal() {
-    this.setState({ showModal: false });
+  onCloseWidget() {
+    this.setState({ showWidget: false });
   }
 
   renderLoggedOut() {
