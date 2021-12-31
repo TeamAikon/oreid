@@ -195,6 +195,22 @@ class App extends Component {
     }
   }
 
+  async handleLoginWithIdToken() {
+    const idToken = process.env.REACT_APP_ID_TOKEN
+    let response = await this.oreId.login({ idToken });
+    console.log(response)
+    this.oreId.accessToken = response.accessToken
+    await this.loadUserFromLocalStorage()
+  }
+
+  /** Load the user from local storage - user info is automatically saved to local storage by oreId.getUserInfoFromApi() */
+  async loadUserFromLocalStorage() {
+    let accessToken = this.oreId.accessToken
+    if(!accessToken) return
+    let userInfo = (await this.oreId.getUser()) || {};
+    this.setState({ userInfo, isLoggedIn: true });
+  }
+
   getChainUrl(chainNetwork) {
     switch (chainNetwork) {
     case 'ore_test':
@@ -863,6 +879,12 @@ class App extends Component {
           provider="keycat"
           buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('keycat')}
+        />
+        <LoginButton
+          provider="google"
+          buttonStyle={buttonStyle}
+          text="Login with id token"
+          onClick={() => this.handleLoginWithIdToken()}
         />
       </div>
     );
