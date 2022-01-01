@@ -204,7 +204,7 @@ class App extends Component {
    *        To get a token to use for this demo app, use the Google OAuth Playground to get an OAuth Id Token for your own Google account - must select Scope: 'Google OAuth2 API v2' userinfo.profile and userinfo.email authorizations
    *        Use this link, login, then click [Exchange authorization code for tokens] button https://accounts.google.com/o/oauth2/v2/auth/oauthchooseaccount?redirect_uri=https%3A%2F%2Fdevelopers.google.com%2Foauthplayground&prompt=consent&response_type=code&client_id=407408718192.apps.googleusercontent.com&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&access_type=offline&flowName=GeneralOAuthFlow
    */
-async handleLoginWithIdToken(idToken, chainNetwork = EOS_CHAIN_NETWORK) {
+  async handleLoginWithIdToken(idToken, chainNetwork = EOS_CHAIN_NETWORK) {
     try {
       this.clearErrors();
       let loginResponse = await this.oreId.login({ idToken, chainNetwork }); // no provider required - will use 'oreid' as provider
