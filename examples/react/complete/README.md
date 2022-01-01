@@ -29,7 +29,7 @@ If you use the callback handler, it stores the basic user info in a cookie (or l
 # be sure to build before deploying
 # update app.yaml 'service' (to react-example or react-example-staging)
 cd examples/react
-gcloud -q app deploy app.yaml
+gcloud app deploy app.yaml
 ```
 
 ### Testing with Ledger Nano S
