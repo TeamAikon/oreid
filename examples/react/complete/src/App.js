@@ -68,6 +68,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      loginWithIdToken: '',
       isLoggedIn: false,
       userInfo: {},
       sendEthForGas: false,
@@ -101,16 +102,17 @@ class App extends Component {
   });
 
   async componentWillMount() {
-    this.loadUserFromLocalState();
+    this.loadUserFromLocalStorage();
     this.handleAuthCallback();
     this.handleSignCallback();
   }
 
-  async loadUserFromLocalState() {
-    const userInfo = (await this.oreId.getUser()) || {};
-    if ((userInfo || {}).accountName) {
-      this.setState({ userInfo, isLoggedIn: true });
-    }
+  /** Load the user from local storage - user info is automatically saved to local storage by oreId.getUserInfoFromApi() */
+  async loadUserFromLocalStorage() {
+    let { accessToken } = this.oreId;
+    if (!accessToken) return;
+    let userInfo = (await this.oreId.getUser()) || {};
+    this.setState({ userInfo, isLoggedIn: true });
   }
 
   async loadUserFromApi(account) {
@@ -195,20 +197,28 @@ class App extends Component {
     }
   }
 
-  async handleLoginWithIdToken() {
-    const idToken = process.env.REACT_APP_ID_TOKEN
-    let response = await this.oreId.login({ idToken });
-    console.log(response)
-    this.oreId.accessToken = response.accessToken
-    await this.loadUserFromLocalStorage()
-  }
-
-  /** Load the user from local storage - user info is automatically saved to local storage by oreId.getUserInfoFromApi() */
-  async loadUserFromLocalStorage() {
-    let accessToken = this.oreId.accessToken
-    if(!accessToken) return
-    let userInfo = (await this.oreId.getUser()) || {};
-    this.setState({ userInfo, isLoggedIn: true });
+  /** alternatively login user with a 3rd-party OAuth token - sets accessToken for the user
+   *  NOTE: The 3rd-party access token must be an OAuth token issued by a known service and OAuth clientId
+   *        E.g. Google app you've registered via Google Authentication
+   *        To use for your app, your Google app must be configured with your ORE ID App Registration
+   *        To get a token to use for this demo app, use the Google OAuth Playground to get an OAuth Id Token for your own Google account - must select Scope: 'Google OAuth2 API v2' userinfo.profile and userinfo.email authorizations
+   *        Use this link, login, then click [Exchange authorization code for tokens] button https://accounts.google.com/o/oauth2/v2/auth/oauthchooseaccount?redirect_uri=https%3A%2F%2Fdevelopers.google.com%2Foauthplayground&prompt=consent&response_type=code&client_id=407408718192.apps.googleusercontent.com&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&access_type=offline&flowName=GeneralOAuthFlow
+   */
+async handleLoginWithIdToken(idToken, chainNetwork = EOS_CHAIN_NETWORK) {
+    try {
+      this.clearErrors();
+      let loginResponse = await this.oreId.login({ idToken, chainNetwork }); // no provider required - will use 'oreid' as provider
+      let { accessToken, errors } = loginResponse;
+      if (errors) {
+        this.setState({ errorMessage: errors });
+        return;
+      }
+      // if the idToken is valid, login responds with an accessToken
+      this.oreId.accessToken = accessToken;
+      await this.loadUserFromLocalStorage();
+    } catch (error) {
+      this.setState({ errorMessage: error.message });
+    }
   }
 
   getChainUrl(chainNetwork) {
@@ -527,7 +537,7 @@ class App extends Component {
         <h3 style={{ color: 'green', margin: '50px' }}>
           {isBusy && (isBusyMessage || 'working...')}
         </h3>
-        <div style={{ color: 'red', margin: '50px' }}>
+        <div data-tag={'error-message'} style={{ color: 'red', margin: '50px' }}>
           {errorMessage && errorMessage}
         </div>
         <div
@@ -724,7 +734,7 @@ class App extends Component {
         </div>
         <LoginButton
           provider={provider}
-          data-tag={index}
+          data-tag={`sign-${provider}-${index}`}
           buttonStyle={{
             margin: '2px',
             width: '50%'
@@ -769,7 +779,7 @@ class App extends Component {
       <div style={{ margin: '5px' }} key={index}>
         <LoginButton
           provider={provider}
-          data-tag={index}
+          data-tag={`discover-${provider}-${index}`}
           buttonStyle={{
             width: '100%',
             minHeight: '75px'
@@ -880,12 +890,18 @@ class App extends Component {
           buttonStyle={buttonStyle}
           onClick={() => this.handleLogin('keycat')}
         />
-        <LoginButton
-          provider="google"
-          buttonStyle={buttonStyle}
-          text="Login with id token"
-          onClick={() => this.handleLoginWithIdToken()}
-        />
+        <span>
+          <LoginButton
+            provider="google"
+            buttonStyle={buttonStyle}
+            text="Login with id token"
+            onClick={() => this.handleLoginWithIdToken(this.state.loginWithIdToken)}
+          />
+          <label>
+            Id Token:
+            <input type="text" value={this.state.loginWithIdToken} onChange={(e) => { this.setState({ loginWithIdToken: e.target.value });}} />
+          </label>
+        </span>
       </div>
     );
   }
