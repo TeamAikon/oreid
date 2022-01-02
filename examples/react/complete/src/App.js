@@ -215,6 +215,7 @@ class App extends Component {
       }
       // if the idToken is valid, login responds with an accessToken
       this.oreId.accessToken = accessToken;
+      await this.oreId.getUserInfoFromApi();
       await this.loadUserFromLocalStorage();
     } catch (error) {
       this.setState({ errorMessage: error.message });
@@ -665,6 +666,7 @@ class App extends Component {
   }
 
   async handleSignWithWidget({ chainAccount, chainNetwork, permission }) {
+    this.clearErrors();
     const { sendEthForGas, userInfo, loggedProvider } = this.state;
     let { accountName } = userInfo;
     const provider = loggedProvider || 'google';
@@ -689,7 +691,8 @@ class App extends Component {
     });
   }
 
-  async handleCreateNewAccount({ chainNetwork, permission }) {
+  async handleCreateNewAccountWithWidget({ chainNetwork, permission }) {
+    this.clearErrors();
     const newAccountActionParams = {
       accessToken: this.oreId.accessToken,
       chainNetwork,
@@ -765,7 +768,7 @@ class App extends Component {
               margin: '2px',
               width: '50%'
             }}
-            onClick={() => this.handleCreateNewAccount(permission)}
+            onClick={() => this.handleCreateNewAccountWithWidget(permission)}
           />
         }
       </div>
