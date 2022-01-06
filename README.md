@@ -24,7 +24,7 @@ To run sample code:
 - Populate .env file in root of project directory with your appId and apiKey (it will start with keys for a demo app)
 
     ```
-    cd examples/react
+    cd examples/react/tutorial/step1-login
     npm install
     npm start
     ```
@@ -38,7 +38,7 @@ You can find other example apps including React Native, in the `/examples` folde
 
 ### Step 1 - Register your app and logo
 
-Apply [here](https://aikon.com/ore-id) for early access 
+Create a developer account [here](https://oreid.io/developer/new-app). 
 
 ### Step 2 - Install library
 
