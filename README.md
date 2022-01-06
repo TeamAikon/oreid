@@ -18,18 +18,23 @@ ORE ID removes the friction between your app and your future users.
 
 # Quickstart Guide
 
-To run sample code:
+To run sample code, start with the React examples from our tutorial:
 
-- You'll need your App ID and API Key - you get them when you register your app with ORE ID
-- Populate .env file in root of project directory with your appId and apiKey (it will start with keys for a demo app)
+First, clone this repo to your local machine.
 
+    ```shell
+    git clone https://github.com/boyroywax/ore-id-docs.git
     ```
+
+Now, run the first example by entering the following:
+
+    ```shell
     cd examples/react/tutorial/step1-login
     npm install
-    npm start
+    yarn start
     ```
-
-You can find other example apps including React Native, in the `/examples` folder.
+    
+Continue onto step 2 and 3.  These will demonstrate ORE-ID signing and the new web-widget.
 
 # Usage
 
