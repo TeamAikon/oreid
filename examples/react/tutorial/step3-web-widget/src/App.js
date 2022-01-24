@@ -70,7 +70,7 @@ class App extends Component {
     event.preventDefault();
     let { loginUrl } = await this.oreId.login({ provider });
     this.setState({ loggedProvider: provider }); // Save the provider to send in test flows
-    window.location = loginUrl; // redirect browser to loginURL to start the login flow
+    window.location.href = loginUrl; // redirect browser to loginURL to start the login flow
   }
 
   /** Remove user info from local storage */
@@ -102,6 +102,7 @@ class App extends Component {
       );
       if (!errors) {
         await this.loadUserFromApi(account);
+        window.location.replace('/')
         this.setState({ isLoggedIn: true });
       } else {
         this.setState({ errors });
@@ -112,8 +113,10 @@ class App extends Component {
   /** Set widget properties for selected action */
   handleSelectAction(e) {
     const action = e.target.value
-    const widgetActionProps = this.composeWidgetOptionsForAction(action)
-    this.setState({ widgetActionProps, showWidget: true })
+    if(action) {
+      const widgetActionProps = this.composeWidgetOptionsForAction(action)
+      this.setState({ widgetActionProps, showWidget: !!widgetActionProps })
+    }
   }
 
   // Compose sample data
@@ -144,29 +147,29 @@ class App extends Component {
   }
 
   composeWidgetOptionsForAction(action) {
-    const signWithChainNetwork = 'eos_kylin';
+    const chainNetwork = 'eos_kylin';
     const { accountName } = this.state.userInfo;
-    const { chainAccount, permissionName } =
-      this.getFirstChainAccountForUserByChainType(signWithChainNetwork);
-
-    // compose params for sign
+    const { chainAccount, permissionName } = this.getFirstChainAccountForUserByChainType(chainNetwork);
+      // compose params for sign
     if(action === 'sign') {
-      return {
-        name: 'sign',
-        params: {
-          account: accountName,
-          broadcast: true, // if broadcast=true, ore id will broadcast the transaction to the chain network for you
-          chainAccount: chainAccount,
-          chainNetwork: signWithChainNetwork,
-          state: 'yourstate', // anything you'd like to remember after the callback
-          transaction: base64Encode(
-            JSON.stringify(
-              this.createSampleTransactionEos(chainAccount, permissionName)
-            )
-          ),
-          returnSignedTransaction: false,
-          preventAutoSign: true, // prevent auto sign even if transaction is auto signable
-        },
+      if(chainAccount && permissionName) {
+        return {
+          name: 'sign',
+          params: {
+            account: accountName,
+            broadcast: true, // if broadcast=true, ore id will broadcast the transaction to the chain network for you
+            chainAccount,
+            chainNetwork,
+            state: 'yourstate', // anything you'd like to remember after the callback
+            transaction: base64Encode(
+              JSON.stringify(
+                this.createSampleTransactionEos(chainAccount, permissionName)
+              )
+            ),
+            returnSignedTransaction: false,
+            preventAutoSign: true, // prevent auto sign even if transaction is auto signable
+          },
+        }
       }
     }
     // compose params to create an additional blockchain account
@@ -176,13 +179,13 @@ class App extends Component {
         name: 'newAccount',
         params: {
           account: accountName,
-          chainNetwork: signWithChainNetwork,
+          chainNetwork,
           accountType: 'native',
           provider: 'google'
         },
       }
     }
-    return {}
+    return null
   }
 
   /** Show user info and options (after logging in )*/
@@ -208,12 +211,12 @@ class App extends Component {
         <br />
         <div className="App-success">{this?.state?.oreIdResult}</div>
         <FormControl variant="filled" className={classes.formControl}>
-          <InputLabel id="action-selector-label" className={classes.whiteText}>Select action</InputLabel>
+          <InputLabel id="action-selector-label" className="white-text">Select action</InputLabel>
           <Select
             labelId="action-selector-label"
             onChange={this.handleSelectAction}
             className={classes.select}
-            value={this.state.dappAction}
+            defaultValue=""
             inputProps={{
               classes: {
                 icon: classes.whiteText,
@@ -221,6 +224,7 @@ class App extends Component {
               }
             }}
           >
+            <MenuItem value="">Select Action</MenuItem>
             <MenuItem value="sign">Sign</MenuItem>
             <MenuItem value="newAccount">New Account</MenuItem>
           </Select>
