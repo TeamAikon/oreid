@@ -124,6 +124,8 @@ async function retrieveUserInfoFromApi() {
 
 When your app needs the user to sign a blockchain transaction, you just specify the chain name (e.g. eos_main) and chain account if you know it. 
 
+```typescript
+
 ```
 
 If you don't know which EOS blockchain accounts the user has or in which wallet they are stored, you can call the discover function that will prompt the user to unlock their wallet. Public keys stored in the wallet will be automatically remembered so you can help the user find the right wallet and keys quickly the next time they need to repeat a transaction. Awesome!
