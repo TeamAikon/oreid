@@ -18,8 +18,6 @@ import LoginButton from "oreid-login-button";
 import { makeStyles } from "@material-ui/core/styles";
 import { ButtonGroup, Snackbar } from "@material-ui/core";
 import Alert, { Color } from "@material-ui/lab/Alert";
-import UserOreId from "./UserOreId";
-import { encode as base64Encode } from "base-64";
 import algoSignerProvider from "eos-transit-algosigner-provider";
 import keycatProvider from "eos-transit-keycat-provider";
 import ledgerProvider from "eos-transit-ledger-provider";
@@ -30,6 +28,8 @@ import scatterProvider from "eos-transit-scatter-provider";
 import simpleosProvider from "eos-transit-simpleos-provider";
 import tokenpocketProvider from "eos-transit-tokenpocket-provider";
 import web3Provider from "eos-transit-web3-provider";
+import { encode as base64Encode } from "base-64";
+import UserOreId from "./UserOreId";
 
 const oreIdCallback = `${window.location.origin}/oreidcallback`;
 

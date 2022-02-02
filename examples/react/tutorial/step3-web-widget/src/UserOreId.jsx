@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { makeStyles } from "@material-ui/core/styles";
 import { DappAction } from "oreid-js/dist/webwidget";
 import { ChainNetwork, ExternalWalletType } from "oreid-js";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 import AccountBalanceWalletIcon from "@material-ui/icons/AccountBalanceWallet";
 import RefreshIcon from "@material-ui/icons/Refresh";
