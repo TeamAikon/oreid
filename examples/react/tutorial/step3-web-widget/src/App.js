@@ -129,8 +129,7 @@ export default function App() {
     event.preventDefault();
     const response = await oreId.login({ provider });
     // redirect browser to loginURL to start the login flow
-    // @ts-ignore
-    if (response) window.location.href = response.loginUrl;
+    if (response?.loginUrl) window.location.href = response.loginUrl;
   };
 
   const handleUserInfo = (userInfo) => {
@@ -156,7 +155,6 @@ export default function App() {
   /** Load the user from local storage - user info is automatically saved to local storage by oreId.getUserInfoFromApi() */
   const loadUserFromLocalStorage = async () => {
     if (!oreId.accessToken) return;
-
     const userInfo = await oreId.getUser();
     handleUserInfo(userInfo);
   };
@@ -201,27 +199,15 @@ export default function App() {
     }
   };
 
-  /** Set widget properties for selected action */
-  const handleAction = async (action, args) => {
-    if (action === "signString") {
-      handleSignString(args);
-      return;
-    }
-    const widgetActionProps = composeWidgetOptionsForAction(action, args);
-    setWidgetAction(widgetActionProps);
-    setShowWidget(!!widgetActionProps);
-  };
-
   // compose params for action
   const composeWidgetOptionsForAction = (action, args) => {
     switch (action) {
       case DappAction.Sign:
-        const selectedChainAccountPermission = userInfo?.permissions[args?.selectedPermission];
-        if (!selectedChainAccountPermission) {
+        if (!args?.selectedChainAccountPermission) {
           setLogs({ [Severity.Error]: "Please select a Permission to use for Action" });
           return;
         }
-        const { chainAccount, chainNetwork, privateKeyStoredExterally } = selectedChainAccountPermission;
+        const { chainAccount, chainNetwork, privateKeyStoredExterally } = args.chainAccountPermission;
         /** @type {{name: DappAction.Sign, params: SignOptions}} */
         const signActionProps = {
           name: DappAction.Sign,
@@ -267,6 +253,17 @@ export default function App() {
     }
   };
 
+  /** Set widget properties for selected action */
+  const handleAction = async (action, args) => {
+    if (action === "signString") {
+      handleSignString(args);
+      return;
+    }
+    const widgetActionProps = composeWidgetOptionsForAction(action, args);
+    setWidgetAction(widgetActionProps);
+    setShowWidget(!!widgetActionProps);
+  };
+
   /** Handle the authCallback coming back from ORE ID with an "account" parameter indicating that a user has logged in */
   useEffect(() => {
     // handles the auth callback url
@@ -286,64 +283,74 @@ export default function App() {
   }, [logs.error, logs.success, logs.warning, logs.info]);
 
   /** @type WebWidgetProps['onSuccess'] */
-  const onWidgetSuccess = (result) => {
+  const handleWidgetSuccess = (result) => {
     setShowWidget(false);
     console.log(JSON.stringify(result, null, 2));
-    if (widgetAction.name === DappAction.Sign) {
-      setLogs({ [Severity.Success]: "Signed Transaction Successfully!" });
+    switch (widgetAction.name) {
+      case DappAction.Sign:
+        setLogs({ [Severity.Success]: "Signed Transaction Successfully!" });
+        break;
+      case DappAction.NewAccount:
+        setLogs({ [Severity.Success]: `New Account ${result?.data["chain_account"] || ""} Created Successfully!` });
+        break;
+      case DappAction.RecoverAccount:
+        setLogs({ [Severity.Success]: "Recovered Password Successfully!" });
+        break;
+      default:
+        break;
     }
-    if (widgetAction.name === DappAction.NewAccount) {
-      const newAccount = result?.data["chain_account"] ? ` ${result?.data["chain_account"]}` : "";
-      setLogs({ [Severity.Success]: `New Account${newAccount} Created Successfully` });
-    }
-    if (widgetAction.name === DappAction.RecoverAccount) {
-      setLogs({ [Severity.Success]: "Recovered Password Successfully!" });
-    }
+    setWidgetAction(null);
+  };
+
+  /** @type WebWidgetProps['onError'] */
+  const handleWidgetError = (result) => {
+    result?.data && console.error(result.data);
+    setShowWidget(false);
+    setLogs({ [Severity.Error]: result?.errors || "An error occured" });
     setWidgetAction(null);
   };
 
   return (
     <div className={styles.container}>
-      {isLoggedIn !== null && isLoggedIn && (
+      {isLoggedIn !== null && (
         <>
-          <UserOreId
-            onAction={handleAction}
-            userInfo={userInfo}
-            onLogout={handleLogout}
-            onRefresh={() => loadUserFromApi(userInfo?.accountName)}
-            appId={myOreIdOptions.appId}
-          />
-          <OreIdWebWidget
-            oreIdOptions={{
-              ...myOreIdOptions,
-              accessToken: oreId?.accessToken,
-            }}
-            show={showWidget}
-            action={widgetAction}
-            onSuccess={onWidgetSuccess}
-            onError={(result) => {
-              setShowWidget(false);
-              setLogs({ [Severity.Error]: result?.errors });
-              setWidgetAction(null);
-            }}
-            timeout={null}
-          />
-        </>
-      )}
-      {isLoggedIn !== null && !isLoggedIn && (
-        <ButtonGroup className={styles.buttons}>
-          {/* Supported Login Options */}
-          {Object.keys(OreIdProvider)
-            .filter((oreIdProvider) => OreIdProvider[oreIdProvider] !== OreIdProvider.Custodial)
-            .map((oreIdProvider) => (
-              // @ts-ignore
-              <LoginButton
-                key={oreIdProvider}
-                provider={OreIdProvider[oreIdProvider]}
-                onClick={(e) => handleLogin(e, OreIdProvider[oreIdProvider])}
+          {isLoggedIn ? (
+            <>
+              <UserOreId
+                appId={myOreIdOptions.appId}
+                userInfo={userInfo}
+                onAction={handleAction}
+                onLogout={handleLogout}
+                onRefresh={() => loadUserFromApi(userInfo?.accountName)}
               />
-            ))}
-        </ButtonGroup>
+              <OreIdWebWidget
+                oreIdOptions={{
+                  ...myOreIdOptions,
+                  accessToken: oreId?.accessToken,
+                }}
+                show={showWidget}
+                action={widgetAction}
+                onSuccess={handleWidgetSuccess}
+                onError={handleWidgetError}
+                timeout={null}
+              />
+            </>
+          ) : (
+            <ButtonGroup className={styles.buttons}>
+              {/* Supported Login Options */}
+              {Object.keys(OreIdProvider)
+                .filter((oreIdProvider) => OreIdProvider[oreIdProvider] !== OreIdProvider.Custodial)
+                .map((oreIdProvider) => (
+                  // @ts-ignore
+                  <LoginButton
+                    key={oreIdProvider}
+                    provider={OreIdProvider[oreIdProvider]}
+                    onClick={(e) => handleLogin(e, OreIdProvider[oreIdProvider])}
+                  />
+                ))}
+            </ButtonGroup>
+          )}
+        </>
       )}
       <Snackbar
         anchorOrigin={{

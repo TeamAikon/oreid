@@ -145,7 +145,7 @@ const UserOreId = (props) => {
   const handleSelectPermission = (event) => {
     event.preventDefault();
     setOpenDialog(false);
-    onAction(DappAction.Sign, { selectedPermission });
+    onAction(DappAction.Sign, { chainAccountPermission: userInfo?.permissions[selectedPermission] });
   };
 
   const handleConnectWallet = (event) => {
@@ -156,15 +156,17 @@ const UserOreId = (props) => {
 
   const handleSelectAction = (event) => {
     const action = event.target.value;
-    if (action === DappAction.Sign) {
-      setDialogTitle(FormTitle.ChoosePermission);
-      setOpenDialog(true);
-      return;
-    }
-    if (action === DappAction.NewAccount) {
-      setDialogTitle(FormTitle.ChooseChainNetwork);
-      setOpenDialog(true);
-      return;
+    switch (action) {
+      case DappAction.Sign:
+        setDialogTitle(FormTitle.ChoosePermission);
+        setOpenDialog(true);
+        return;
+      case DappAction.NewAccount:
+        setDialogTitle(FormTitle.ChooseChainNetwork);
+        setOpenDialog(true);
+        return;
+      default:
+        break;
     }
     onAction(action);
   };
