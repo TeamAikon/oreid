@@ -1,0 +1,13 @@
+{
+  "account": "demoapphello",
+  "name": "hi",
+  "authorization": [
+    {
+      "actor": "$actor",
+      "permission": "$permission"
+    }
+  ],
+  "data": {
+    "user": "$actor"
+  }
+}
