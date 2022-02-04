@@ -124,7 +124,7 @@ const useStyles = makeStyles((theme) => ({
 
 /** Show user info and options (after logging in )*/
 const UserOreId = (props) => {
-  const { onAction, userInfo, onLogout, onRefresh, appId } = props;
+  const { onAction, userInfo, onLogout, onRefresh, appId, oreIdAppUrl } = props;
   const { accountName, email, name, picture, permissions, username } = userInfo;
 
   const [selectedPermission, setSelectedPermission] = useState("");
@@ -179,7 +179,7 @@ const UserOreId = (props) => {
           <Chip
             className={styles.dappPill}
             label={appId}
-            onClick={() => window.open(`https://oreid.io/app/${appId}`, "_blank").focus()}
+            onClick={() => window.open(`${oreIdAppUrl}/app/${appId}`, "_blank").focus()}
             color="primary"
             avatar={<Avatar aria-label={name}>{name[0].toUpperCase()}</Avatar>}
             variant="outlined"

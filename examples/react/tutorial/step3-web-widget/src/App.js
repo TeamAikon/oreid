@@ -50,9 +50,15 @@ const Severity = {
  * }} Logs
  */
 
+const oreIdUrl = {
+  app: "https://dev.oreid.io",
+  auth: "https://dev.service.oreid.io",
+};
+
 /** @type OreIdOptions  */
 const myOreIdOptions = {
-  appId: process.env.REACT_APP_OREID_APP_ID,
+  appId: "demo_0097ed83e0a54e679ca46d082ee0e33a",
+  oreIdUrl: oreIdUrl.auth,
   authCallbackUrl: oreIdCallback,
   signCallbackUrl: oreIdCallback,
   eosTransitWalletProviders: [
@@ -318,6 +324,7 @@ export default function App() {
             <>
               <UserOreId
                 appId={myOreIdOptions.appId}
+                oreIdAppUrl={oreIdUrl.app}
                 userInfo={userInfo}
                 onAction={handleAction}
                 onLogout={handleLogout}
