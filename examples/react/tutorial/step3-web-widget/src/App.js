@@ -329,6 +329,7 @@ export default function App() {
                 onRefresh={() => loadUserFromApi(userInfo?.accountName)}
               />
               <OreIdWebWidget
+                widgetUrl={`${oreIdUrl.auth}/.well-known/ore-id-web-widget.js`}
                 oreIdOptions={{
                   ...myOreIdOptions,
                   accessToken: oreId?.accessToken,
@@ -337,7 +338,6 @@ export default function App() {
                 action={widgetAction}
                 onSuccess={handleWidgetSuccess}
                 onError={handleWidgetError}
-                timeout={null}
               />
             </>
           ) : (
