@@ -132,7 +132,7 @@ const UserOreId = (props) => {
   const [dialogTitle, setDialogTitle] = useState("");
   const [chainNetwork, setChainNetwork] = useState(null);
   const [walletType, setWalletType] = useState(null);
-  const [sampleTransaction, setSampleTransaction] = useState(JSON.stringify(transactionTemplate, null, 4));
+  const [transaction, setTransaction] = useState(JSON.stringify(transactionTemplate, null, 4));
 
   const styles = useStyles();
 
@@ -145,7 +145,7 @@ const UserOreId = (props) => {
   const handleSelectPermission = (event) => {
     event.preventDefault();
     setOpenDialog(false);
-    onAction(DappAction.Sign, { chainAccountPermission: userInfo?.permissions[selectedPermission] });
+    onAction(DappAction.Sign, { chainAccountPermission: userInfo?.permissions[selectedPermission], transaction });
   };
 
   const handleConnectWallet = (event) => {
@@ -271,7 +271,7 @@ const UserOreId = (props) => {
                       value={selectedPermission}
                       onChange={(e) => {
                         setSelectedPermission(e.target.value);
-                        setSampleTransaction(JSON.stringify(transactionTemplate, null, 4));
+                        setTransaction(JSON.stringify(transactionTemplate, null, 4));
                       }}
                       label="Permission"
                     >
@@ -293,10 +293,10 @@ const UserOreId = (props) => {
                       variant="outlined"
                       color="secondary"
                       rows="5"
-                      value={sampleTransaction
+                      value={transaction
                         .replace(/\$actor/g, userInfo?.permissions[selectedPermission]?.chainAccount || "")
                         .replace(/\$permission/g, userInfo?.permissions[selectedPermission]?.permission || "")}
-                      onChange={(e) => setSampleTransaction(e.currentTarget.value)}
+                      onChange={(e) => setTransaction(e.currentTarget.value)}
                     />
                   </FormControl>
                   <FormControl margin="dense">
