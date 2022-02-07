@@ -210,8 +210,8 @@ export default function App() {
   const composeWidgetOptionsForAction = (action, args) => {
     switch (action) {
       case DappAction.Sign:
-        if (!args?.chainAccountPermission) {
-          setLogs({ [Severity.Error]: "Please select a Permission to use for Action" });
+        if (!args?.chainAccountPermission || !args.transaction) {
+          setLogs({ [Severity.Error]: "Please select a Permission and Transaction to Sign" });
           return;
         }
         const { chainAccount, chainNetwork, privateKeyStoredExterally } = args.chainAccountPermission;
