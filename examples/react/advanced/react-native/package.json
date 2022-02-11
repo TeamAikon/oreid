@@ -14,7 +14,7 @@
     "expo": "32.0.0",
     "mobx": "^5.9.4",
     "mobx-react": "^5.4.4",
-    "react": "16.5.0",
+    "react": "16.14.0",
     "react-native": "https://github.com/expo/react-native/archive/sdk-32.0.0.tar.gz",
     "react-native-auth0": "^1.4.2",
     "react-native-extended-stylesheet": "^0.11.2",
