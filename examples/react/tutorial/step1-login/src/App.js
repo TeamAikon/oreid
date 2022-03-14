@@ -28,7 +28,7 @@ class App extends Component {
     appName: 'ORE ID Sample App',
     appId: this.REACT_APP_OREID_APP_ID,
     // apiKey: this.REACT_APP_OREID_API_KEY,
-    oreIdUrl: "http://localhost:8080",
+    oreIdUrl: "https://dev.service.oreid.io",
   });
 
   webwidget = new OreIdWebWidget(this.oreId, window);
