@@ -2,10 +2,9 @@
 ## Overview
 
 This example demonstrates the basics of using the ORE ID
-- Initializing the oreid-js library with your app's api-key
-- Redirecting the browser to the login flow
-- Handling the login flow callback
-- Retrieving the user's info from the API (and caching it in local storage)
+- Initializing the oreid-js library with your app's appId
+- Handling the login flow
+- Retrieving the user's info from the API
 - Using the LoginButton React component
 <br><br>
 
