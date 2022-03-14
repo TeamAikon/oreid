@@ -1,19 +1,23 @@
 import React, { Component } from 'react';
 import './App.css';
 import { OreId } from 'oreid-js';
+import { OreIdWebWidget } from "oreid-webwidget";
 import LoginButton from 'oreid-login-button';
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      userInfo: {},
+      userData: {},
       errors: "",
       isLoggedIn: false
     };
     this.handleSubmit = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this)
   }
+
+  REACT_APP_OREID_APP_ID="demo_0097ed83e0a54e679ca46d082ee0e33a"
+  REACT_APP_OREID_API_KEY="demo_k_97b33a2f8c984fb5b119567ca19e4a49"
 
   authCallbackUrl = `${window.location.origin}/authcallback`
 
@@ -22,32 +26,35 @@ class App extends Component {
   // To protect the key, you need to set-up a proxy server. See https://github.com/TeamAikon/ore-id-docs/tree/master/examples/react/advanced/react-server
   oreId = new OreId({
     appName: 'ORE ID Sample App',
-    appId: process.env.REACT_APP_OREID_APP_ID,
-    // apiKey: process.env.REACT_APP_OREID_API_KEY,
-    authCallbackUrl: this.authCallbackUrl
+    appId: this.REACT_APP_OREID_APP_ID,
+    // apiKey: this.REACT_APP_OREID_API_KEY,
+    oreIdUrl: "http://localhost:8080",
   });
 
+  webwidget = new OreIdWebWidget(this.oreId, window);
+
   async componentWillMount() {
-    await this.loadUserFromLocalStorage();
-    await this.handleAuthCallback(); // handles the auth callback url 
+    await this.loadUser();
   }
 
-  /* Call oreId.login() - this returns a redirect url which will launch the login flow (for the specified provider) 
-     When complete, the browser will be redirected to the authCallbackUrl (specified in oredId options) */
+  /* Present a popup for the user to login
+     When complete, the accessToken will be updated in oreid.auth */
   async handleLogin(event, provider) {
     event.preventDefault();
-    if(provider === 'idtoken') return await this.handleLoginWithIdToken(this.idToken)
-    let { loginUrl } = await this.oreId.login({ provider });
-    window.location = loginUrl; // redirect browser to loginURL to start the login flow
+    this.webwidget.onAuth({
+			params: { provider: 'google'},
+			onError: console.error,
+			onSuccess: async (data) => { await this.loadUser() },
+		});
   }
 
   // get idTokens from Google using Oauth playground - https://stackoverflow.com/questions/25657190/how-to-get-dummy-google-access-token-to-test-oauth-google-api
   idToken = 'ey...'
   /** login to oreid using an idToken from a 3rd party OAuth flow (e.g. google) */
   async handleLoginWithIdToken(idToken) {
-    let { accessToken } = await this.oreId.login({idToken})
+    let { accessToken } = await this.oreId.loginWithToken({idToken})
     this.oreId.accessToken = accessToken
-    await this.loadUserFromLocalStorage()
+    await this.loadUser()
   }
 
   /** Remove user info from local storage */
@@ -58,35 +65,15 @@ class App extends Component {
   }
 
   /** Load the user from local storage - user info is automatically saved to local storage by oreId.getUserInfoFromApi() */
-  async loadUserFromLocalStorage() {
-    let accessToken = this.oreId.accessToken
-    if(!accessToken) return
-    let userInfo = (await this.oreId.getUser()) || {};
-    this.setState({ userInfo, isLoggedIn: true });
-  }
-
-  /** Retrieve user info from ORE ID service - user info is automatically saved to local storage */
-  async loadUserFromApi(account) {
-    const userInfo = (await this.oreId.getUserInfoFromApi(account)) || {};
-    if(userInfo.accountName) this.setState({ userInfo, isLoggedIn: true });
-  }
-
-  /* Handle the authCallback coming back from ORE ID with an "account" parameter indicating that a user has logged in */
-  async handleAuthCallback() {
-    const urlPath = `${window.location.origin}${window.location.pathname}`;
-    if (urlPath === this.authCallbackUrl) {
-      const { accessToken, account, errors } = this.oreId.handleAuthResponse(window.location.href);
-      if (!errors) {
-        await this.loadUserFromApi(account);
-        this.setState({ isLoggedIn: true });
-      } else {
-        this.setState({ errors });
-      }
-    }
+  async loadUser() {
+    if(!this.oreId.auth.isLoggedIn) return
+    let { user } = this.oreId.auth
+    await user.getData()
+    this.setState({ userData: user.data, isLoggedIn: true });
   }
 
   renderLoggedIn() {
-    const { accountName, email, name, picture, username } = this.state.userInfo;
+    const { accountName, email, name, picture, username } = this.state.userData;
     return (
       <div style={{ marginTop: 50, marginLeft: 40 }}>
         <h4>User Info</h4>
@@ -110,7 +97,7 @@ class App extends Component {
       <div>
         <LoginButton provider='facebook' onClick={(e) => this.handleLogin(e, 'facebook')}/>
         <LoginButton provider='google' onClick={(e) => this.handleLogin(e, 'google')}/>
-        <LoginButton provider='google' text='Login with idToken' onClick={(e) => this.handleLogin(e, 'idtoken')}/>
+        <LoginButton provider='google' text='Login with idToken' onClick={(e) => this.handleLoginWithIdToken(e, 'idtoken')}/>
       </div>
     )
   }
