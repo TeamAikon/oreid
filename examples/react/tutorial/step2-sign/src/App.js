@@ -1,99 +1,68 @@
 import React, { Component } from 'react';
-// import ReactDOM from 'react-dom';
-import { OreId } from 'oreid-js';
 import LoginButton from 'oreid-login-button';
-import OreIdWebWidget from 'oreid-react-web-widget';
-import { encode as base64Encode } from 'base-64';
+import { OreId } from 'oreid-js';
+import { OreIdWebWidget } from "oreid-webwidget";
 import './App.css';
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      userInfo: {},
       errors: '',
       isLoggedIn: false,
-      authInfo: {},
-      oreIdResult: '',
-      showWidget: false,
+      signResults: '',
+      userData: {},
     };
     this.handleSubmit = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
-    this.showWidget = this.showWidget.bind(this);
-    this.onCloseModal = this.onCloseWidget.bind(this);
   }
 
-  authCallbackUrl = `${window.location.origin}/authcallback`;
+  REACT_APP_OREID_APP_ID = "demo_0097ed83e0a54e679ca46d082ee0e33a"
+  REACT_APP_OREID_API_KEY = "demo_k_97b33a2f8c984fb5b119567ca19e4a49"
 
   // Intialize oreId
   // IMPORTANT - For a production app, you must protect your api key. A create-react-app app will leak the key since it all runs in the browser.
   // To protect the key, you need to set-up a proxy server. See https://github.com/TeamAikon/ore-id-docs/tree/master/examples/react/advanced/react-server
   myOreIdOptions = {
-    appName: "My app",
-    appId: process.env.REACT_APP_OREID_APP_ID,
-    apiKey: process.env.REACT_APP_OREID_API_KEY,
-    authCallbackUrl: this.authCallbackUrl,
-    signCallbackUrl: this.authCallbackUrl
+    appName: 'ORE ID Sample App',
+    appId: this.REACT_APP_OREID_APP_ID,
+    // apiKey: REACT_APP_OREID_API_KEY,
+    oreIdUrl: "https://dev.service.oreid.io",
   }
+
   oreId = new OreId(this.myOreIdOptions);
 
+  webwidget = new OreIdWebWidget(this.oreId, window);
+
   async componentWillMount() {
-    await this.loadUserFromLocalStorage();
-    await this.handleAuthCallback(); // handles the auth callback url
+    await this.loadUser();
   }
 
-  /* Call oreId.login() - this returns a redirect url which will launch the login flow (for the specified provider)
-     When complete, the browser will be redirected to the authCallbackUrl (specified in oredId options) */
+  /* Present a popup for the user to login
+    When complete, the accessToken will be updated in oreid.auth */
   async handleLogin(event, provider) {
     event.preventDefault();
-    this.setState({ errors: null });
-    let { loginUrl } = await this.oreId.login({ provider });
-    window.location = loginUrl; // redirect browser to loginURL to start the login flow
+    console.log('got to handleLogin')
+    this.webwidget.onAuth({
+      params: { provider },
+      onError: console.error,
+      onSuccess: async (data) => { await this.loadUser() },
+    });
   }
 
   /** Remove user info from local storage */
   async handleLogout() {
-    this.setState({ errors: {}, userInfo: {}, isLoggedIn: false });
+    this.setState({ errors: {}, userData: {}, isLoggedIn: false });
     this.oreId.logout();
     window.location = window.location.origin; // clear callback url in browser
   }
 
-  /** Load the user from local storage - user info is automatically saved to local storage by oreId.getUserInfoFromApi() */
-  async loadUserFromLocalStorage() {
-    let accessToken = this.oreId.accessToken
-    if(!accessToken) return
-    let userInfo = (await this.oreId.getUser()) || {};
-    this.setState({ userInfo, isLoggedIn: true });
-  }
-
-  /** Retrieve user info from ORE ID service - user info is automatically saved to local storage */
-  async loadUserFromApi(account) {
-    const userInfo = (await this.oreId.getUserInfoFromApi(account)) || {};
-    if (userInfo.accountName) this.setState({ userInfo, isLoggedIn: true });
-  }
-
-  /* Handle the authCallback coming back from ORE ID with an "account" parameter indicating that a user has logged in */
-  async handleAuthCallback() {
-    const urlPath = `${window.location.origin}${window.location.pathname}`;
-    if (urlPath === this.authCallbackUrl) {
-      const { account, errors } = this.oreId.handleAuthResponse(
-        window.location.href
-      );
-      if (!errors) {
-        await this.loadUserFromApi(account);
-        this.setState({ isLoggedIn: true });
-      } else {
-        this.setState({ errors });
-      }
-    }
-  }
-
-  getFirstChainAccountForUserByChainType(chainNetwork) {
-    const matchingPermission = this.state?.userInfo?.permissions?.find(
-      p => p.chainNetwork === chainNetwork
-    );
-    const { chainAccount, permission: permissionName } = matchingPermission || {};
-    return { chainAccount, permissionName };
+  /** Load the user from local storage - user info is automatically saved to local storage by oreId.auth.user.getData() */
+  async loadUser() {
+    if(!this.oreId.auth?.user?.isLoggedIn) return
+    let { user } = this.oreId.auth
+    await user.getData()
+    this.setState({ userData: user.data, isLoggedIn: true });
   }
 
   createSampleTransactionEos(actor, permission = 'active') {
@@ -114,10 +83,7 @@ class App extends Component {
   }
 
   renderLoggedIn() {
-    const signWithChainNetwork = 'eos_kylin';
-    const { accountName, email, name, picture, username } = this.state.userInfo;
-    const { chainAccount, permissionName } =
-      this.getFirstChainAccountForUserByChainType(signWithChainNetwork);
+    const { accountName, email, name, picture, username } = this.state.userData;
     return (
       <div style={{ marginTop: 50, marginLeft: 40 }}>
         <h4>User Info</h4>
@@ -135,56 +101,47 @@ class App extends Component {
         <br />
         email: {email}
         <br />
-        <div className="App-success">{this?.state?.oreIdResult}</div>
+        <div className="App-success">{this?.state?.signResults}</div>
         <LoginButton
           provider="oreid"
           text="Sign with OreID"
-          onClick={e => this.showWidget()}
+          onClick={e => this.handleSign()}
         />
-        <OreIdWebWidget
-          show={this.state.showWidget}
-          oreIdOptions={{
-            ...this.myOreIdOptions,
-            accessToken: this.oreId.accessToken,
-          }}
-          action={{
-            name: 'sign',
-            params: {
-              // provider: "google", // optional - must be a login provider supported by ORE ID
-              account: accountName,
-              broadcast: true, // if broadcast=true, ore id will broadcast the transaction to the chain network for you
-              chainAccount: chainAccount,
-              chainNetwork: signWithChainNetwork,
-              state: 'yourstate', // anything you'd like to remember after the callback
-              transaction: base64Encode(
-                JSON.stringify(
-                  this.createSampleTransactionEos(chainAccount, permissionName)
-                )
-              ),
-              returnSignedTransaction: false,
-              preventAutoSign: true, // prevent auto sign even if transaction is auto signable
-            }
-          }}
-          onSuccess={result => {
-            this.setState({ oreIdResult: JSON.stringify(result, null, '\t') });
-            this.onCloseWidget();
-          }}
-          onError={result => {
-            this.setState({ errors: result?.errors });
-            this.onCloseWidget();
-          }}
-        />
+        <br />
+        <button onClick={this.handleLogout}> Logout </button>
       </div>
     );
   }
 
-  showWidget() {
+  async handleSign() {
+		const userData = this.oreId.auth.user.data
     this.setState({ errors: null });
-    this.setState({ showWidget: true });
-  }
 
-  onCloseWidget() {
-    this.setState({ showWidget: false });
+    const signWithChainNetwork = 'eos_kylin';
+    const signingAccount = userData.chainAccounts.find(ca => ca.chainNetwork === signWithChainNetwork)
+
+    // Compose transaction contents
+		const transactionBody = this.createSampleTransactionEos(signingAccount.chainAccount, signingAccount.defaultPermission?.name)
+
+		const transaction = await this.oreId.createTransaction({
+			chainAccount: signingAccount.chainAccount,
+			chainNetwork: signingAccount.chainNetwork,
+			transaction: transactionBody,
+			signOptions: { 
+        broadcast: true,
+        returnSignedTransaction: false, 
+      },
+		});
+
+		this.webwidget.onSign({
+			transaction,
+      onError: ({ errors }) => {
+        this.setState({ errors });
+      },
+      onSuccess: ({ data }) => {
+        this.setState({ oreIdResult: JSON.stringify(data, null, '\t') });
+      }
+		});
   }
 
   renderLoggedOut() {
