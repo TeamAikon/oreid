@@ -502,7 +502,7 @@ class App extends Component {
     const oreIdOptions = {
       appName: this.oreId.options.appName,
       appId: this.oreId.options.appId,
-      oreIdUrl: 'http://localhost:8080',
+      oreIdUrl,
       accessToken: this.oreId.accessToken
     };
 
@@ -608,7 +608,6 @@ class App extends Component {
 
   renderUserInfo() {
     const { accountName, email, name, picture, username } = this.state.userInfo;
-    console.log({ userInfo: this.state.userInfo });
     return (
       <div style={{ marginTop: 50, marginLeft: 40 }}>
         <h3>User Info</h3>
