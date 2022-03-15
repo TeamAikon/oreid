@@ -3,7 +3,11 @@ import LoginButton from "oreid-login-button";
 import { OreId } from "oreid-js";
 import { OreIdWebWidget } from "oreid-webwidget";
 import "./App.css";
-import { assignGroupIdAndReturnTransactions, composeTxOptIn, composeTxTransfer } from "./algorand";
+import {
+  assignGroupIdAndReturnTransactions,
+  composeTxOptIn,
+  composeTxTransfer,
+} from "./algorand";
 
 class App extends Component {
   constructor(props) {
@@ -13,6 +17,7 @@ class App extends Component {
       isLoggedIn: false,
       signResults: "",
       userData: {},
+      txType: "transfer",
       toAddress: "VBS2IRDUN2E7FJGYEKQXUAQX3XWL6UNBJZZJHB7CJDMWHUKXAGSHU5NXNQ",
     };
     this.handleSubmit = this.handleLogin.bind(this);
@@ -85,20 +90,20 @@ class App extends Component {
     }
 
     // calculate groupId for two transactions, then return each including groupId
-    const { transaction1WithGroup, transaction2WithGroup } = await assignGroupIdAndReturnTransactions(
-      txOptIn,
-      txTransfer
-    );
+    const { transaction1WithGroup, transaction2WithGroup } =
+      await assignGroupIdAndReturnTransactions(txOptIn, txTransfer);
 
     if (txType === "group") {
-      return [transaction1WithGroup, transaction2WithGroup]
+      return [transaction1WithGroup, transaction2WithGroup];
     }
+  }
 
+  handleTxTypeChange(e) {
+    this.setState({ txType: e.target.value });
   }
 
   renderLoggedIn() {
     const { accountName, email, name, picture, username } = this.state.userData;
-    const { classes } = this.props;
     return (
       <div style={{ marginTop: 50, marginLeft: 40 }}>
         <h4>User Info</h4>
@@ -117,11 +122,24 @@ class App extends Component {
         email: {email}
         <br />
         <div className="App-success">{this?.state?.signResults}</div>
-        <LoginButton
-          provider="oreid"
-          text="Sign with OreID"
-          onClick={(e) => this.handleSign()}
-        />
+        <div style={{ marginTop: 10, marginBottom: 20 }}>
+          <select
+            name="choice"
+            value={this.state.txType}
+            onChange={(e) => this.handleTxTypeChange(e)}
+          >
+            <option value="transfer">Transfer Example</option>
+            <option value="optin">Opt-in Example</option>
+            <option value="group">Group Example</option>
+          </select>
+        </div>
+        <div className="App-button">
+          <LoginButton
+            provider="oreid"
+            text="Sign with OreID"
+            onClick={(e) => this.handleSign()}
+          />
+        </div>
         <br />
         <button onClick={this.handleLogout}> Logout </button>
       </div>
@@ -151,9 +169,9 @@ class App extends Component {
     // Compose transaction contents
     const transactionBody = await this.composeSampleTransactionAlgorand(
       signingAccount.chainAccount,
-      "optin" // "group"
+      this.state.txType
     );
-  
+
     console.log("transactionBody:", transactionBody);
 
     const transaction = await this.oreId.createTransaction({
