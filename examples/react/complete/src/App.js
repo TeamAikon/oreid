@@ -1,7 +1,8 @@
 import dotenv from 'dotenv';
 import React, { Component } from 'react';
 import LoginButton from 'oreid-login-button';
-import { OreId } from 'oreid-js';
+import { OreId, ExternalWalletType, ChainNetwork } from 'oreid-js';
+import { defaultOreIdServiceUrl } from 'oreid-js/dist/constants';
 import {
   ABI,
   addEthForGas,
@@ -24,22 +25,19 @@ import simpleosProvider from 'eos-transit-simpleos-provider';
 import web3Provider from 'eos-transit-web3-provider';
 import walletconnectProvider from 'eos-transit-walletconnect-provider';
 import {
-  EOS_CHAIN_NETWORK,
   ERC20_FUNDING_AMOUNT,
   ERC20_TRANSFER_AMOUNT,
   ETH_TRANSFER_AMOUNT,
-  ALGO_CHAIN_NETWORK,
-  ETH_CHAIN_NETWORK
 } from './constants';
 import { composeAlgorandSampleTransaction } from './algorand';
 
 dotenv.config();
 
 const {
-  REACT_APP_OREID_APP_ID: appId, // Provided when you register your app
+  REACT_APP_OREID_APP_ID: appId = 'demo_0097ed83e0a54e679ca46d082ee0e33a', // Provided when you register your app
   REACT_APP_OREID_API_KEY: apiKey, // Provided when you register your app
   REACT_APP_OREID_SERVICE_KEY: serviceKey, // Optional - required for some advanced features including autoSign and custodial accounts
-  REACT_APP_OREID_URL: oreIdUrl, // HTTPS Address of OREID server
+  REACT_APP_OREID_URL: oreIdUrl = defaultOreIdServiceUrl, // HTTPS Address of OREID server
   REACT_APP_BACKGROUND_COLOR: backgroundColor, // Background color shown during login flow
   REACT_APP_ETHEREUM_CONTRACT_ADDRESS: ethereumContractAddress,
   REACT_APP_ETHEREUM_CONTRACT_ACCOUNT_ADDRESS: ethereumContractAccountAddress,
@@ -52,7 +50,7 @@ const {
 const authCallbackUrl = `${window.location.origin}/authcallback`; // The url called by the server when login flow is finished - must match one of the callback strings listed in the App Registration
 const signCallbackUrl = `${window.location.origin}/signcallback`; // The url called by the server when transaction signing flow is finished - must match one of the callback strings listed in the App Registration
 
-let eosTransitWalletProviders = [
+const eosTransitWalletProviders = [
   scatterProvider(),
   lynxProvider(),
   meetoneProvider(),
@@ -63,6 +61,8 @@ let eosTransitWalletProviders = [
   web3Provider(),
   walletconnectProvider()
 ];
+
+const loginButtonStyle = { width: 200, marginTop: '24px', cursor: 'pointer' };
 
 class App extends Component {
   constructor(props) {
@@ -76,16 +76,10 @@ class App extends Component {
       webWidgetProps: {},
       widgetResponse: null
     };
-    this.handleLogin = this.handleLogin.bind(this);
-    this.handleLogout = this.handleLogout.bind(this);
-    this.handleSignButton = this.handleSignButton.bind(this);
-    this.toggleSendEthForGas = this.toggleSendEthForGas.bind(this);
   }
 
   // called by library to set local busy state
-  setBusyCallback = (isBusy, isBusyMessage) => {
-    this.setState({ isBusy, isBusyMessage });
-  };
+  setBusyCallback = (isBusy, isBusyMessage) => this.setState({ isBusy, isBusyMessage });
 
   // intialize oreId
   oreId = new OreId({
@@ -101,23 +95,39 @@ class App extends Component {
     setBusyCallback: this.setBusyCallback
   });
 
+  walletButtons = [
+    { provider: ExternalWalletType.AlgoSigner, chainNetwork: ChainNetwork.AlgoTest },
+    { provider: ExternalWalletType.Keycat, chainNetwork: ChainNetwork.EosKylin },
+    { provider: ExternalWalletType.Ledger, chainNetwork: ChainNetwork.EosKylin },
+    { provider: ExternalWalletType.Lynx, chainNetwork: ChainNetwork.EosKylin },
+    { provider: ExternalWalletType.Meetone, chainNetwork: ChainNetwork.EosKylin },
+    { provider: ExternalWalletType.Portis, chainNetwork: ChainNetwork.EosKylin },
+    { provider: ExternalWalletType.Scatter, chainNetwork: ChainNetwork.EosKylin },
+    { provider: ExternalWalletType.SimpleEos, chainNetwork: ChainNetwork.EosKylin },
+    { provider: ExternalWalletType.TokenPocket, chainNetwork: ChainNetwork.EosKylin },
+    { provider: ExternalWalletType.Web3, chainNetwork: ChainNetwork.EthRopsten },
+    { provider: ExternalWalletType.WhaleVault, chainNetwork: ChainNetwork.EosKylin }
+  ]
+
   async componentWillMount() {
     this.loadUserFromLocalStorage();
     this.handleAuthCallback();
     this.handleSignCallback();
+    window.oreId = this.oreId;
   }
 
-  /** Load the user from local storage - user info is automatically saved to local storage by oreId.getUserInfoFromApi() */
+  /** Load the user from local storage - user info is automatically saved to local storage by oreId.auth.user.getData() */
   async loadUserFromLocalStorage() {
     let { accessToken } = this.oreId;
     if (!accessToken) return;
-    let userInfo = (await this.oreId.getUser()) || {};
+    let userInfo = (await this.oreId.auth.user) || {};
     this.setState({ userInfo, isLoggedIn: true });
   }
 
-  async loadUserFromApi(account) {
+  async loadUserFromApi() {
     try {
-      const userInfo = (await this.oreId.getUserInfoFromApi(account)) || {};
+      await this.oreId.auth.user.getData();
+      const userInfo = this.oreId.auth.user.data;
       this.setState({ userInfo, isLoggedIn: true });
     } catch (error) {
       this.setState({ errorMessage: error.message });
@@ -132,7 +142,7 @@ class App extends Component {
     });
   }
 
-  handleLogout() {
+  handleLogout = () => {
     this.clearErrors();
     this.oreId.logout(); // clears local user state (stored in local storage or cookie)
     // this.setState({ userInfo: {}, isLoggedIn: false });
@@ -140,12 +150,12 @@ class App extends Component {
     window.location = `${oreIdUrl}/logout?app_id=${this.oreId.options.appId}&providers=all&callback_url=${window.location.origin}`;
   }
 
-  async handleSignButton({
+  handleSignButton = async ({
     chainAccount,
     chainNetwork,
     permission,
     externalWalletType: provider
-  }) {
+  }) => {
     this.clearErrors();
     const { sendEthForGas, userInfo } = this.state;
     let { accountName } = userInfo;
@@ -160,31 +170,48 @@ class App extends Component {
     );
   }
 
-  async handleWalletDiscoverButton({ provider, chainNetwork }) {
+  handleWalletDiscoverButton = async ({ provider, chainNetwork } = {}) => {
     try {
       this.clearErrors();
-      let { accountName } = this.state.userInfo;
+      const { accountName } = this.state.userInfo;
 
-      if (!this.oreId.canDiscover(provider)) {
+      if (!this.oreId.transitHelper.canDiscover(provider)) {
         console.log(
           'Provider doesn\'t support discover, so discover function will call wallet provider\'s login instead.'
         );
       }
-      await this.oreId.discover({
-        provider,
+      await this.oreId.transitHelper.discover({
+        walletType: provider,
         chainNetwork,
         oreAccount: accountName
       });
-      this.loadUserFromApi(this.state.userInfo.accountName); // reload user from ore id api - to show new keys discovered
+      this.loadUserFromApi(); // reload user from ore id api - to show new keys discovered
     } catch (error) {
       this.setState({ errorMessage: error.message });
     }
   }
 
-  async handleLogin(provider, chainNetwork = EOS_CHAIN_NETWORK) {
+  handleSignStringWithWallet = async ({ provider, chainNetwork }) => {
     try {
       this.clearErrors();
-      let loginResponse = await this.oreId.login({ provider, chainNetwork });
+      const { signedString } = await this.oreId.signStringWithWallet({
+        account: this.state.userInfo?.accountName,
+        walletType: provider,
+        provider,
+        chainNetwork,
+        string: 'Sign Arbitrary',
+        message: 'Placeholder'
+      });
+      console.log(`Signed String: ${signedString}`);
+    } catch (error) {
+      this.setState({ errorMessage: error.message });
+    }
+  }
+
+  handleLogin = async (provider, chainNetwork = ChainNetwork.EosKylin) => {
+    try {
+      this.clearErrors();
+      let loginResponse = await this.oreId.auth.getLoginUrl({ provider, chainNetwork });
       // if the login responds with a loginUrl, then redirect the browser to it to start the user's OAuth login flow
       let { isLoggedIn, account, loginUrl } = loginResponse;
       if (loginUrl) {
@@ -204,7 +231,7 @@ class App extends Component {
    *        To get a token to use for this demo app, use the Google OAuth Playground to get an OAuth Id Token for your own Google account - must select Scope: 'Google OAuth2 API v2' userinfo.profile and userinfo.email authorizations
    *        Use this link, login, then click [Exchange authorization code for tokens] button https://accounts.google.com/o/oauth2/v2/auth/oauthchooseaccount?redirect_uri=https%3A%2F%2Fdevelopers.google.com%2Foauthplayground&prompt=consent&response_type=code&client_id=407408718192.apps.googleusercontent.com&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&access_type=offline&flowName=GeneralOAuthFlow
    */
-  async handleLoginWithIdToken(idToken, chainNetwork = EOS_CHAIN_NETWORK) {
+  async handleLoginWithIdToken(idToken, chainNetwork = ChainNetwork.EosKylin) {
     try {
       this.clearErrors();
       let loginResponse = await this.oreId.login({ idToken, chainNetwork }); // no provider required - will use 'oreid' as provider
@@ -215,7 +242,7 @@ class App extends Component {
       }
       // if the idToken is valid, login responds with an accessToken
       this.oreId.accessToken = accessToken;
-      await this.oreId.getUserInfoFromApi();
+      await this.oreId.auth.user.getData();
       await this.loadUserFromLocalStorage();
     } catch (error) {
       this.setState({ errorMessage: error.message });
@@ -415,9 +442,7 @@ class App extends Component {
     }
   }
 
-  async toggleSendEthForGas() {
-    this.setState({ sendEthForGas: !this.state.sendEthForGas });
-  }
+  toggleSendEthForGas = () => this.setState({ sendEthForGas: !this.state.sendEthForGas });
 
   /*
   Handle the authCallback coming back from ORE-ID with an "account" parameter indicating that a user has logged in
@@ -425,10 +450,10 @@ class App extends Component {
   async handleAuthCallback() {
     const url = window.location.href;
     if (/authcallback/i.test(url)) {
-      const { account, errors, state } = this.oreId.handleAuthResponse(url);
+      const { errors, state } = this.oreId.auth.handleAuthCallback(url);
       if (state) console.log(`state returned with request:${state}`);
       if (!errors) {
-        this.loadUserFromApi(account);
+        this.loadUserFromApi();
       }
     }
   }
@@ -477,7 +502,7 @@ class App extends Component {
     const oreIdOptions = {
       appName: this.oreId.options.appName,
       appId: this.oreId.options.appId,
-      oreIdUrl: this.oreId.options.oreIdUrl,
+      oreIdUrl: 'http://localhost:8080',
       accessToken: this.oreId.accessToken
     };
 
@@ -576,12 +601,14 @@ class App extends Component {
           </p>
         </div>
         {isLoggedIn && this.renderDiscoverOptions()}
+        {isLoggedIn && this.renderSignWithWallet()}
       </div>
     );
   }
 
   renderUserInfo() {
     const { accountName, email, name, picture, username } = this.state.userInfo;
+    console.log({ userInfo: this.state.userInfo });
     return (
       <div style={{ marginTop: 50, marginLeft: 40 }}>
         <h3>User Info</h3>
@@ -601,6 +628,7 @@ class App extends Component {
             marginTop: 20,
             padding: '10px',
             backgroundColor: '#FFFBE6',
+            cursor: 'pointer',
             borderRadius: '5px'
           }}
         >
@@ -634,36 +662,30 @@ class App extends Component {
           onChange={this.toggleSendEthForGas}
           checked={sendEthForGas}
         />
-        <label for="eth" style={{ paddingLeft: 10 }}>
+        <label htmlFor="eth" style={{ paddingLeft: 10 }}>
           For Ethereum - Check the box above if you want to automatically send Eth for gas required for sample transaction if needed
         </label>
       </div>
     );
   }
 
-  renderDiscoverOptions() {
-    this.walletButtons = [
-      { provider: 'scatter', chainNetwork: EOS_CHAIN_NETWORK },
-      { provider: 'ledger', chainNetwork: EOS_CHAIN_NETWORK },
-      { provider: 'lynx', chainNetwork: EOS_CHAIN_NETWORK },
-      { provider: 'meetone', chainNetwork: EOS_CHAIN_NETWORK },
-      { provider: 'tokenpocket', chainNetwork: EOS_CHAIN_NETWORK },
-      { provider: 'portis', chainNetwork: EOS_CHAIN_NETWORK },
-      { provider: 'whalevault', chainNetwork: EOS_CHAIN_NETWORK },
-      { provider: 'simpleos', chainNetwork: EOS_CHAIN_NETWORK },
-      { provider: 'keycat', chainNetwork: EOS_CHAIN_NETWORK },
-      { provider: 'algosigner', chainNetwork: ALGO_CHAIN_NETWORK },
-      { provider: 'web3', chainNetwork: ETH_CHAIN_NETWORK }
-    ];
-    return (
-      <div style={{ marginTop: 50, marginLeft: 20 }}>
-        <h3>Or discover a key in your wallet</h3>
-        <div style={{ display: 'flex' }}>
-          {this.renderWalletDiscoverButtons(this.walletButtons)}
-        </div>
+  renderDiscoverOptions = () => (
+    <div style={{ marginTop: 50, marginLeft: 20 }}>
+      <h3>Or discover a key in your wallet</h3>
+      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+        {this.renderWalletButtons(this.handleWalletDiscoverButton)}
       </div>
-    );
-  }
+    </div>
+  );
+
+  renderSignWithWallet = () => (
+    <div style={{ marginTop: 50, marginLeft: 20 }}>
+      <h3>Or sign string with your wallet</h3>
+      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+        {this.renderWalletButtons(this.handleSignStringWithWallet)}
+      </div>
+    </div>
+  );
 
   async handleSignWithWidget({ chainAccount, chainNetwork, permission }) {
     this.clearErrors();
@@ -775,139 +797,134 @@ class App extends Component {
     );
   });
 
-  // render one sign transaction button for each chain
-  renderWalletDiscoverButtons = (walletButtons) => walletButtons.map((wallet, index) => {
-    let { provider } = wallet;
-    return (
-      <div style={{ margin: '5px' }} key={index}>
-        <LoginButton
-          provider={provider}
-          data-tag={`discover-${provider}-${index}`}
-          buttonStyle={{
-            width: '100%',
-            minHeight: '75px'
-          }}
-          text={`${provider}`}
-          onClick={() => { this.handleWalletDiscoverButton(wallet); }}
-        >{`${provider}`}</LoginButton>
-      </div>
-    );
-  });
+  // render wallet button for each chain
+  renderWalletButtons = (handleClick) => this.walletButtons.map((wallet, index) => (
+    <div style={{ margin: '5px' }} key={index}>
+      <LoginButton
+        provider={wallet.provider}
+        data-tag={`discover-${wallet.provider}-${index}`}
+        buttonStyle={{
+          width: '100%',
+          minHeight: '75px',
+          cursor: 'pointer'
+        }}
+        onClick={() => handleClick(wallet)}
+        text={wallet.provider}
+      />
+    </div>
+  ));
 
-  renderLoginButtons() {
-    const buttonStyle = { width: 200, marginTop: '24px' };
-    return (
-      <div>
-        <LoginButton
-          provider="apple"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('apple')}
-        />
-        <LoginButton
-          provider="facebook"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('facebook')}
-        />
-        <LoginButton
-          provider="twitter"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('twitter')}
-        />
-        <LoginButton
-          provider="github"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('github')}
-        />
-        <LoginButton
-          provider="twitch"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('twitch')}
-        />
-        <LoginButton
-          provider="line"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('line')}
-        />
-        <LoginButton
-          provider="kakao"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('kakao')}
-        />
-        <LoginButton
-          provider="linkedin"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('linkedin')}
-        />
-        <LoginButton
-          provider="google"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('google')}
-        />
-        <LoginButton
-          provider="email"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('email')}
-        />
-        <LoginButton
-          provider="phone"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('phone')}
-        />
-        <LoginButton
-          provider="scatter"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('scatter')}
-        />
-        <LoginButton
-          provider="ledger"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('ledger')}
-        />
-        <LoginButton
-          provider="meetone"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('meetone')}
-        />
-        <LoginButton
-          provider="lynx"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('lynx')}
-        />
-        <LoginButton
-          provider="portis"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('portis')}
-        />
-        <LoginButton
-          provider="whalevault"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('whalevault')}
-        />
-        <LoginButton
-          provider="simpleos"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('simpleos')}
-        />
-        <LoginButton
-          provider="keycat"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('keycat')}
-        />
-        <span>
-          <LoginButton
-            provider="google"
-            buttonStyle={buttonStyle}
-            text="Login with id token"
-            onClick={() => this.handleLoginWithIdToken(this.state.loginWithIdToken)}
-          />
-          <label>
-            Id Token:
-            <input type="text" value={this.state.loginWithIdToken} onChange={(e) => { this.setState({ loginWithIdToken: e.target.value });}} />
-          </label>
-        </span>
-      </div>
-    );
-  }
+  renderLoginButtons = () => (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
+      <LoginButton
+        provider="apple"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLogin('apple')}
+      />
+      <LoginButton
+        provider="facebook"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLogin('facebook')}
+      />
+      <LoginButton
+        provider="twitter"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLogin('twitter')}
+      />
+      <LoginButton
+        provider="github"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLogin('github')}
+      />
+      <LoginButton
+        provider="twitch"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLogin('twitch')}
+      />
+      <LoginButton
+        provider="line"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLogin('line')}
+      />
+      <LoginButton
+        provider="kakao"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLogin('kakao')}
+      />
+      <LoginButton
+        provider="linkedin"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLogin('linkedin')}
+      />
+      <LoginButton
+        provider="google"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLogin('google')}
+      />
+      <LoginButton
+        provider="email"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLogin('email')}
+      />
+      <LoginButton
+        provider="phone"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLogin('phone')}
+      />
+      <LoginButton
+        provider="scatter"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLogin('scatter')}
+      />
+      <LoginButton
+        provider="ledger"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLogin('ledger')}
+      />
+      <LoginButton
+        provider="meetone"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLogin('meetone')}
+      />
+      <LoginButton
+        provider="lynx"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLogin('lynx')}
+      />
+      <LoginButton
+        provider="portis"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLogin('portis')}
+      />
+      <LoginButton
+        provider="whalevault"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLogin('whalevault')}
+      />
+      <LoginButton
+        provider="simpleos"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLogin('simpleos')}
+      />
+      <LoginButton
+        provider="keycat"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLogin('keycat')}
+      />
+      <LoginButton
+        provider="google"
+        buttonStyle={loginButtonStyle}
+        text="Login with id token"
+        onClick={() => this.handleLoginWithIdToken(this.state.loginWithIdToken)}
+      />
+      <span>
+        <label>
+          Id Token:
+          <input type="text" value={this.state.loginWithIdToken} onChange={(e) => { this.setState({ loginWithIdToken: e.target.value });}} />
+        </label>
+      </span>
+    </div>
+  );
 }
 
 export default App;
