@@ -10,6 +10,7 @@ class App extends Component {
     this.state = {
       errors: '',
       isLoggedIn: false,
+      oreIdResult: '',
       signResults: '',
       userData: {},
     };
@@ -170,6 +171,9 @@ class App extends Component {
           )}
           {this.state.errors && (
             <div className="App-error">Error: {this.state.errors}</div>
+          )}
+          {this.state?.oreIdResult && (
+            <div className="App-success">{this?.state?.oreIdResult}</div>
           )}
         </header>
       </div>
