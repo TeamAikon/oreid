@@ -4,7 +4,7 @@ import LoginButton from 'oreid-login-button';
 import { OreId, ExternalWalletType, ChainNetwork } from 'oreid-js';
 import { defaultOreIdServiceUrl } from 'oreid-js/dist/constants';
 import {
-  ABI,
+  // ABI,
   addEthForGas,
   init,
   getGasParams,
@@ -12,7 +12,7 @@ import {
   getEthBalance,
   getErc20Balance
 } from './eth';
-import { encode as base64Encode } from 'base-64';
+// import { encode as base64Encode } from 'base-64';
 import algoSignerProvider from 'eos-transit-algosigner-provider';
 import scatterProvider from 'eos-transit-scatter-provider';
 import { OreIdWebWidget } from "oreid-webwidget";
@@ -98,6 +98,10 @@ class App extends Component {
   // intialize webwidget
   webwidget = new OreIdWebWidget(this.oreId, window);
 
+  get loggedInProvider(){
+    return this.oreId.accessTokenHelper.decodedAccessToken['https://oreid.aikon.com/provider']
+  }
+
 
   walletButtons = [
     { provider: ExternalWalletType.AlgoSigner, chainNetwork: ChainNetwork.AlgoTest },
@@ -119,6 +123,11 @@ class App extends Component {
     this.handleSignCallback();
     window.oreId = this.oreId;
     window.webwidget = this.webwidget;
+    document.addEventListener('click', e => {
+      if (this.state.errorMessage && !e.target.contains(document.querySelector('[data-tag=error-message]'))){
+        this.setState({ errorMessage: null })
+      }
+    })
   }
 
   /** Load the user from local storage - user info is automatically saved to local storage by oreId.auth.user.getData() */
@@ -160,11 +169,13 @@ class App extends Component {
     chainNetwork,
     permission,
     externalWalletType,
+    provider,
   }) => {
     this.clearErrors();
     const { sendEthForGas, userInfo } = this.state;
     await this.handleSignSampleTransaction(
       externalWalletType,
+      provider,
       userInfo.accountName,
       chainAccount,
       chainNetwork,
@@ -300,6 +311,7 @@ class App extends Component {
 
   async handleSignSampleTransaction(
     externalWalletType,
+    provider,
     account,
     chainAccount,
     chainNetwork,
@@ -307,7 +319,7 @@ class App extends Component {
     sendEthForGas
   ) {
     try {
-      const transactionData = await this.prepareTransactionData({ chainNetwork, chainAccount, permission, provider: externalWalletType, sendEthForGas, account });
+      const transactionData = await this.prepareTransactionData({ chainNetwork, chainAccount, permission, provider, externalWalletType, sendEthForGas, account });
       console.log({transactionData})
       this.setResponseSignTransaction('','','','');
       const transaction = await this.oreId.createTransaction(transactionData)
@@ -315,14 +327,14 @@ class App extends Component {
       if (externalWalletType)
         signResponse = await transaction.signWithWallet(externalWalletType);
       else
-        signResponse = await this.oreId.sign(transactionData);
+        signResponse = await transaction.getSignUrl();
       console.log({ signResponse })
       // if the sign responds with a signUrl, then redirect the browser to it to call the signing flow
-      let { signUrl, signedTransaction, transactionId } =
+      const { signUrl, signedTransaction, transactionId } =
         signResponse || {};
       if (signUrl) {
         // redirect browser to signUrl
-        window.location = signUrl;
+        window.location.href = signUrl;
       }
       if (signedTransaction) {
         this.setState({
@@ -335,8 +347,8 @@ class App extends Component {
     }
   }
 
-  async prepareTransactionData({ chainNetwork, chainAccount, permission, provider, sendEthForGas, account }) {
-    const sampleTransaction = await this.composeSampleTransaction({ chainNetwork, chainAccount, permission, provider, sendEthForGas });
+  async prepareTransactionData({ chainNetwork, chainAccount, permission, externalWalletType, provider, sendEthForGas, account }) {
+    const sampleTransaction = await this.composeSampleTransaction({ chainNetwork, chainAccount, permission, externalWalletType, provider, sendEthForGas });
 
     const transactionData = {
       account: account || '',
@@ -346,7 +358,7 @@ class App extends Component {
       signOptions: {
         broadcast: true,
         preventAutoSign: false,
-        provider: provider || '',
+        provider: externalWalletType || provider,
         returnSignedTransaction: true,
         state: 'abc',
       },
@@ -354,18 +366,18 @@ class App extends Component {
     return transactionData;
   }
 
-  async composeSampleTransaction({ chainNetwork, chainAccount, permission, provider, sendEthForGas }) {
+  async composeSampleTransaction({ chainNetwork, chainAccount, permission, externalWalletType, provider, sendEthForGas }) {
     let transaction;
     if (this.getChainType(chainNetwork) === 'algo') {
       transaction = this.createSampleTransactionAlgorand(chainAccount, permission);
-      transaction = this.wrapTxActionArrayForOreId(provider, transaction);
+      transaction = this.wrapTxActionArrayForOreId(externalWalletType || provider, transaction);
     }
     if (this.getChainType(chainNetwork) === 'eth') {
       if (sendEthForGas) {
         await this.fundEthereumAccountIfNeeded(chainAccount, chainNetwork);
       }
       transaction = this.createSampleTransactionEthereum(chainAccount, permission);
-      transaction = this.wrapTxActionArrayForOreId(provider, transaction);
+      transaction = this.wrapTxActionArrayForOreId(externalWalletType || provider, transaction);
     }
     if (this.getChainType(chainNetwork) === 'eos') {
       transaction = this.createSampleTransactionEos(
@@ -477,7 +489,7 @@ class App extends Component {
   async handleSignCallback() {
     const url = window.location.href;
     if (/signcallback/i.test(url)) {
-      const { signedTransaction, state, transactionId, errors } = this.oreId.handleSignResponse(url);
+      const { signedTransaction, state, transactionId, errors } = this.oreId.handleSignCallback(url);
       this.setResponseSignTransaction(signedTransaction, state, transactionId, errors);
     }
   }
@@ -567,12 +579,9 @@ class App extends Component {
           {isBusy && (isBusyMessage || 'working...')}
         </h3>
         {errorMessage && (
-          <>
-            {console.error(errorMessage)}
-            <div data-tag="error-message" onClick={() => this.setState({ errorMessage: null })} style={{ color: 'red', right: '50px', top: '50px', marginLeft: '20px', wordBreak: 'break-all', backgroundColor: 'yellow', padding: '10px', position: 'fixed' }}>
-              {errorMessage}
-            </div>
-          </>
+          <div data-tag="error-message" style={{ color: 'red', right: '50px', top: '50px', marginLeft: '20px', wordBreak: 'break-all', backgroundColor: 'yellow', padding: '10px', position: 'fixed' }}>
+            {errorMessage}
+          </div>
         )}
         <div
           id="transactionId"
@@ -782,7 +791,8 @@ class App extends Component {
             chainAccount: userChainAccount.chainAccount, 
             chainNetwork: userChainAccount.chainNetwork, 
             permission: chainAccountPermission,
-            externalWalletType: provider,
+            externalWalletType: chainAccountPermission?.externalWalletType,
+            provider: !chainAccountPermission?.externalWalletType && this.loggedInProvider,
           })}
         />
         {!chainAccountPermission.externalWalletType && (          
@@ -930,7 +940,7 @@ class App extends Component {
         buttonStyle={loginButtonStyle}
         onClick={() => this.handleLogin('keycat')}
       />
-      <span style={{ flexBasis: '100%' }}>
+      <span style={{ flexBasis: '100%' }}> 
         <label>
           Id Token:
           <input type="text" value={this.state.loginWithIdToken} onChange={(e) => this.setState({ loginWithIdToken: e.target.value })} />
