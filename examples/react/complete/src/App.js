@@ -15,7 +15,7 @@ import {
 import { encode as base64Encode } from 'base-64';
 import algoSignerProvider from 'eos-transit-algosigner-provider';
 import scatterProvider from 'eos-transit-scatter-provider';
-import OreIdWebWidget from 'oreid-react-web-widget';
+import { OreIdWebWidget } from "oreid-webwidget";
 // import ledgerProvider from 'eos-transit-ledger-provider';
 import lynxProvider from 'eos-transit-lynx-provider';
 import meetoneProvider from 'eos-transit-meetone-provider';
@@ -72,8 +72,6 @@ class App extends Component {
       isLoggedIn: false,
       userInfo: {},
       sendEthForGas: false,
-      showWidget: false,
-      webWidgetProps: {},
       widgetResponse: null,
       chainAccountItem: '',
       chainAccountPermissionItem: ''
@@ -97,6 +95,10 @@ class App extends Component {
     setBusyCallback: this.setBusyCallback
   });
 
+  // intialize webwidget
+  webwidget = new OreIdWebWidget(this.oreId, window);
+
+
   walletButtons = [
     { provider: ExternalWalletType.AlgoSigner, chainNetwork: ChainNetwork.AlgoTest },
     { provider: ExternalWalletType.Keycat, chainNetwork: ChainNetwork.EosKylin },
@@ -116,6 +118,7 @@ class App extends Component {
     this.handleAuthCallback();
     this.handleSignCallback();
     window.oreId = this.oreId;
+    window.webwidget = this.webwidget;
   }
 
   /** Load the user from local storage - user info is automatically saved to local storage by oreId.auth.user.getData() */
@@ -393,12 +396,12 @@ class App extends Component {
   createSampleTransactionEthereum(actor, permission = 'active') {
     return {
       from: actor,
-      to: ethereumContractAddress,
-      contract: {
-        abi: ABI,
-        parameters: [ethereumContractAccountAddress, ERC20_TRANSFER_AMOUNT],
-        method: 'transfer'
-      },
+      to: '0x0d165491039B70c6Ea97d6Ccf6C4A861BfF20899',
+      // contract: {
+      //   abi: ABI,
+      //   parameters: [ethereumContractAccountAddress, ERC20_TRANSFER_AMOUNT],
+      //   method: 'transfer'
+      // },
       gasLimit: 145000
     };
   }
@@ -511,38 +514,34 @@ class App extends Component {
 
   /** compose object of properties that can be added to WebWidget React component */
   composePropsForWebWidget(action, actionParams) {
-    const oreIdOptions = {
-      appName: this.oreId.options.appName,
-      appId: this.oreId.options.appId,
-      oreIdUrl,
-      accessToken: this.oreId.accessToken
-    };
-
-    const widgetProps = {
-      oreIdOptions,
-      action: {
-        name: action, // e.g. 'sign'
-        params: actionParams
-      },
+    const webwidgetProps = {
       onSuccess: (result) => {
         console.log('widget results:', result);
-        this.setState({ showWidget: false });
         this.setWidgetSuccess(result);
       },
       onError: (result) => {
         this.setResponseErrors(result.errors);
-        this.setState({ showWidget: false });
       }
     };
 
     // handle onSuccess differently depending on action type
-    if (action === 'sign') {
-      widgetProps.onSuccess = ({ data }) => {
-        this.setResponseSignTransaction(data.signed_transaction, data.state, data.transaction_id, data.errors);
-        this.setState({ showWidget: false });
-      };
-    };
-    return widgetProps;
+    switch (action) {
+      case 'sign':
+        webwidgetProps.onSuccess = ({ data }) => {
+          this.setResponseSignTransaction(data.signed_transaction, data.state, data.transaction_id, data.errors);
+        }
+        webwidgetProps.transaction = actionParams.transaction
+        break
+      case 'newChainAccount':
+        webwidgetProps.options = {
+          accountType: actionParams.accountType,
+          chainNetwork: actionParams.chainNetwork
+        }
+        break
+      default:
+        break
+    }
+    return webwidgetProps;
   }
 
   render() {
@@ -554,7 +553,6 @@ class App extends Component {
       signedTransaction,
       signState,
       transactionId,
-      showWidget,
       widgetResponse
     } = this.state;
 
@@ -564,20 +562,17 @@ class App extends Component {
           {!isLoggedIn && this.renderLoginButtons()}
           {isLoggedIn && this.renderUserInfo()}
           {isLoggedIn && this.renderSigningOptions()}
-          {isLoggedIn && showWidget && (
-            <OreIdWebWidget
-              show={showWidget}
-              {...this.state.webWidgetProps}
-            />
-          )}
         </div>
         <h3 style={{ color: 'green', margin: '50px' }}>
           {isBusy && (isBusyMessage || 'working...')}
         </h3>
         {errorMessage && (
-          <div data-tag="error-message" style={{ color: 'red', right: '50px', top: '50px', marginLeft: '20px', wordBreak: 'break-all', backgroundColor: 'yellow', padding: '10px', position: 'fixed' }}>
-            {errorMessage}
-          </div>
+          <>
+            {console.error(errorMessage)}
+            <div data-tag="error-message" onClick={() => this.setState({ errorMessage: null })} style={{ color: 'red', right: '50px', top: '50px', marginLeft: '20px', wordBreak: 'break-all', backgroundColor: 'yellow', padding: '10px', position: 'fixed' }}>
+              {errorMessage}
+            </div>
+          </>
         )}
         <div
           id="transactionId"
@@ -711,25 +706,17 @@ class App extends Component {
     const { sendEthForGas, userInfo, loggedProvider } = this.state;
     let { accountName } = userInfo;
     const provider = loggedProvider || 'google';
-    const signOptions = await this.prepareTransactionData(
-      { chainNetwork,
-        chainAccount,
-        permission,
-        provider,
-        sendEthForGas,
-        account: accountName
-      }
-    );
-    const webWidgetSignActionParams = {
-      ...signOptions,
-      accessToken: this.oreId.accessToken,
-      transaction: base64Encode(JSON.stringify(signOptions.transaction))
-    };
-    const webWidgetProps = this.composePropsForWebWidget('sign', webWidgetSignActionParams);
-    this.setState({
-      showWidget: true,
-      webWidgetProps
+    const transactionData = await this.prepareTransactionData({
+      chainNetwork,
+      chainAccount,
+      permission,
+      provider,
+      sendEthForGas,
+      account: accountName
     });
+    const transaction = await this.oreId.createTransaction(transactionData);
+    const webWidgetProps = this.composePropsForWebWidget('sign', { transaction });
+    this.webwidget.onSign(webWidgetProps);
   }
 
   async handleCreateNewAccountWithWidget({ chainNetwork, permission }) {
@@ -740,11 +727,8 @@ class App extends Component {
       accountType: 'native',
       provider: 'google'
     };
-    const webWidgetProps = this.composePropsForWebWidget('newAccount', newAccountActionParams);
-    this.setState({
-      showWidget: true,
-      webWidgetProps
-    });
+    const webWidgetProps = this.composePropsForWebWidget('newChainAccount', newAccountActionParams);
+    this.webwidget.onNewChainAccount(webWidgetProps);
   }
 
   // render one sign transaction button for each chain
@@ -793,7 +777,7 @@ class App extends Component {
             margin: '2px',
             width: '50%'
           }}
-          text={`Sign with ${chainAccountPermission?.externalWalletType || 'Callback'}`}
+          text={`Sign via ${chainAccountPermission?.externalWalletType || 'Callback'}`}
           onClick={() => this.handleSignButton({
             chainAccount: userChainAccount.chainAccount, 
             chainNetwork: userChainAccount.chainNetwork, 
@@ -946,17 +930,17 @@ class App extends Component {
         buttonStyle={loginButtonStyle}
         onClick={() => this.handleLogin('keycat')}
       />
-      <LoginButton
-        provider="google"
-        buttonStyle={loginButtonStyle}
-        text="Login with id token"
-        onClick={() => this.handleLoginWithIdToken(this.state.loginWithIdToken)}
-      />
-      <span>
+      <span style={{ flexBasis: '100%' }}>
         <label>
           Id Token:
-          <input type="text" value={this.state.loginWithIdToken} onChange={(e) => { this.setState({ loginWithIdToken: e.target.value });}} />
+          <input type="text" value={this.state.loginWithIdToken} onChange={(e) => this.setState({ loginWithIdToken: e.target.value })} />
         </label>
+        <LoginButton
+          provider="oreid"
+          buttonStyle={loginButtonStyle}
+          text="Login with id token"
+          onClick={() => this.handleLoginWithIdToken(this.state.loginWithIdToken)}
+        />
       </span>
     </div>
   );
