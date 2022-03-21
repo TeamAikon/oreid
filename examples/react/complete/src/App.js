@@ -944,18 +944,20 @@ class App extends Component {
         buttonStyle={loginButtonStyle}
         onClick={() => this.handleLogin('keycat')}
       />
-      <span style={{ flexBasis: '100%' }}> 
-        <label>
-          Id Token:
-          <input type="text" value={this.state.loginWithIdToken} onChange={(e) => this.setState({ loginWithIdToken: e.target.value })} />
-        </label>
-        <LoginButton
-          provider="oreid"
-          buttonStyle={loginButtonStyle}
-          text="Login with id token"
-          onClick={() => this.handleLoginWithIdToken(this.state.loginWithIdToken)}
-        />
-      </span>
+      <div style={{ flexBasis: '100%', display: 'flex', justifyContent: 'center' }}>
+        <span style={{ display: 'flex', flexDirection: 'column' }}>
+          <label>
+            Id Token:
+            <input type="text" value={this.state.loginWithIdToken} onChange={(e) => this.setState({ loginWithIdToken: e.target.value })} />
+          </label>
+          <LoginButton
+            provider="oreid"
+            buttonStyle={loginButtonStyle}
+            text="Login with id token"
+            onClick={() => this.handleLoginWithIdToken(this.state.loginWithIdToken)}
+          />
+        </span>
+      </div>
     </div>
   );
 }
