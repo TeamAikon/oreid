@@ -225,14 +225,18 @@ class App extends Component {
   handleLogin = async (provider, chainNetwork = ChainNetwork.EosKylin) => {
     try {
       this.clearErrors();
-      let loginResponse = await this.oreId.auth.getLoginUrl({ provider, chainNetwork });
-      // if the login responds with a loginUrl, then redirect the browser to it to start the user's OAuth login flow
-      let { isLoggedIn, account, loginUrl } = loginResponse;
-      if (loginUrl) {
-        // redirect browser to loginURL
-        window.location = loginUrl;
-      }
-      this.setState({ userInfo: { accountName: account }, isLoggedIn, loggedProvider: provider });
+      this.webwidget.onAuth({
+        params: { provider },
+        onSuccess: (userData) => this.setState({ userInfo: userData, isLoggedIn: true, loggedProvider: provider }),
+        onError: async () => {
+          // redirect the browser to it to start the user's OAuth login flow
+          const { loginUrl } = await this.oreId.auth.getLoginUrl({ provider, chainNetwork });
+          if (loginUrl) {
+            // redirect browser to loginURL
+            window.location.href = loginUrl;
+          }
+        }
+      })     
     } catch (error) {
       this.setState({ errorMessage: error.message });
     }
