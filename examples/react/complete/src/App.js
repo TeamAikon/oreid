@@ -848,7 +848,7 @@ class App extends Component {
   ));
 
   renderLoginButtons = () => (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '15px' }}>
       <LoginButton
         provider="apple"
         buttonStyle={loginButtonStyle}
