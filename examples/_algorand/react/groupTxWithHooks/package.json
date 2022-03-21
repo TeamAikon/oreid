@@ -16,7 +16,7 @@
     "loadjs": "^4.2.0",
     "oreid-js": "^3.0.5",
     "oreid-login-button": "^1.0.3",
-    "oreid-react": "1.0.2",
+    "oreid-react": "1.0.3",
     "oreid-webwidget": "^1.0.3",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",

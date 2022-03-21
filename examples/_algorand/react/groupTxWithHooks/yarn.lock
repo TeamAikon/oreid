@@ -9798,10 +9798,10 @@ oreid-login-button@^1.0.3:
   resolved "https://registry.yarnpkg.com/oreid-login-button/-/oreid-login-button-1.1.1.tgz#d5a965f6e5c6711354d55e8d42cbf9634bfb9f91"
   integrity sha512-3THx69ipD+7ICbszCQN94ozYoeTI1nmFHdF5BIgpAeMm1P+Z289woNpio/bwkNJT8SJ+5jnGrYWk7idNS+MLiQ==
 
-oreid-react@1.0.1-beta.2:
-  version "1.0.1-beta.2"
-  resolved "https://registry.yarnpkg.com/oreid-react/-/oreid-react-1.0.1-beta.2.tgz#99175d5100c3eed2553ab6ddcc0e870ba63c9377"
-  integrity sha512-+IdYwMhbl9Km2Nf2OpSaiPKTSWPPiaCXd7laYlALG1vAwf2yIMuyFEjPRQMT3tMOgoO0WOIvOwm+mf7Bmly48g==
+oreid-react@1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/oreid-react/-/oreid-react-1.0.3.tgz#7e276917719ca29b01654f63bc88ff02dca9280e"
+  integrity sha512-WMhCh4bnnYq/mDOSqmhQzCEjRwGxkS/BYgHE3rDLTrGFgvQK6qzaa1Ls+GMIaxhc7IAwJ8E3fTWYTDdu5s9MjA==
   dependencies:
     lodash "^4.17.21"
 
