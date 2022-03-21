@@ -18,7 +18,7 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-router": "^5.0.1",
-    "react-scripts": "3.4.1",
+    "react-scripts": "5.0.0",
     "text-encoding": "^0.7.0",
     "util": "^0.12.1",
     "web3": "^1.2.6"
