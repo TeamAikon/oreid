@@ -8,7 +8,7 @@
     "@testing-library/user-event": "^7.1.2",
     "base-64": "^1.0.0",
     "loadjs": "^4.2.0",
-    "oreid-js": "^3.0.5",
+    "oreid-js": "^3.0.7",
     "oreid-login-button": "^1.0.3",
     "oreid-webwidget": "^1.0.3",
     "react": "^16.13.1",

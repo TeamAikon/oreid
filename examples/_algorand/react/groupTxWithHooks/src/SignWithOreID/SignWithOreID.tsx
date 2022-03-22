@@ -2,8 +2,9 @@ import React, { useContext } from "react";
 import { useActionSign, useOreId, useUser } from "oreid-react";
 import LoginButton from "oreid-login-button";
 import { AppContext } from "../AppProvider";
-
 import { composeSampleTransactionAlgorand } from "../helpers/composeSampleTransactionAlgorand";
+
+const algorandChainType = 'algo_test'
 
 interface Props {
 	txType: string;
@@ -21,12 +22,12 @@ export const SignWithOreID: React.FC<Props> = ({ txType }) => {
 
 		// get first algorand (e.g. algo_test) account in user's wallet
 		const signingAccount = userData.chainAccounts.find(
-			(ca) => ca.chainNetwork === process.env.REACT_APP_CHAIN_NETWORK
+			(ca) => ca.chainNetwork === algorandChainType
 		);
 
 		if (!signingAccount) {
 			setErrors(
-				`User doesnt have any accounts on ${process.env.REACT_APP_CHAIN_NETWORK}`
+				`User doesnt have any accounts on ${algorandChainType}`
 			);
 			return;
 		}

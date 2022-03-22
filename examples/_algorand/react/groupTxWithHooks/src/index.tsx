@@ -11,8 +11,7 @@ import * as serviceWorker from "./serviceWorker";
 const oreId = new OreId({
 	appName: "ORE ID Sample App",
 	appId: process.env.REACT_APP_OREID_APP_ID || "",
-	apiKey: process.env.REACT_APP_OREID_API_KEY || "",
-	oreIdUrl: process.env.REACT_APP_OREID_URL,
+	apiKey: process.env.REACT_APP_OREID_API_KEY || ""
 });
 const webWidget = new OreIdWebWidget(oreId, window);
 
