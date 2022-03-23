@@ -9798,17 +9798,17 @@ oreid-login-button@^1.0.3:
   resolved "https://registry.yarnpkg.com/oreid-login-button/-/oreid-login-button-1.1.1.tgz#d5a965f6e5c6711354d55e8d42cbf9634bfb9f91"
   integrity sha512-3THx69ipD+7ICbszCQN94ozYoeTI1nmFHdF5BIgpAeMm1P+Z289woNpio/bwkNJT8SJ+5jnGrYWk7idNS+MLiQ==
 
-oreid-react@1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/oreid-react/-/oreid-react-1.0.3.tgz#7e276917719ca29b01654f63bc88ff02dca9280e"
-  integrity sha512-WMhCh4bnnYq/mDOSqmhQzCEjRwGxkS/BYgHE3rDLTrGFgvQK6qzaa1Ls+GMIaxhc7IAwJ8E3fTWYTDdu5s9MjA==
+oreid-react@1.0.4-beta.5:
+  version "1.0.4-beta.5"
+  resolved "https://registry.yarnpkg.com/oreid-react/-/oreid-react-1.0.4-beta.5.tgz#85582e008ce4b1cf8f40fd81dcff68b6c722266c"
+  integrity sha512-08lUdzfCUUrvZHCLqxKlfk38jbhofRP/wwgh0ucmgcOBI5Ss3gWGpu9Jtu8HuebVibIFCCqhjOGUsPqzCT4zkw==
   dependencies:
     lodash "^4.17.21"
 
-oreid-webwidget@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/oreid-webwidget/-/oreid-webwidget-1.0.3.tgz#6fba56b34a385ee1e919b374db02b26f6ace0c8e"
-  integrity sha512-Qd6E2+QE2sT9XhY+t2CrLqDQHwvlmHbaDKmPiCDzlsLnPXDFTg/MDU4aGdUNikCQnEU5GUTwzSBtUrJyl8k6HQ==
+oreid-webwidget@^1.0.6-beta.2:
+  version "1.0.6-beta.3"
+  resolved "https://registry.yarnpkg.com/oreid-webwidget/-/oreid-webwidget-1.0.6-beta.3.tgz#ee78c49c32140426802f8084fb913f4873243a11"
+  integrity sha512-0kBxDi5fJ4daasYaY6z9wcXofDLnnrtFg+ttZBRJi3apLgYFXp+L+tSSI4VzdGOGy/rHXtdpklx69mbGIJ4kQA==
   dependencies:
     await-to-js "^3.0.0"
 

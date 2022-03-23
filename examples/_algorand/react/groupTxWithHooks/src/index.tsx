@@ -1,6 +1,3 @@
-import { OreId } from "oreid-js";
-import { OreidProvider } from "oreid-react";
-import { OreIdWebWidget } from "oreid-webwidget";
 import React from "react";
 import ReactDOM from "react-dom";
 import App from "./App";
@@ -8,20 +5,10 @@ import { AppProvider } from "./AppProvider";
 import "./index.css";
 import * as serviceWorker from "./serviceWorker";
 
-const oreId = new OreId({
-	appName: "ORE ID Sample App",
-	appId: process.env.REACT_APP_OREID_APP_ID || "",
-	apiKey: process.env.REACT_APP_OREID_API_KEY || "",
-	oreIdUrl: process.env.REACT_APP_OREID_URL,
-});
-const webWidget = new OreIdWebWidget(oreId, window);
-
 ReactDOM.render(
 	<React.StrictMode>
 		<AppProvider>
-			<OreidProvider oreId={oreId} webWidget={webWidget}>
-				<App />
-			</OreidProvider>
+			<App />
 		</AppProvider>
 	</React.StrictMode>,
 	document.getElementById("root")
