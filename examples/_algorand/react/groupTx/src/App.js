@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import LoginButton from "oreid-login-button";
 import { OreId } from "oreid-js";
-import { OreIdWebWidget } from "oreid-webwidget";
+import { createOreIdWebWidget } from "oreid-webwidget";
 import "./App.css";
 import {
   assignGroupIdAndReturnTransactions,
@@ -40,10 +40,9 @@ class App extends Component {
 
   oreId = new OreId(this.myOreIdOptions);
 
-  webwidget = new OreIdWebWidget(this.oreId, window);
-
   async componentWillMount() {
     await this.loadUser();
+    this.webwidget = await createOreIdWebWidget(this.oreId, window)
   }
 
   /* Present a popup for the user to login

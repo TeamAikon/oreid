@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import LoginButton from 'oreid-login-button';
 import { OreId } from 'oreid-js';
-import { OreIdWebWidget } from "oreid-webwidget";
+import { createOreIdWebWidget } from "oreid-webwidget";
 import './App.css';
 
 class App extends Component {
@@ -32,17 +32,15 @@ class App extends Component {
 
   oreId = new OreId(this.myOreIdOptions);
 
-  webwidget = new OreIdWebWidget(this.oreId, window);
-
   async componentWillMount() {
     await this.loadUser();
+    this.webwidget = await createOreIdWebWidget(this.oreId, window)
   }
 
   /* Present a popup for the user to login
     When complete, the accessToken will be updated in oreid.auth */
   async handleLogin(event, provider) {
     event.preventDefault();
-    console.log('got to handleLogin')
     this.webwidget.onAuth({
       params: { provider },
       onError: console.error,

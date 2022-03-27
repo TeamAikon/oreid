@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import { OreId } from 'oreid-js';
-import { OreIdWebWidget } from "oreid-webwidget";
+import { createOreIdWebWidget } from "oreid-webwidget";
 import LoginButton from 'oreid-login-button';
 
 class App extends Component {
@@ -30,10 +30,9 @@ class App extends Component {
     // apiKey: this.REACT_APP_OREID_API_KEY,
   });
 
-  webwidget = new OreIdWebWidget(this.oreId, window);
-
   async componentWillMount() {
     await this.loadUser();
+    this.webwidget = await createOreIdWebWidget(this.oreId, window)
   }
 
   /* Present a popup for the user to login
@@ -41,7 +40,7 @@ class App extends Component {
   async handleLogin(event, provider) {
     event.preventDefault();
     this.webwidget.onAuth({
-			params: { provider: 'google'},
+			params: { provider },
 			onError: console.error,
 			onSuccess: async (data) => { await this.loadUser() },
 		});

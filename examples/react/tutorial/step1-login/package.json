@@ -10,7 +10,7 @@
     "oreid-js": "^3.0.7",
     "oreid-login-button": "^1.0.3",
     "oreid-react": "1.0.1",
-    "oreid-webwidget": "^1.0.3",
+    "oreid-webwidget": "^1.0.8",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.4"
