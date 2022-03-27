@@ -1,6 +1,6 @@
 import { OreId } from "oreid-js";
 import { OreidProvider } from "oreid-react";
-import { OreIdWebWidget } from "oreid-webwidget";
+import { createOreIdWebWidget, OreIdWebWidget } from "oreid-webwidget";
 import React from "react";
 import ReactDOM from "react-dom";
 import App from "./App";
@@ -13,18 +13,27 @@ const oreId = new OreId({
 	appId: process.env.REACT_APP_OREID_APP_ID || "",
 	apiKey: process.env.REACT_APP_OREID_API_KEY || ""
 });
-const webWidget = new OreIdWebWidget(oreId, window);
 
-ReactDOM.render(
-	<React.StrictMode>
-		<AppProvider>
+let webWidget: OreIdWebWidget;
+
+createOreIdWebWidget(oreId, window).then(oreIdWebWidget => {
+	webWidget = oreIdWebWidget
+	renderApp()
+})
+
+
+const renderApp = () => {
+	ReactDOM.render(
+		<React.StrictMode>
+			<AppProvider>
 			<OreidProvider oreId={oreId} webWidget={webWidget}>
 				<App />
 			</OreidProvider>
-		</AppProvider>
-	</React.StrictMode>,
-	document.getElementById("root")
-);
+			</AppProvider>
+		</React.StrictMode>,
+		document.getElementById("root")
+	);
+}
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

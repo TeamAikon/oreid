@@ -9773,10 +9773,10 @@ optionator@^0.8.1, optionator@^0.8.3:
     type-check "~0.3.2"
     word-wrap "~1.2.3"
 
-oreid-js@^3.0.5:
-  version "3.0.6"
-  resolved "https://registry.yarnpkg.com/oreid-js/-/oreid-js-3.0.6.tgz#c3546ca4164107c2d29332c73e5fb96af2a4a5ea"
-  integrity sha512-REonfs+uIRELXyjtEi5JqEaVElVZCsEWJrD86AlwygO9yTcJyxJykRiZlKeqQWOZPKdYb0FFG8y6UfIJEjXqXw==
+oreid-js@^3.0.7:
+  version "3.0.7"
+  resolved "https://registry.yarnpkg.com/oreid-js/-/oreid-js-3.0.7.tgz#09f6bc3afe35751a222209a798c1b42b77b6e87d"
+  integrity sha512-mB4+NbLdcI+38x8kny+FPMKBaG9QQAxlg5cv1r3TOuANumpQ6GC7yC5e9T19Zw/FrhaDKCatbU+T//I658i75A==
   dependencies:
     "@aikon/eos-transit" "^4.0.8"
     "@msgpack/msgpack" "^2.7.2"
@@ -9798,17 +9798,17 @@ oreid-login-button@^1.0.3:
   resolved "https://registry.yarnpkg.com/oreid-login-button/-/oreid-login-button-1.1.1.tgz#d5a965f6e5c6711354d55e8d42cbf9634bfb9f91"
   integrity sha512-3THx69ipD+7ICbszCQN94ozYoeTI1nmFHdF5BIgpAeMm1P+Z289woNpio/bwkNJT8SJ+5jnGrYWk7idNS+MLiQ==
 
-oreid-react@1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/oreid-react/-/oreid-react-1.0.3.tgz#7e276917719ca29b01654f63bc88ff02dca9280e"
-  integrity sha512-WMhCh4bnnYq/mDOSqmhQzCEjRwGxkS/BYgHE3rDLTrGFgvQK6qzaa1Ls+GMIaxhc7IAwJ8E3fTWYTDdu5s9MjA==
+oreid-react@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/oreid-react/-/oreid-react-1.0.4.tgz#0bd978d7ddb0a2e9931917c6368fc0640195182c"
+  integrity sha512-HFaj8umNR4Fe0Wis9Dnm2e1BAXLfFEck07QsuFf032E+UA/MeGqPHhWrZ/xEHDy2dfiWkm0z/dNGljAzTmjPxw==
   dependencies:
     lodash "^4.17.21"
 
-oreid-webwidget@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/oreid-webwidget/-/oreid-webwidget-1.0.3.tgz#6fba56b34a385ee1e919b374db02b26f6ace0c8e"
-  integrity sha512-Qd6E2+QE2sT9XhY+t2CrLqDQHwvlmHbaDKmPiCDzlsLnPXDFTg/MDU4aGdUNikCQnEU5GUTwzSBtUrJyl8k6HQ==
+oreid-webwidget@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/oreid-webwidget/-/oreid-webwidget-1.0.6.tgz#829b7ea621190e822546af68ae83903235ea3757"
+  integrity sha512-uIczO5xbjkOS0bzuML3uFnkFKWs+vP2EbTrZCefMTmqmoo+SViLbEpZ7RZ080sZyKN4IqwvU5W02yiRqgVjxkQ==
   dependencies:
     await-to-js "^3.0.0"
 
