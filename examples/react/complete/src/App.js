@@ -15,7 +15,7 @@ import {
 // import { encode as base64Encode } from 'base-64';
 import algoSignerProvider from 'eos-transit-algosigner-provider';
 import scatterProvider from 'eos-transit-scatter-provider';
-import { OreIdWebWidget } from "oreid-webwidget";
+import { createOreIdWebWidget } from "oreid-webwidget";
 // import ledgerProvider from 'eos-transit-ledger-provider';
 import lynxProvider from 'eos-transit-lynx-provider';
 import meetoneProvider from 'eos-transit-meetone-provider';
@@ -78,6 +78,10 @@ class App extends Component {
     };
   }
 
+  async componentDidMount() {
+    this.webwidget = await createOreIdWebWidget(this.oreId, window);
+  }
+
   // called by library to set local busy state
   setBusyCallback = (isBusy, isBusyMessage) => this.setState({ isBusy, isBusyMessage });
 
@@ -94,9 +98,6 @@ class App extends Component {
     eosTransitWalletProviders,
     setBusyCallback: this.setBusyCallback
   });
-
-  // intialize webwidget
-  webwidget = new OreIdWebWidget(this.oreId, window);
 
   get loggedInProvider(){
     return this.oreId.accessTokenHelper.decodedAccessToken['https://oreid.aikon.com/provider']
@@ -161,7 +162,10 @@ class App extends Component {
     this.oreId.logout(); // clears local user state (stored in local storage or cookie)
     // this.setState({ userInfo: {}, isLoggedIn: false });
     // call logout on ORE ID to delete OAuth tokens
-    window.location = `${oreIdUrl}/logout?app_id=${this.oreId.options.appId}&providers=all&callback_url=${window.location.origin}`;
+    this.webwidget.onLogout({
+      onSuccess: () => this.setState({ isLoggedIn: false })
+    });
+    // window.location = `${oreIdUrl}/logout?app_id=${this.oreId.options.appId}&providers=all&callback_url=${window.location.origin}`;
   }
 
   handleSignButton = async ({
