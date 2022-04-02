@@ -15,7 +15,7 @@ import {
 // import { encode as base64Encode } from 'base-64';
 import algoSignerProvider from 'eos-transit-algosigner-provider';
 import scatterProvider from 'eos-transit-scatter-provider';
-import { createOreIdWebWidget } from "oreid-webwidget";
+import { createOreIdWebWidget } from 'oreid-webwidget';
 // import ledgerProvider from 'eos-transit-ledger-provider';
 import lynxProvider from 'eos-transit-lynx-provider';
 import meetoneProvider from 'eos-transit-meetone-provider';
@@ -27,7 +27,7 @@ import walletconnectProvider from 'eos-transit-walletconnect-provider';
 import {
   ERC20_FUNDING_AMOUNT,
   ERC20_TRANSFER_AMOUNT,
-  ETH_TRANSFER_AMOUNT,
+  ETH_TRANSFER_AMOUNT
 } from './constants';
 import { composeAlgorandSampleTransaction } from './algorand';
 
@@ -99,10 +99,9 @@ class App extends Component {
     setBusyCallback: this.setBusyCallback
   });
 
-  get loggedInProvider(){
-    return this.oreId.accessTokenHelper.decodedAccessToken['https://oreid.aikon.com/provider']
+  get loggedInProvider() {
+    return this.oreId.accessTokenHelper.decodedAccessToken['https://oreid.aikon.com/provider'];
   }
-
 
   walletButtons = [
     { provider: ExternalWalletType.AlgoSigner, chainNetwork: ChainNetwork.AlgoTest },
@@ -124,16 +123,16 @@ class App extends Component {
     this.handleSignCallback();
     window.oreId = this.oreId;
     window.webwidget = this.webwidget;
-    document.addEventListener('click', e => {
-      if (this.state.errorMessage && !e.target.contains(document.querySelector('[data-tag=error-message]'))){
-        this.setState({ errorMessage: null })
+    document.addEventListener('click', (e) => {
+      if (this.state.errorMessage && !e.target.contains(document.querySelector('[data-tag=error-message]'))) {
+        this.setState({ errorMessage: null });
       }
-    })
+    });
   }
 
   /** Load the user from local storage - user info is automatically saved to local storage by oreId.auth.user.getData() */
   async loadUserFromLocalStorage() {
-    let { accessToken } = this.oreId;
+    const { accessToken } = this.oreId;
     if (!accessToken) return;
     await this.loadUserFromApi();
   }
@@ -143,7 +142,7 @@ class App extends Component {
       await this.oreId.auth.user.getData();
       const userInfo = this.oreId.auth.user.data;
       this.setState({ userInfo, isLoggedIn: true });
-      console.log({userInfo})
+      console.log({ userInfo });
     } catch (error) {
       this.setState({ errorMessage: error.message });
     }
@@ -173,7 +172,7 @@ class App extends Component {
     chainNetwork,
     permission,
     externalWalletType,
-    provider,
+    provider
   }) => {
     this.clearErrors();
     const { sendEthForGas, userInfo } = this.state;
@@ -240,7 +239,7 @@ class App extends Component {
             window.location.href = loginUrl;
           }
         }
-      })     
+      });
     } catch (error) {
       this.setState({ errorMessage: error.message });
     }
@@ -328,15 +327,13 @@ class App extends Component {
   ) {
     try {
       const transactionData = await this.prepareTransactionData({ chainNetwork, chainAccount, permission, provider, externalWalletType, sendEthForGas, account });
-      console.log({transactionData})
+      console.log({ transactionData });
       this.setResponseSignTransaction('','','','');
-      const transaction = await this.oreId.createTransaction(transactionData)
-      let signResponse
-      if (externalWalletType)
-        signResponse = await transaction.signWithWallet(externalWalletType);
-      else
-        signResponse = await transaction.getSignUrl();
-      console.log({ signResponse })
+      const transaction = await this.oreId.createTransaction(transactionData);
+      let signResponse;
+      if (externalWalletType) signResponse = await transaction.signWithWallet(externalWalletType);
+      else signResponse = await transaction.getSignUrl();
+      console.log({ signResponse });
       // if the sign responds with a signUrl, then redirect the browser to it to call the signing flow
       const { signUrl, signedTransaction, transactionId } =
         signResponse || {};
@@ -368,8 +365,8 @@ class App extends Component {
         preventAutoSign: false,
         provider: externalWalletType || provider,
         returnSignedTransaction: true,
-        state: 'abc',
-      },
+        state: 'abc'
+      }
     };
     return transactionData;
   }
@@ -479,16 +476,17 @@ class App extends Component {
 */
   async handleAuthCallback() {
     const url = window.location.href;
-    let errors, state
+    let errors;
+    let state;
     if (/authcallback/i.test(url)) {
       try {
         ;({ errors, state } = this.oreId.auth.handleAuthCallback(url));
         if (state) console.log(`state returned with request:${state}`);
       } catch (error) {
-        console.error(error)
+        console.error(error);
       }
       if (!errors) {
-        window.location.replace('/')
+        window.location.replace('/');
       }
     }
   }
@@ -546,20 +544,20 @@ class App extends Component {
 
     // handle onSuccess differently depending on action type
     switch (action) {
-      case 'sign':
-        webwidgetProps.onSuccess = ({ data }) => {
-          this.setResponseSignTransaction(data.signed_transaction, data.state, data.transaction_id, data.errors);
-        }
-        webwidgetProps.transaction = actionParams.transaction
-        break
-      case 'newChainAccount':
-        webwidgetProps.options = {
-          accountType: actionParams.accountType,
-          chainNetwork: actionParams.chainNetwork
-        }
-        break
-      default:
-        break
+    case 'sign':
+      webwidgetProps.onSuccess = ({ data }) => {
+        this.setResponseSignTransaction(data.signed_transaction, data.state, data.transaction_id, data.errors);
+      };
+      webwidgetProps.transaction = actionParams.transaction;
+      break;
+    case 'newChainAccount':
+      webwidgetProps.options = {
+        accountType: actionParams.accountType,
+        chainNetwork: actionParams.chainNetwork
+      };
+      break;
+    default:
+      break;
     }
     return webwidgetProps;
   }
@@ -668,7 +666,7 @@ class App extends Component {
       <div style={{ marginTop: 50, marginLeft: 20 }}>
         <hr />
         <h3>Sign sample transaction with one of your keys</h3>
-        <select value={this.state.chainAccountItem} onChange={e => this.setState({ chainAccountItem: e.target.value, chainAccountPermissionItem: '0' })}>
+        <select value={this.state.chainAccountItem} onChange={(e) => this.setState({ chainAccountItem: e.target.value, chainAccountPermissionItem: '0' })}>
           <option value="" />
           {chainAccounts.map((chainAccount, index) => (
             <option key={index} value={index}>{`${chainAccount.chainAccount} (${chainAccount.chainNetwork})`}</option>
@@ -750,10 +748,10 @@ class App extends Component {
 
   // render one sign transaction button for each chain
   renderSignButtons = () => {
-    const { chainAccountItem, chainAccountPermissionItem} = this.state
-    if (chainAccountItem === '') return null
-    const userChainAccount = this.state.userInfo.chainAccounts[chainAccountItem]
-    const chainAccountPermission = userChainAccount.permissions[chainAccountPermissionItem]
+    const { chainAccountItem, chainAccountPermissionItem } = this.state;
+    if (chainAccountItem === '') return null;
+    const userChainAccount = this.state.userInfo.chainAccounts[chainAccountItem];
+    const chainAccountPermission = userChainAccount.permissions[chainAccountPermissionItem];
     const provider = chainAccountPermission.externalWalletType || 'oreid';
     return (
       <div style={{
@@ -779,7 +777,7 @@ class App extends Component {
         </div>
         <div>
           <strong>Permission: </strong>
-          <select value={chainAccountPermissionItem} onChange={e => this.setState({ chainAccountPermissionItem: e.target.value })}>
+          <select value={chainAccountPermissionItem} onChange={(e) => this.setState({ chainAccountPermissionItem: e.target.value })}>
             {userChainAccount.permissions.map((permission, index) => (
               <option key={index} value={index}>{`${permission.name} (${permission.accountType})`}</option>
             ))}
@@ -796,14 +794,14 @@ class App extends Component {
           }}
           text={`Sign via ${chainAccountPermission?.externalWalletType || 'Callback'}`}
           onClick={() => this.handleSignButton({
-            chainAccount: userChainAccount.chainAccount, 
-            chainNetwork: userChainAccount.chainNetwork, 
+            chainAccount: userChainAccount.chainAccount,
+            chainNetwork: userChainAccount.chainNetwork,
             permission: chainAccountPermission,
             externalWalletType: chainAccountPermission?.externalWalletType,
-            provider: !chainAccountPermission?.externalWalletType && this.loggedInProvider,
+            provider: !chainAccountPermission?.externalWalletType && this.loggedInProvider
           })}
         />
-        {!chainAccountPermission.externalWalletType && (          
+        {!chainAccountPermission.externalWalletType && (
           /* Show button to sign with OREID WebWidget  (don't show if the key is in a local wallet app)*/
           <>
             <LoginButton
