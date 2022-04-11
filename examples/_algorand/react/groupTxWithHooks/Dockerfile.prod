@@ -1,0 +1,59 @@
+###########
+#  BASE   #
+###########
+
+FROM node:16.14-alpine3.15 as base
+
+WORKDIR /home/app
+
+COPY package*.json ./
+COPY tsconfig.json ./
+COPY yarn.lock ./
+
+RUN yarn install
+
+RUN yarn global add typescript --save-dev
+
+COPY src/ src/
+COPY ./public/ ./public/
+
+RUN yarn build
+
+#################
+#  TS-REMOVER   #
+#################
+
+FROM node:16.14-alpine3.15 as ts-remover
+
+WORKDIR /usr/app
+
+COPY --from=base /home/app/package*.json ./
+
+RUN yarn install --only=production
+
+COPY --from=base /home/app/build ./
+
+###########
+#  FINAL  #
+###########
+
+FROM node:16.14-alpine3.15
+
+WORKDIR /usr/app
+
+RUN yarn global add serve
+
+COPY --from=ts-remover /usr/app /usr/app
+COPY .env ./
+
+# COPY ./public ./public/
+
+USER 1000
+
+EXPOSE 3000
+
+CMD ["serve", "-s", "build"]
+
+
+
+
