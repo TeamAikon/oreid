@@ -30,7 +30,7 @@
     "express": "^4.17.1",
     "oreid-js": "^3.0.6",
     "oreid-login-button": "^1.0.3",
-    "oreid-webwidget": "^1.0.8",
+    "oreid-webwidget": "^1.1.1",
     "path": "^0.12.7",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
