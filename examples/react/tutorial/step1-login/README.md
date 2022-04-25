@@ -9,6 +9,12 @@ This example demonstrates the basics of using the ORE ID
 - Using the LoginButton React component
   <br><br>
 
+To install project dependencies use:
+
+```
+yarn install
+```
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app)
 
     yarn start
