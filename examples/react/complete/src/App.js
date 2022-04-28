@@ -234,7 +234,7 @@ class App extends Component {
         onError: async () => {
           // redirect the browser to it to start the user's OAuth login flow
           const { loginUrl } = await this.oreId.auth.getLoginUrl({ provider, chainNetwork });
-          if (loginUrl) {
+          if (loginUrl && !this.oreId.accessToken) {
             // redirect browser to loginURL
             window.location.href = loginUrl;
           }
