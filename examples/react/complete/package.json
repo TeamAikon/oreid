@@ -28,7 +28,7 @@
     "ethereumjs-tx": "^2.1.2",
     "ethereumjs-util": "^6.2.0",
     "express": "^4.17.1",
-    "oreid-js": "^3.0.6",
+    "oreid-js": "^3.0.11",
     "oreid-login-button": "^1.0.3",
     "oreid-webwidget": "^1.1.1",
     "path": "^0.12.7",
