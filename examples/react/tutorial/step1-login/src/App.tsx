@@ -8,7 +8,7 @@ import {
 	useIsLoggedIn,
 	useUser,
 } from "oreid-react";
-import { createOreIdWebWidget, OreIdWebWidget } from "oreid-webwidget";
+import { WebWidget } from "oreid-webwidget";
 import React, { useEffect, useState } from "react";
 import "./App.css";
 
@@ -20,6 +20,7 @@ const oreId = new OreId({
 	appName: "ORE ID Sample App",
 	appId: REACT_APP_OREID_APP_ID,
 	apiKey: REACT_APP_OREID_API_KEY,
+	plugins: [WebWidget()],
 });
 
 interface OreidReactError {
@@ -133,19 +134,19 @@ const AppWithProvider: React.FC = () => {
 };
 
 export const App: React.FC = () => {
-	const [webWidget, setWebWidget] = useState<OreIdWebWidget>();
+	const [ready, setReady] = useState(false);
 
 	useEffect(() => {
-		createOreIdWebWidget(oreId, window).then((oreIdWebWidget) => {
-			setWebWidget(oreIdWebWidget);
+		oreId.init().then(() => {
+			setReady(true);
 		});
 	}, []);
 
-	if (!webWidget) {
+	if (!ready) {
 		return <>Loading...</>;
 	}
 	return (
-		<OreidProvider oreId={oreId} webWidget={webWidget}>
+		<OreidProvider oreId={oreId}>
 			<AppWithProvider />
 		</OreidProvider>
 	);
