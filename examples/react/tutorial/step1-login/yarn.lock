@@ -6272,7 +6272,7 @@ optionator@^0.9.1:
     type-check "^0.4.0"
     word-wrap "^1.2.3"
 
-oreid-js@^4.0.0-beta.0:
+oreid-js@^3.1.0:
   version "4.0.0-beta.0"
   resolved "https://registry.yarnpkg.com/oreid-js/-/oreid-js-4.0.0-beta.0.tgz#aedb588dbb6039c7a1cf53753778f4ab197be5a1"
   integrity sha512-sgbpXSn2YjwGyTnlr0glaR9AKE4FNw63KNV8IIaLfVFvFusBSeFv66gFlXUrykzG6bVa9ToMforbyw9PCBDK2w==
@@ -6297,14 +6297,14 @@ oreid-login-button@^1.1.1:
   resolved "https://registry.yarnpkg.com/oreid-login-button/-/oreid-login-button-1.1.1.tgz#d5a965f6e5c6711354d55e8d42cbf9634bfb9f91"
   integrity sha512-3THx69ipD+7ICbszCQN94ozYoeTI1nmFHdF5BIgpAeMm1P+Z289woNpio/bwkNJT8SJ+5jnGrYWk7idNS+MLiQ==
 
-oreid-react@^2.0.0-beta.0:
-  version "2.0.0-beta.0"
-  resolved "https://registry.yarnpkg.com/oreid-react/-/oreid-react-2.0.0-beta.0.tgz#cbdcff815bb9fe32fe15e3b74f9984874a059323"
-  integrity sha512-lbX/t+myBPXSGKPO/9xou2mUmI93DYCci0mm5yPLFxoygCOKoVKv0tdk3kvqO2rH+OI+mtqhCZjvhxaShinEtQ==
+oreid-react@^1.2.0-beta.0:
+  version "1.2.0-beta.0"
+  resolved "https://registry.yarnpkg.com/oreid-react/-/oreid-react-1.2.0-beta.0.tgz#40b8c7558f14a59c74f59cd6805e9d1dfaf3ff93"
+  integrity sha512-zUU4Lds+PDTSizPLXF+JgSH8nhoK5FDctZx85RAvio1Kj7zfkvKZw8mggPeIpKwaK3ZcB2p08x8RL7nIuP5x3Q==
   dependencies:
     lodash "^4.17.21"
 
-oreid-webwidget@^2.0.0-beta.0:
+oreid-webwidget@^1.2.0:
   version "2.0.0-beta.0"
   resolved "https://registry.yarnpkg.com/oreid-webwidget/-/oreid-webwidget-2.0.0-beta.0.tgz#2729580270f2f14bd518e29eff2294fcbfb550da"
   integrity sha512-A2K0ZMPV3Wt8bal4i++LZ9cEwXl5eC7Pe/kB69c/iUlKwStsJd6mhrIStSsRXI2K8/0DOxtCFySckC3AQpHJ7w==

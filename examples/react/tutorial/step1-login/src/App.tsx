@@ -20,7 +20,9 @@ const oreId = new OreId({
 	appName: "ORE ID Sample App",
 	appId: REACT_APP_OREID_APP_ID,
 	apiKey: REACT_APP_OREID_API_KEY,
-	plugins: [WebWidget()],
+	plugins: {
+		popup: WebWidget(),
+	},
 });
 
 interface OreidReactError {
