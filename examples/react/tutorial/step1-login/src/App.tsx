@@ -90,7 +90,6 @@ const LoggedOutComponent: React.FC = () => {
 
 const LoggedInComponent: React.FC = () => {
 	const user = useUser();
-	const logout = useActionLogout();
 
 	if (!user) return null;
 
@@ -112,12 +111,9 @@ const LoggedInComponent: React.FC = () => {
 			<br />
 			email: {email}
 			<br />
-			<button
-				onClick={() =>
-					// * onError and onSuccess are optional. They're just here to show that they exist.
-					logout({ onError: console.error, onSuccess: console.log })
-				}
-			>
+			<button onClick={
+				() => oreId.logout()
+			}>
 				Logout
 			</button>
 		</div>
