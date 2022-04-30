@@ -4,7 +4,6 @@ import LoginButton from "oreid-login-button";
 import {
 	OreidProvider,
 	useActionAuth,
-	useActionLogout,
 	useIsLoggedIn,
 	useUser,
 } from "oreid-react";
