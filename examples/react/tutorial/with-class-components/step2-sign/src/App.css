@@ -28,6 +28,24 @@
   color: #61dafb;
 }
 
+.App-error {
+  margin-top: 20;
+  margin-left: 10;
+  margin-right: 10;
+  align-items: center;
+  font-size: calc(5px + 2vmin);
+  color: #da3333;
+}
+
+.App-success {
+  margin-top: 20;
+  margin-left: 10;
+  margin-right: 10;
+  align-items: center;
+  font-size: 5;
+  color: #dde6e7;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

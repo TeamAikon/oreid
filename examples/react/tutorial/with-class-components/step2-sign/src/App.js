@@ -4,6 +4,10 @@ import { OreId } from 'oreid-js';
 import { createOreIdWebWidget } from "oreid-webwidget";
 import './App.css';
 
+const REACT_APP_OREID_APP_ID = "demo_0097ed83e0a54e679ca46d082ee0e33a"
+const REACT_APP_OREID_API_KEY = "demo_k_97b33a2f8c984fb5b119567ca19e4a49"
+
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -18,16 +22,15 @@ class App extends Component {
     this.handleLogout = this.handleLogout.bind(this);
   }
 
-  REACT_APP_OREID_APP_ID = "demo_0097ed83e0a54e679ca46d082ee0e33a"
-  REACT_APP_OREID_API_KEY = "demo_k_97b33a2f8c984fb5b119567ca19e4a49"
 
   // Intialize oreId
   // IMPORTANT - For a production app, you must protect your api key. A create-react-app app will leak the key since it all runs in the browser.
   // To protect the key, you need to set-up a proxy server. See https://github.com/TeamAikon/ore-id-docs/tree/master/examples/react/advanced/react-server
   myOreIdOptions = {
-    appName: 'ORE ID Sample App',
-    appId: this.REACT_APP_OREID_APP_ID,
-    // apiKey: REACT_APP_OREID_API_KEY,
+    appName: "ORE ID Sample App",
+    appId: REACT_APP_OREID_APP_ID || "",
+    apiKey: REACT_APP_OREID_API_KEY || "",
+    oreIdUrl: "http://localhost:8080",
   }
 
   oreId = new OreId(this.myOreIdOptions);
@@ -57,7 +60,7 @@ class App extends Component {
 
   /** Load the user from local storage - user info is automatically saved to local storage by oreId.auth.user.getData() */
   async loadUser() {
-    if(!this.oreId.auth?.user?.isLoggedIn) return
+    if (!this.oreId.auth?.user?.isLoggedIn) return
     let { user } = this.oreId.auth
     await user.getData()
     this.setState({ userData: user.data, isLoggedIn: true });
@@ -112,34 +115,34 @@ class App extends Component {
   }
 
   async handleSign() {
-		const userData = this.oreId.auth.user.data
+    const userData = this.oreId.auth.user.data
     this.setState({ errors: null });
 
     const signWithChainNetwork = 'eos_kylin';
     const signingAccount = userData.chainAccounts.find(ca => ca.chainNetwork === signWithChainNetwork)
 
     // Compose transaction contents
-		const transactionBody = this.createSampleTransactionEos(signingAccount.chainAccount, signingAccount.defaultPermission?.name)
+    const transactionBody = this.createSampleTransactionEos(signingAccount.chainAccount, signingAccount.defaultPermission?.name)
 
-		const transaction = await this.oreId.createTransaction({
-			chainAccount: signingAccount.chainAccount,
-			chainNetwork: signingAccount.chainNetwork,
-			transaction: transactionBody,
-			signOptions: { 
+    const transaction = await this.oreId.createTransaction({
+      chainAccount: signingAccount.chainAccount,
+      chainNetwork: signingAccount.chainNetwork,
+      transaction: transactionBody,
+      signOptions: {
         broadcast: true,
-        returnSignedTransaction: false, 
+        returnSignedTransaction: false,
       },
-		});
+    });
 
-		this.webwidget.onSign({
-			transaction,
+    this.webwidget.onSign({
+      transaction,
       onError: ({ errors }) => {
         this.setState({ errors });
       },
       onSuccess: ({ data }) => {
         this.setState({ oreIdResult: JSON.stringify(data, null, '\t') });
       }
-		});
+    });
   }
 
   renderLoggedOut() {
