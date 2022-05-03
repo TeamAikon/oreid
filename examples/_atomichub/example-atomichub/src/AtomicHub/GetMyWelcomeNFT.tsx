@@ -2,7 +2,7 @@ import React from "react";
 
 export const GetMyWelcomeNFT: React.FC = () => {
 	const onClick = () => {
-		// TODO: How to get my wellcome NFT?
+		// TODO: Create transaction to get my first NFT
 		console.log("Get my Welcome NFT");
 	};
 
