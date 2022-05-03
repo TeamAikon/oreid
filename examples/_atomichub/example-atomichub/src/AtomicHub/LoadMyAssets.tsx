@@ -1,3 +1,5 @@
+import { ChainNetwork } from "oreid-js";
+import { useOreId } from "oreid-react";
 import React, { useState } from "react";
 import { AtomichubAssets } from "./AtomicHubTypes";
 
@@ -21,9 +23,13 @@ interface Props {
 
 export const LoadMyAssets: React.FC<Props> = ({ setAssets }) => {
 	const [loading, setLoading] = useState(false);
+	const oreId = useOreId();
+	const account = oreId.auth.user.data.chainAccounts.find(
+		(chainAccount) => chainAccount.chainNetwork === ChainNetwork.WaxTest
+	);
 
-	// TODO: Get my wax wallet from oreId
-	const waxAccount = "testsataikon";
+	const waxAccount = account?.chainAccount || "";
+	// const waxAccount = "testsataikon";
 
 	const loadAssets = () => {
 		setLoading(true);

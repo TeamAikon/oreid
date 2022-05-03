@@ -1,8 +1,9 @@
 import React, { useState } from "react";
+import { AssetsToBuy } from "./AssetsToBuy";
 import { AtomichubAssets } from "./AtomicHubTypes";
 import { GetMyWelcomeNFT } from "./GetMyWelcomeNFT";
 import { LoadMyAssets } from "./LoadMyAssets";
-import { ShowMyAssets } from "./ShowMyAssets";
+import { MyAssetsList } from "./MyAssetsList";
 
 export const AtomicHub: React.FC = () => {
 	const [assets, setAssets] = useState<AtomichubAssets[]>([]);
@@ -13,7 +14,8 @@ export const AtomicHub: React.FC = () => {
 			<GetMyWelcomeNFT />
 			<br />
 			<LoadMyAssets setAssets={setAssets} />
-			<ShowMyAssets assets={assets} />
+			<MyAssetsList assets={assets} />
+			<AssetsToBuy />
 		</>
 	);
 };

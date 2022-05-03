@@ -12,22 +12,25 @@ import React, { useEffect, useState } from "react";
 import "./App.css";
 import { AtomicHub } from "./AtomicHub";
 
-const REACT_APP_OREID_APP_ID = "demo_0097ed83e0a54e679ca46d082ee0e33a";
-const REACT_APP_OREID_API_KEY = "demo_k_97b33a2f8c984fb5b119567ca19e4a49";
+// const REACT_APP_OREID_APP_ID = "demo_0097ed83e0a54e679ca46d082ee0e33a";
+// const REACT_APP_OREID_API_KEY = "demo_k_97b33a2f8c984fb5b119567ca19e4a49";
 
-// const REACT_APP_OREID_APP_ID = "t_4683afc074ab444ebdf1bf08ed8d1757";
-// // const REACT_APP_OREID_API_KEY = "t_kc5bdfae98495409e82b22e524ed2ae97";
+const REACT_APP_OREID_APP_ID = "t_4683afc074ab444ebdf1bf08ed8d1757";
+// const REACT_APP_OREID_API_KEY = "t_kc5bdfae98495409e82b22e524ed2ae97";
 
 // * Initialize OreId
 const oreId = new OreId({
 	appName: "ORE ID Sample App",
 	appId: REACT_APP_OREID_APP_ID,
-	apiKey: REACT_APP_OREID_API_KEY, // apiKey required for autoSign feature
+	// apiKey: REACT_APP_OREID_API_KEY, // apiKey required for autoSign feature
 	oreIdUrl: "https://dev.service.oreid.io",
 	plugins: {
 		popup: WebWidget(),
 	},
 });
+
+// @ts-ignore
+window.oreId = oreId;
 
 interface OreidReactError {
 	errors?: string | undefined;

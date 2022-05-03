@@ -68,3 +68,20 @@ export interface AtomichubAssets {
 	};
 	name: string;
 }
+
+export interface AtomichubOffer {
+	contract: "atomicassets";
+	offer_id: string;
+	sender_name: string;
+	recipient_name: string;
+	memo: string;
+	state: number;
+	sender_assets: AtomichubAssets[];
+	recipient_assets: [];
+	is_sender_contract: boolean;
+	is_recipient_contract: boolean;
+	updated_at_block: string;
+	updated_at_time: string;
+	created_at_block: string;
+	created_at_time: string;
+}

@@ -1,14 +1,16 @@
 import React from "react";
 import { AtomichubAssets } from "./AtomicHubTypes";
+import { DisplayAssets } from "./DisplayAssets";
 import { SellOrCancelButtom } from "./SellOrCancelButtom";
 
 interface Props {
 	assets: AtomichubAssets[];
 }
-export const ShowMyAssets: React.FC<Props> = ({ assets }) => {
+export const MyAssetsList: React.FC<Props> = ({ assets }) => {
 	if (assets.length === 0) return null;
 	return (
 		<>
+			<h2>My NFTs</h2>
 			<div
 				style={{
 					display: "flex",
@@ -18,29 +20,16 @@ export const ShowMyAssets: React.FC<Props> = ({ assets }) => {
 				}}
 			>
 				{assets.map((asset) => (
-					<div
+					<DisplayAssets
 						key={asset.asset_id}
-						style={{
-							width: "300px",
-							padding: "10px",
-							border: "1px solid #fff",
-							margin: "20px",
-						}}
-					>
-						{asset.data.name}
-						<br />
-						<br />
-						<img
-							src={`https://resizer.atomichub.io/images/v1/preview?ipfs=${asset.data.img}&size=370`}
-							style={{ maxWidth: "100%" }}
-							alt=""
-						/>
-						<br />
-						<SellOrCancelButtom asset={asset} />
-					</div>
+						asset={asset}
+						footer={<SellOrCancelButtom asset={asset} />}
+					/>
 				))}
 			</div>
 			Total: {assets.length}
+			<br />
+			<br />
 		</>
 	);
 };
