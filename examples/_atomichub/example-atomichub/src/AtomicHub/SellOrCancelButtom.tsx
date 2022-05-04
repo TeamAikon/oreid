@@ -1,18 +1,10 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { AtomichubAssets } from "./AtomicHubTypes";
+import { isAssetOnSale } from "./helpers/isAssetOnSale";
 
 interface Props {
 	asset: AtomichubAssets;
 }
-
-const isAssetOnSale = async (asset: AtomichubAssets) => {
-	const response = await fetch(
-		`https://test.wax.api.atomicassets.io/atomicassets/v1/offers?asset_id=${asset.asset_id}&page=1&limit=100&order=desc&sort=created`
-	);
-	const json = await response.json();
-	const offers = json?.data || [];
-	return offers.length >= 1;
-};
 
 export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 	const [isLoading, setIsLoading] = useState(true);
@@ -20,7 +12,7 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 
 	useEffect(() => {
 		setIsLoading(true);
-		isAssetOnSale(asset)
+		isAssetOnSale(asset.asset_id)
 			.then((isOnSale) => setOnSale(isOnSale))
 			.finally(() => setIsLoading(false));
 	}, [asset]);

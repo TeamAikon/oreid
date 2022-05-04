@@ -2,20 +2,7 @@ import { ChainNetwork } from "oreid-js";
 import { useOreId } from "oreid-react";
 import React, { useState } from "react";
 import { AtomichubAssets } from "./AtomicHubTypes";
-
-const fetchDataFromAtomicHub = async ({
-	waxAccount,
-	collection,
-}: {
-	waxAccount: string;
-	collection: string;
-}): Promise<AtomichubAssets[]> => {
-	const response = await fetch(
-		`https://test.wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=${collection}&owner=${waxAccount}&page=1&limit=1000&order=desc&sort=asset_id`
-	);
-	const json = await response.json();
-	return json?.data || [];
-};
+import { getAssetsFromCollection } from "./helpers/getAssetsFromCollection";
 
 interface Props {
 	setAssets: (assets: AtomichubAssets[]) => void;
@@ -31,9 +18,9 @@ export const LoadMyAssets: React.FC<Props> = ({ setAssets }) => {
 	const waxAccount = account?.chainAccount || "";
 	// const waxAccount = "testsataikon";
 
-	const loadAssets = () => {
+	const loadMyAssets = () => {
 		setLoading(true);
-		fetchDataFromAtomicHub({ waxAccount, collection: "orenetworkv1" })
+		getAssetsFromCollection({ waxAccount, collection: "orenetworkv1" })
 			.then((myAssets) => setAssets(myAssets))
 			.catch((error) => {
 				console.error(error);
@@ -43,7 +30,7 @@ export const LoadMyAssets: React.FC<Props> = ({ setAssets }) => {
 	};
 	return (
 		<>
-			<button disabled={loading} onClick={loadAssets}>
+			<button disabled={loading} onClick={loadMyAssets}>
 				{loading ? "Loading..." : "Load My Assets"}
 			</button>
 			<br />

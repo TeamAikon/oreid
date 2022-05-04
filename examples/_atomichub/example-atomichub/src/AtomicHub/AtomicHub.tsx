@@ -15,6 +15,7 @@ export const AtomicHub: React.FC = () => {
 			<br />
 			<LoadMyAssets setAssets={setAssets} />
 			<MyAssetsList assets={assets} />
+			<br />
 			<AssetsToBuy />
 		</>
 	);
