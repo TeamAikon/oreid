@@ -20,7 +20,6 @@ const oreId = new OreId({
 	appName: "ORE ID Sample App",
 	appId: REACT_APP_OREID_APP_ID,
 	// apiKey: REACT_APP_OREID_API_KEY, // apiKey required for autoSign feature
-	oreIdUrl: 'http://localhost:8080',
 	plugins: {
 		popup: WebWidget(),
 	},
