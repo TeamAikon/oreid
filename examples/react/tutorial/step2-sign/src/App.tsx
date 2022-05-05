@@ -1,13 +1,13 @@
-import { AuthProvider, OreId, Transaction, UserData } from "oreid-js";
+import {
+	AuthProvider,
+	OreId,
+	PopupPluginError,
+	Transaction,
+	UserData,
+} from "oreid-js";
 import LoginButton from "oreid-login-button";
 // ! To use hooks from oreid-react make sure you added the OreidProvider (index.tx shows how to do this)
-import {
-	OreidProvider,
-	useActionAuth,
-	useActionSign,
-	useIsLoggedIn,
-	useUser,
-} from "oreid-react";
+import { OreidProvider, useIsLoggedIn, useOreId, useUser } from "oreid-react";
 import { WebWidget } from "oreid-webwidget";
 import React, { useEffect, useState } from "react";
 import "./App.css";
@@ -20,22 +20,15 @@ const oreId = new OreId({
 	appName: "ORE ID Sample App",
 	appId: REACT_APP_OREID_APP_ID,
 	// apiKey: REACT_APP_OREID_API_KEY, // apiKey required for autoSign feature
-	oreIdUrl: 'http://localhost:8080',
 	plugins: {
 		popup: WebWidget(),
 	},
 });
 
-interface OreidReactError {
-	errors?: string | undefined;
-	data?: any;
-}
-
-
-const createSampleTransactionEos = (actor: string, permission = 'active') => {
+const createSampleTransactionEos = (actor: string, permission = "active") => {
 	const transaction = {
-		account: 'demoapphello',
-		name: 'hi',
+		account: "demoapphello",
+		name: "hi",
 		authorization: [
 			{
 				actor,
@@ -47,16 +40,27 @@ const createSampleTransactionEos = (actor: string, permission = 'active') => {
 		},
 	};
 	return transaction;
-}
+};
 
-const composeSampleTransaction: any = async (userData: UserData, signWithChainNetwork: string) => {
-	if(!userData) return null
+const composeSampleTransaction: any = async (
+	userData: UserData,
+	signWithChainNetwork: string
+) => {
+	if (!userData) return null;
 
-	const signingAccount = userData.chainAccounts.find(ca => ca.chainNetwork === signWithChainNetwork)
-	if(!signingAccount) throw new Error(`User doesnt have a chain account for the ${signWithChainNetwork} network`)
+	const signingAccount = userData.chainAccounts.find(
+		(ca) => ca.chainNetwork === signWithChainNetwork
+	);
+	if (!signingAccount)
+		throw new Error(
+			`User doesnt have a chain account for the ${signWithChainNetwork} network`
+		);
 
 	// Compose transaction contents
-	const transactionBody = createSampleTransactionEos(signingAccount.chainAccount, signingAccount.defaultPermission?.name)
+	const transactionBody = createSampleTransactionEos(
+		signingAccount.chainAccount,
+		signingAccount.defaultPermission?.name
+	);
 	const transaction = await oreId.createTransaction({
 		chainAccount: signingAccount.chainAccount,
 		chainNetwork: signingAccount.chainNetwork,
@@ -66,14 +70,14 @@ const composeSampleTransaction: any = async (userData: UserData, signWithChainNe
 			returnSignedTransaction: false,
 		},
 	});
-	return transaction
-}
+	return transaction;
+};
 
 const NotLoggedInComponent: React.FC = () => {
-	const onAuth = useActionAuth();
-	const [errors, setErrors] = useState<OreidReactError | undefined>();
+	const oreIdFromContext = useOreId();
+	const [errors, setErrors] = useState<PopupPluginError | undefined>();
 
-	const onError = (error: OreidReactError) => {
+	const onError = (error: PopupPluginError) => {
 		console.log("Login failed:", error);
 		setErrors(error);
 	};
@@ -91,31 +95,34 @@ const NotLoggedInComponent: React.FC = () => {
 					onClick={() => {
 						// * onError and onSuccess are optional. They're just here to show that they exist.
 						// ! provider is also optional, but its use is highly recommended.
-						onAuth({
-							params: { provider: AuthProvider.Facebook },
-							onError,
-							onSuccess,
-						});
+						oreIdFromContext.popup
+							.auth({
+								params: { provider: AuthProvider.Facebook },
+							})
+							.then(onSuccess)
+							.catch(onError);
 					}}
 				/>
 				<LoginButton
 					provider="google"
 					onClick={() => {
-						onAuth({
-							params: { provider: AuthProvider.Google },
-							onError,
-							onSuccess,
-						});
+						oreIdFromContext.popup
+							.auth({
+								params: { provider: AuthProvider.Google },
+							})
+							.then(onSuccess)
+							.catch(onError);
 					}}
 				/>
 				<LoginButton
 					provider="email"
 					onClick={() => {
-						onAuth({
-							params: { provider: AuthProvider.Email },
-							onError,
-							onSuccess,
-						});
+						oreIdFromContext.popup
+							.auth({
+								params: { provider: AuthProvider.Email },
+							})
+							.then(onSuccess)
+							.catch(onError);
 					}}
 				/>
 			</div>
@@ -126,13 +133,25 @@ const NotLoggedInComponent: React.FC = () => {
 
 const LoggedInComponent: React.FC = () => {
 	const user = useUser();
-	const onSign = useActionSign();
-	const [errors, setErrors] = useState<OreidReactError | undefined>();
+	// const onSign = useActionSign();
+	const oreIdFromContext = useOreId();
+
+	//@ts-ignore
+	window.oreIdFromContext = oreIdFromContext;
+	const [errors, setErrors] = useState<PopupPluginError | undefined>();
 	const [signResults, setSignResults] = useState<any | undefined>();
 
 	if (!user) return null;
 
 	const { accountName, email, name, picture, username } = user;
+
+	const onError = (error: PopupPluginError) => {
+		console.log("Login failed:", error);
+		setErrors(error);
+	};
+	const onSuccess = (results: any) => {
+		setSignResults(results);
+	};
 
 	return (
 		<>
@@ -156,29 +175,29 @@ const LoggedInComponent: React.FC = () => {
 					provider="oreid"
 					text="Sign with OreID"
 					onClick={() => {
-						setErrors(undefined)
+						setErrors(undefined);
 						// compose a sample transaction for the EOS Kylin test network
-						composeSampleTransaction(user, 'eos_kylin')
-							.then((transaction: Transaction) => {
-								console.log('transaction to sign:', transaction.data)
+						composeSampleTransaction(user, "eos_kylin").then(
+							(transaction: Transaction) => {
+								console.log("transaction to sign:", transaction.data);
 								// call the sign action
-								onSign({
-									transaction,
-									onError: (error) => { setErrors(error) },
-									onSuccess: (results) => { 
-										setSignResults(results) 
-									},
-								});
-						});
+								oreIdFromContext.popup
+									.sign({
+										transaction,
+									})
+									.then(onSuccess)
+									.catch(onError);
+							}
+						);
 					}}
 				/>
-				<button onClick={
-					() => oreId.logout()
-				}>
-					Logout
-				</button>
+				<button onClick={() => oreIdFromContext.logout()}>Logout</button>
 			</div>
-			{signResults && <div className="App-success">Results: {JSON.stringify(signResults)}</div>}
+			{signResults && (
+				<div className="App-success">
+					Results: {JSON.stringify(signResults)}
+				</div>
+			)}
 			{errors && <div className="App-error">Error: {errors.errors}</div>}
 		</>
 	);

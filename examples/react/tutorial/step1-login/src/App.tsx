@@ -1,12 +1,7 @@
 import { AuthProvider, OreId, UserData } from "oreid-js";
 import LoginButton from "oreid-login-button";
 // ! To use hooks from oreid-react make sure you added the OreidProvider (index.tx shows how to do this)
-import {
-	OreidProvider,
-	useActionAuth,
-	useIsLoggedIn,
-	useUser,
-} from "oreid-react";
+import { OreidProvider, useIsLoggedIn, useOreId, useUser } from "oreid-react";
 import { WebWidget } from "oreid-webwidget";
 import React, { useEffect, useState } from "react";
 import "./App.css";
@@ -27,14 +22,13 @@ interface OreidReactError {
 	data?: any;
 }
 const NotLoggedInView: React.FC = () => {
-	const onAuth = useActionAuth();
+	const oreIdFromContext = useOreId();
 	const [errors, setErrors] = useState<OreidReactError | undefined>();
 
 	const onError = (error: OreidReactError) => {
-		console.log("Login failed");
+		console.log("Login failed", error);
 		setErrors(error);
 	};
-
 	const onSuccess = ({ user }: { user: UserData }) => {
 		console.log("Login successfull. User Data: ", user);
 	};
@@ -47,11 +41,12 @@ const NotLoggedInView: React.FC = () => {
 					onClick={() => {
 						// * onError and onSuccess are optional. They're just here to show that they exist.
 						// ! provider is also optional, but its use is highly recommended.
-						onAuth({
-							params: { provider: AuthProvider.Facebook },
-							onError,
-							onSuccess,
-						});
+						oreIdFromContext.popup
+							.auth({
+								params: { provider: AuthProvider.Facebook },
+							})
+							.then(onSuccess)
+							.catch(onError);
 					}}
 				/>
 				<LoginButton
@@ -59,11 +54,12 @@ const NotLoggedInView: React.FC = () => {
 					onClick={() => {
 						// * onError and onSuccess are optional. They're just here to show that they exist.
 						// ! provider is also optional, but its use is highly recommended.
-						onAuth({
-							params: { provider: AuthProvider.Google },
-							onError,
-							onSuccess,
-						});
+						oreIdFromContext.popup
+							.auth({
+								params: { provider: AuthProvider.Google },
+							})
+							.then(onSuccess)
+							.catch(onError);
 					}}
 				/>
 				<LoginButton
@@ -71,11 +67,12 @@ const NotLoggedInView: React.FC = () => {
 					onClick={() => {
 						// * onError and onSuccess are optional. They're just here to show that they exist.
 						// ! provider is also optional, but its use is highly recommended.
-						onAuth({
-							params: { provider: AuthProvider.Email },
-							onError,
-							onSuccess,
-						});
+						oreIdFromContext.popup
+							.auth({
+								params: { provider: AuthProvider.Email },
+							})
+							.then(onSuccess)
+							.catch(onError);
 					}}
 				/>
 			</div>
@@ -85,6 +82,7 @@ const NotLoggedInView: React.FC = () => {
 };
 
 const LoggedInView: React.FC = () => {
+	const oreIdFromContext = useOreId();
 	const user = useUser();
 
 	if (!user) return null;
@@ -107,11 +105,7 @@ const LoggedInView: React.FC = () => {
 			<br />
 			email: {email}
 			<br />
-			<button onClick={
-				() => oreId.logout()
-			}>
-				Logout
-			</button>
+			<button onClick={() => oreIdFromContext.logout()}>Logout</button>
 		</div>
 	);
 };
