@@ -1,35 +1,32 @@
+import { toEosAsset } from "../helpers/toEosAsset";
+
 interface BuyParams {
 	accountName: string;
 	permission: string;
 
 	saleId: string;
-	priceString: string;
 	assetsIdToBuy: string[];
 
-	payment?: {
+	payment: {
+		amount: string;
 		tokenContract: string;
 		tokenPrecision: number;
 		tokenSymbol: string;
 	};
+
 	intendedDelphiMedian?: number;
 	takerMarketplace?: string;
 }
 export const createBuyNftTransaction = ({
 	accountName,
 	permission,
-	priceString,
 	saleId,
 	assetsIdToBuy,
 	payment,
 	intendedDelphiMedian,
 	takerMarketplace,
 }: BuyParams) => {
-	// TODO: Get WAX contract name
-	const tokenInfo = payment || {
-		tokenContract: "eosio.token",
-		tokenPrecision: 8,
-		tokenSymbol: "WAX",
-	};
+	const priceString = `${payment.amount} ${payment.tokenSymbol.toUpperCase()}`;
 
 	return [
 		{
@@ -45,11 +42,11 @@ export const createBuyNftTransaction = ({
 				sale_id: saleId,
 				asset_ids_to_assert: assetsIdToBuy,
 				listing_price_to_assert: priceString,
-				settlement_symbol_to_assert: `${tokenInfo.tokenPrecision},${tokenInfo.tokenSymbol}`,
+				settlement_symbol_to_assert: payment.tokenSymbol,
 			},
 		},
 		{
-			account: tokenInfo.tokenContract,
+			account: payment.tokenContract,
 			name: "transfer",
 			authorization: [
 				{
