@@ -1,34 +1,40 @@
 import { ChainNetwork } from "oreid-js";
-import { useOreId } from "oreid-react";
-import React, { useEffect, useState } from "react";
-import { AtomichubOffer } from "./AtomicHubTypes";
+import React, { useState } from "react";
+import { AtomichubSale } from "./AtomicHubTypes";
 import { BuyButtom } from "./BuyButtom";
 import { DisplayAssets } from "./DisplayAssets";
-import { getOffersFromCollection } from "./helpers/getOffersFromCollection";
+import { getSalesFromCollection } from "./helpers/getSalesFromCollection";
+import { useUsercChainAccount } from "./hooks/useUsercChainAccount";
 
 interface Props {}
 export const AssetsToBuy: React.FC<Props> = () => {
-	const [offers, setOffers] = useState<AtomichubOffer[]>([]);
-	const oreId = useOreId();
+	const [loading, setLoading] = useState(false);
+	const [sales, setSales] = useState<AtomichubSale[]>([]);
+	const waxAccount = useUsercChainAccount({
+		chainNetwork: ChainNetwork.WaxTest,
+	});
 
-	const account = oreId.auth.user.data.chainAccounts.find(
-		(chainAccount) => chainAccount.chainNetwork === ChainNetwork.WaxTest
-	);
-	const waxAccount = account?.chainAccount || "";
+	console.log({ sales });
 
-	useEffect(() => {
-		// TODO: Should use "/sales" endpoint
-		getOffersFromCollection({ collection: "orenetworkv1" }).then(
-			(marketOffers) => {
-				const assetsToSell = marketOffers.filter(
-					(offer) => offer.sender_name !== waxAccount
-				);
-				setOffers(assetsToSell);
-			}
+	if (sales.length === 0)
+		return (
+			<button
+				disabled={loading}
+				onClick={() => {
+					setLoading(true);
+					getSalesFromCollection({ collection: "orenetworkv1" }).then(
+						(marketSales) => {
+							const salesList = marketSales.filter(
+								(sale) => sale.seller !== waxAccount
+							);
+							setSales(salesList);
+						}
+					);
+				}}
+			>
+				{loading ? "Loading..." : "Load listed tokens"}
+			</button>
 		);
-	}, [setOffers, waxAccount]);
-
-	if (offers.length === 0) return null;
 	return (
 		<>
 			<h2>NFT to Buy</h2>
@@ -40,13 +46,13 @@ export const AssetsToBuy: React.FC<Props> = () => {
 					justifyContent: "center",
 				}}
 			>
-				{offers
-					.map((offer) => {
-						return offer.sender_assets.map((asset) => (
+				{sales
+					.map((sale) => {
+						return sale.assets.map((asset) => (
 							<DisplayAssets
 								key={asset.asset_id}
 								asset={asset}
-								footer={<BuyButtom offer={offer} />}
+								footer={<BuyButtom sale={sale} />}
 							/>
 						));
 					})

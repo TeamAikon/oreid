@@ -1,39 +1,35 @@
 import { ChainNetwork } from "oreid-js";
-import { useActionSign, useOreId } from "oreid-react";
+import { useOreId } from "oreid-react";
 import React, { useState } from "react";
-import { AtomichubOffer } from "./AtomicHubTypes";
+import { AtomichubSale } from "./AtomicHubTypes";
 import { createOreIdBuyTransaction } from "./helpers/createOreIdBuyTransaction";
 
 interface Props {
-	offer: AtomichubOffer;
+	sale: AtomichubSale;
 }
 
-export const BuyButtom: React.FC<Props> = ({ offer }) => {
+export const BuyButtom: React.FC<Props> = ({ sale }) => {
 	const oreId = useOreId();
 	const [isLoading, setIsLoading] = useState(false);
-	const sign = useActionSign();
 	const [transactionId, setTransactionId] = useState("");
 
 	const onClick = () => {
 		setIsLoading(true);
 		createOreIdBuyTransaction({
-			offer,
+			sale,
 			oreId,
 			chainNetwork: ChainNetwork.WaxTest,
 		})
 			.then((transaction) => {
-				sign({
-					transaction,
-					onError: (error) => {
-						console.log("onError: ", error);
-						setIsLoading(false);
-					},
-					onSuccess: (result) => {
+				oreId.popup
+					.sign({ transaction })
+					.then((result) => {
 						setTransactionId(result.transactionId || "");
 						console.log({ result });
 						setIsLoading(false);
-					},
-				});
+					})
+					.catch(console.error)
+					.finally(() => setIsLoading(false));
 			})
 			.catch((error) => {
 				console.error(error);
@@ -55,7 +51,7 @@ export const BuyButtom: React.FC<Props> = ({ offer }) => {
 	}
 	return (
 		<button onClick={onClick} disabled={isLoading}>
-			Buy: {offer.sender_assets[0].data.name}
+			Buy: {sale.assets[0].data.name}
 		</button>
 	);
 };

@@ -69,19 +69,43 @@ export interface AtomichubAssets {
 	name: string;
 }
 
-export interface AtomichubOffer {
-	contract: "atomicassets";
+export interface AtomichubSale {
+	market_contract: string;
+	assets_contract: string;
+	sale_id: string;
+	seller: string;
+	buyer: string;
 	offer_id: string;
-	sender_name: string;
-	recipient_name: string;
-	memo: string;
-	state: number;
-	sender_assets: AtomichubAssets[];
-	recipient_assets: [];
-	is_sender_contract: boolean;
-	is_recipient_contract: boolean;
+	price: {
+		token_contract: string;
+		token_symbol: string;
+		token_precision: number;
+		median: any;
+		amount: string;
+	};
+	listing_price: string;
+	listing_symbol: string;
+	assets: AtomichubAssets[];
+	maker_marketplace: string;
+	taker_marketplace: any;
+	collection_name: string;
+	collection: {
+		collection_name: string;
+		name: string;
+		img: string;
+		author: string;
+		allow_notify: boolean;
+		authorized_accounts: string[];
+		notify_accounts: string[];
+		market_fee: number;
+		created_at_block: string;
+		created_at_time: string;
+	};
+	is_seller_contract: boolean;
 	updated_at_block: string;
 	updated_at_time: string;
 	created_at_block: string;
 	created_at_time: string;
+	ordinality: string;
+	state: number;
 }

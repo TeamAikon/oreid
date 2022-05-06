@@ -17,11 +17,11 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 			.finally(() => setIsLoading(false));
 	}, [asset]);
 
-	const offerAsset = useCallback(async () => {
+	const createAssetSale = useCallback(async () => {
 		// TODO: Create transaction to sell my NFT
 		console.log("Offer my NFT for sale");
 	}, [asset]);
-	const cancelAssetOffer = useCallback(async () => {
+	const cancelAssetSale = useCallback(async () => {
 		// TODO: Create transaction to cancel my NFT offer
 		console.log("Cancel sales offer");
 	}, [asset]);
@@ -32,7 +32,7 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 		setIsLoading(true);
 
 		if (onSale) {
-			cancelAssetOffer()
+			cancelAssetSale()
 				.then(() => {
 					// Do something
 				})
@@ -41,7 +41,7 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 			return;
 		}
 
-		offerAsset()
+		createAssetSale()
 			.then(() => {
 				// Do something
 			})
