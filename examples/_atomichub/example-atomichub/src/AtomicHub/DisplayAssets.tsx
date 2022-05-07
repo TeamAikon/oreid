@@ -21,11 +21,10 @@ export const DisplayAssets: React.FC<Props> = ({ asset, footer }) => {
 			<br />
 			<img
 				src={`https://resizer.atomichub.io/images/v1/preview?ipfs=${asset.data.img}&size=370`}
-				style={{ maxWidth: "100%" }}
+				style={{ maxWidth: "100%", margin: "15px 0px" }}
 				alt=""
 			/>
-			<br />
-			{footer}
+			<div style={{ marginBottom: "15px" }}>{footer}</div>
 		</div>
 	);
 };
