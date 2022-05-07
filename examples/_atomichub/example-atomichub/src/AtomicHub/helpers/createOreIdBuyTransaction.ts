@@ -1,7 +1,6 @@
 import { ChainNetwork, OreId, Transaction } from "oreid-js";
 import { AtomichubSale } from "../AtomicHubTypes";
 import { createBuyNftTransaction } from "../createTransactions/createBuyNftTransaction";
-import { toEosAsset } from "./toEosAsset";
 
 export const createOreIdBuyTransaction = async ({
 	oreId,
@@ -29,6 +28,7 @@ export const createOreIdBuyTransaction = async ({
 			tokenContract: sale.price.token_contract,
 			tokenPrecision: sale.price.token_precision,
 			tokenSymbol: sale.price.token_symbol,
+			settlementSymbolToAssert: `${sale.price.token_precision},${sale.price.token_symbol}`,
 		},
 	});
 
