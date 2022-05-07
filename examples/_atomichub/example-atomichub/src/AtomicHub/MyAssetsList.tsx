@@ -36,11 +36,26 @@ export const MyAssetsList: React.FC<Props> = () => {
 		loadMyAssets();
 	}, [loadMyAssets]);
 
-	if (loading) return <>Loading my assets...</>;
-	if (assets.length === 0) return <ClaimMyToken loadMyAssets={loadMyAssets} />;
+	const title = <h2>My NFTs on Atomic Hub</h2>;
+
+	if (loading)
+		return (
+			<>
+				{title}
+				<br />
+				Loading my assets...
+			</>
+		);
+	if (assets.length === 0)
+		return (
+			<>
+				{title}
+				<ClaimMyToken loadMyAssets={loadMyAssets} />
+			</>
+		);
 	return (
 		<>
-			<h2>My NFTs</h2>
+			{title}
 			<div
 				style={{
 					display: "flex",

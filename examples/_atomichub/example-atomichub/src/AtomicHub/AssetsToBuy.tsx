@@ -1,6 +1,7 @@
 import { ChainNetwork } from "oreid-js";
 import React, { useState } from "react";
 import { AtomichubSale } from "./AtomicHubTypes";
+import { Button } from "../Button";
 import { BuyButtom } from "./BuyButtom";
 import { DisplayAssets } from "./DisplayAssets";
 import { getSalesFromCollection } from "./helpers/getSalesFromCollection";
@@ -16,10 +17,13 @@ export const AssetsToBuy: React.FC<Props> = () => {
 
 	console.log({ sales });
 
-	if (sales.length === 0)
-		return (
-			<button
+	let body: JSX.Element;
+
+	if (sales.length === 0) {
+		body = (
+			<Button
 				disabled={loading}
+				icon="/img/atomic-hub-logo.svg"
 				onClick={() => {
 					setLoading(true);
 					getSalesFromCollection({ collection: "orenetworkv1" }).then(
@@ -33,11 +37,10 @@ export const AssetsToBuy: React.FC<Props> = () => {
 				}}
 			>
 				{loading ? "Loading..." : "Load listed tokens"}
-			</button>
+			</Button>
 		);
-	return (
-		<>
-			<h2>NFT to Buy</h2>
+	} else {
+		body = (
 			<div
 				style={{
 					display: "flex",
@@ -58,6 +61,12 @@ export const AssetsToBuy: React.FC<Props> = () => {
 					})
 					.flat()}
 			</div>
+		);
+	}
+	return (
+		<>
+			<h2>NFTs to Buy on Atomic Hub</h2>
+			{body}
 			<br />
 		</>
 	);

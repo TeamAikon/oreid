@@ -6,6 +6,7 @@ import { WebWidget } from "oreid-webwidget";
 import React, { useEffect, useState } from "react";
 import "./App.css";
 import { AtomicHub } from "./AtomicHub";
+import { Button } from "./Button";
 
 const REACT_APP_OREID_APP_ID = "t_4683afc074ab444ebdf1bf08ed8d1757";
 
@@ -88,10 +89,10 @@ const LoggedInView: React.FC = () => {
 
 	if (!user) return null;
 
-	const { accountName, email, name, picture, username } = user;
+	const { accountName, email, name, picture } = user;
 	return (
 		<>
-			<div style={{ marginTop: 50, marginLeft: 40 }}>
+			<div style={{ marginTop: 50 }}>
 				<h4>User Info</h4>
 				<img
 					src={picture.toString()}
@@ -101,13 +102,13 @@ const LoggedInView: React.FC = () => {
 				<br />
 				OreId account: {accountName}
 				<br />
-				name: {name}
+				{name}
 				<br />
-				username: {username}
+				{email}
 				<br />
-				email: {email}
 				<br />
-				<button onClick={() => oreIdFromContext.logout()}>Logout</button>
+				<Button onClick={() => oreIdFromContext.logout()}>Logout</Button>
+				<br />
 			</div>
 			<AtomicHub />
 		</>
