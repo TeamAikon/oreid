@@ -1,5 +1,6 @@
 import { ChainNetwork } from "oreid-js";
 import React, { useState } from "react";
+import { Button } from "../Button";
 import { useUsercChainAccount } from "./hooks/useUsercChainAccount";
 
 const claimMyToken = async ({ chainAccount }: { chainAccount: string }) => {
@@ -28,8 +29,8 @@ export const ClaimMyToken: React.FC<Props> = ({ loadMyAssets }) => {
 	};
 
 	return (
-		<button onClick={onClick} disabled={isLoading}>
+		<Button onClick={onClick} disabled={isLoading}>
 			{isLoading ? "Claiming..." : "Claim my token"}
-		</button>
+		</Button>
 	);
 };

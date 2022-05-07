@@ -2,6 +2,7 @@ import { ChainNetwork } from "oreid-js";
 import { useOreId } from "oreid-react";
 import React, { useState } from "react";
 import { AtomichubAssets } from "./AtomicHubTypes";
+import { Button } from "../Button";
 import { getAssetsFromCollection } from "./helpers/getAssetsFromCollection";
 
 interface Props {
@@ -30,9 +31,9 @@ export const LoadMyAssets: React.FC<Props> = ({ setAssets }) => {
 	};
 	return (
 		<>
-			<button disabled={loading} onClick={loadMyAssets}>
+			<Button disabled={loading} onClick={loadMyAssets}>
 				{loading ? "Loading..." : "Load My Assets"}
-			</button>
+			</Button>
 			<br />
 		</>
 	);

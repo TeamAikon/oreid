@@ -2,7 +2,9 @@ import { ChainNetwork } from "oreid-js";
 import { useOreId } from "oreid-react";
 import React, { useState } from "react";
 import { AtomichubSale } from "./AtomicHubTypes";
+import { Button } from "../Button";
 import { createOreIdBuyTransaction } from "./helpers/createOreIdBuyTransaction";
+import { shiftDecimal } from "./helpers/shiftDecimal";
 
 interface Props {
 	sale: AtomichubSale;
@@ -40,18 +42,29 @@ export const BuyButtom: React.FC<Props> = ({ sale }) => {
 	if (isLoading) return <>Loading...</>;
 	if (transactionId) {
 		return (
-			<a
-				href={`https://wax-test.bloks.io/transaction/${transactionId}`}
-				target="_blank"
-				rel="noreferrer"
+			<Button
+				onClick={() => {
+					const blockExplorer = `https://wax-test.bloks.io/transaction/${transactionId}`;
+					window.open(blockExplorer, "_blank");
+				}}
+				disabled={isLoading}
 			>
-				{transactionId}
-			</a>
+				...{transactionId.slice(-15)}
+			</Button>
 		);
 	}
 	return (
-		<button onClick={onClick} disabled={isLoading}>
-			Buy: {sale.assets[0].data.name}
-		</button>
+		<Button
+			icon="/img/wax-chain-logo.wam"
+			onClick={onClick}
+			disabled={isLoading}
+		>
+			Buy for{" "}
+			{shiftDecimal({
+				amount: sale.price.amount,
+				precision: sale.price.token_precision,
+			})}{" "}
+			{sale.price.token_symbol.toUpperCase()}
+		</Button>
 	);
 };

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { AtomichubAssets } from "./AtomicHubTypes";
+import { Button } from "../Button";
 import { isAssetOnSale } from "./helpers/isAssetOnSale";
 
 interface Props {
@@ -51,6 +52,8 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 
 	if (isLoading) return <>Loading...</>;
 	return (
-		<button onClick={onClick}>{onSale ? "Cancel offer" : "Sell my NFT"}</button>
+		<Button icon="/img/wax-chain-logo.wam" onClick={onClick}>
+			{onSale ? "Cancel Sale Offer" : "Offer to Sale"}
+		</Button>
 	);
 };
