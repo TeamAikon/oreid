@@ -2535,11 +2535,6 @@ autoprefixer@^10.4.5:
     picocolors "^1.0.0"
     postcss-value-parser "^4.2.0"
 
-await-to-js@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/await-to-js/-/await-to-js-3.0.0.tgz#70929994185616f4675a91af6167eb61cc92868f"
-  integrity sha512-zJAaP9zxTcvTHRlejau3ZOY4V7SRpiByf3/dxx2uyKxxor19tpmpV2QRsTKikckwhaPmr2dVpxxMr7jOCYVp5g==
-
 axe-core@^4.3.5:
   version "4.4.1"
   resolved "https://registry.yarnpkg.com/axe-core/-/axe-core-4.4.1.tgz#7dbdc25989298f9ad006645cd396782443757413"
@@ -6425,10 +6420,10 @@ optionator@^0.9.1:
     type-check "^0.4.0"
     word-wrap "^1.2.3"
 
-oreid-js@3.1.3:
-  version "3.1.3"
-  resolved "https://registry.yarnpkg.com/oreid-js/-/oreid-js-3.1.3.tgz#9220b23529979d66462a2ab1201bd30ea99d0889"
-  integrity sha512-J+feSxi80Kdf0/qC0eA7rvwcqsbQfDJivkD3mn7YUvbLC/FFQRzbCUid7bvzY6VydTD/PXjkkjaMfPqUZnkxBA==
+oreid-js@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/oreid-js/-/oreid-js-3.2.0.tgz#be92c982a753d5a092564232d5cfa6d3ed12cea0"
+  integrity sha512-qU19QtEJwmlaKJrvNpifFtqBAhRmYmX0rghCOc7FuH5fLrxWF+bfqepMK1f9V9o6a60dH0dCMtN30YYJ9J6Y/w==
   dependencies:
     "@aikon/eos-transit" "^4.0.8"
     "@msgpack/msgpack" "^2.7.2"
@@ -6445,24 +6440,23 @@ oreid-js@3.1.3:
     semver "^6.3.0"
     uuid "^7.0.3"
 
-oreid-login-button@^1.1.2:
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/oreid-login-button/-/oreid-login-button-1.1.2.tgz#807acbd2dcf537e5dcb0e86251f2cfbf78a4076f"
-  integrity sha512-lnpzbynOmE32VBam3EKISB2AOwGsKilhxWHQ9hCVjWiMGdlAQ/T6buYnrJ7qfSVTmYhECQPVnSzzgJDTGDXIAA==
+oreid-login-button@^1.1.3:
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/oreid-login-button/-/oreid-login-button-1.1.3.tgz#8807c9bbdd302bfcdef58698a3b0d2f6cc667aa9"
+  integrity sha512-2KiwR1NT1HqWY548ivzfY1pBwFGeXNEriSFLU6XnlariMc61zha3VKAExJe4yjst8sQ3piAjAxRF19id3cFVlw==
 
-oreid-react@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/oreid-react/-/oreid-react-1.2.1.tgz#0f51e843740039dca1c495662134569ae347cc6f"
-  integrity sha512-k0su8Sg0rI/nH7lhzvQCWJBN1WbEmsNlALNwxUZTrzL+8hYBh3cKNLem6fukaP2isLqIDvGt3Wx3rHxDyjJyEA==
+oreid-react@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/oreid-react/-/oreid-react-1.3.0.tgz#8fe46bc4d66a9418efe04c853a641bca9e3a5f9f"
+  integrity sha512-p6b3kgI1vLHJrLqsaCmPBy3BxP1mAgT9VlDnN0iVPRnBUrsFPDHQsF0pX+n30BaHslM3GU7KjhupiXEBpiUdGA==
   dependencies:
     lodash "^4.17.21"
 
-oreid-webwidget@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/oreid-webwidget/-/oreid-webwidget-1.2.1.tgz#c356b3adfa36853d479c750527cd5f53bb994d28"
-  integrity sha512-JPNvOkaXBNm4OhHQQfK63I3/05K09btqZADLWnVmYUmTWnfvbC7lg/GTe/DjTUjMJzYMFvMdyhen5Cvde2437g==
+oreid-webwidget@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/oreid-webwidget/-/oreid-webwidget-1.3.0.tgz#c41e9da9b3d493eae533e51ee8750d2d5426a8f5"
+  integrity sha512-jXTWpeRi7Q/1VGugzSmBxhqtfRApIwnagsJlGT1otSkDZXKWNUCSzVmU0b4nchMH9aBvdhC7oQBFbF+tD0iaSA==
   dependencies:
-    await-to-js "^3.0.0"
     promise-retry "^2.0.1"
 
 p-limit@^1.1.0:
