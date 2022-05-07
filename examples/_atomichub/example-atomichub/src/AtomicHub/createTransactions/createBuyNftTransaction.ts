@@ -1,4 +1,4 @@
-import { toEosAsset } from "../helpers/toEosAsset";
+import { shiftDecimal } from "../helpers/shiftDecimal";
 
 interface BuyParams {
 	accountName: string;
@@ -12,6 +12,7 @@ interface BuyParams {
 		tokenContract: string;
 		tokenPrecision: number;
 		tokenSymbol: string;
+		settlementSymbolToAssert?: string;
 	};
 
 	intendedDelphiMedian?: number;
@@ -26,7 +27,11 @@ export const createBuyNftTransaction = ({
 	intendedDelphiMedian,
 	takerMarketplace,
 }: BuyParams) => {
-	const priceString = `${payment.amount} ${payment.tokenSymbol.toUpperCase()}`;
+	const formattedAmount = shiftDecimal({
+		amount: payment.amount,
+		precision: payment.tokenPrecision,
+	});
+	const priceString = `${formattedAmount} ${payment.tokenSymbol.toUpperCase()}`;
 
 	return [
 		{
@@ -42,7 +47,8 @@ export const createBuyNftTransaction = ({
 				sale_id: saleId,
 				asset_ids_to_assert: assetsIdToBuy,
 				listing_price_to_assert: priceString,
-				settlement_symbol_to_assert: payment.tokenSymbol,
+				settlement_symbol_to_assert:
+					payment.settlementSymbolToAssert || payment.tokenSymbol,
 			},
 		},
 		{
