@@ -1,7 +1,6 @@
 import {
   AuthProvider,
   OreId,
-  PopupPluginErrorResults,
   Transaction,
   UserData,
 } from "oreid-js";
@@ -73,13 +72,13 @@ const composeSampleTransaction: any = async (
   return transaction;
 };
 
-const NotLoggedInComponent: React.FC = () => {
+const NotLoggedInView: React.FC = () => {
   const oreId = useOreId();
-  const [errors, setErrors] = useState<string | undefined>();
+  const [error, setError] = useState<string>();
 
-  const onError = ({ errors }: PopupPluginErrorResults) => {
-    console.log("Login failed:", errors);
-    setErrors(errors);
+  const onError = (error: Error) => {
+    console.log("Login failed:", error.message);
+    setError(error.message);
   };
 
   const onSuccess = ({ user }: { user: UserData }) => {
@@ -108,25 +107,24 @@ const NotLoggedInComponent: React.FC = () => {
           onClick={() => loginWithOreidPopup(AuthProvider.Email)}
         />
       </div>
-      {errors && <div className="App-error">Error: {errors}</div>}
+      {error && <div className="App-error">Error: {error}</div>}
     </>
   );
 };
 
-const LoggedInComponent: React.FC = () => {
+const LoggedInView: React.FC = () => {
   const user = useUser();
   const oreId = useOreId();
 
-  const [errors, setErrors] = useState<string | undefined>();
+  const [error, setError] = useState<string>();
   const [signResults, setSignResults] = useState<any | undefined>();
 
   if (!user) return null;
 
   const { accountName, email, name, picture, username } = user;
 
-  const onError = ({ errors }: PopupPluginErrorResults) => {
-    console.log("Login failed:", errors);
-    setErrors(errors);
+  const onError = (error: Error) => {
+    setError(error.message);
   };
   const onSuccess = (results: any) => {
     setSignResults(results);
@@ -154,7 +152,7 @@ const LoggedInComponent: React.FC = () => {
           provider="oreid"
           text="Sign with OreID"
           onClick={() => {
-            setErrors(undefined);
+            setError(undefined);
             // compose a sample transaction for the EOS Kylin test network
             composeSampleTransaction(user, "eos_kylin").then(
               (transaction: Transaction) => {
@@ -177,7 +175,7 @@ const LoggedInComponent: React.FC = () => {
           Results: {JSON.stringify(signResults)}
         </div>
       )}
-      {errors && <div className="App-error">Error: {errors}</div>}
+      {error && <div className="App-error">Error: {error}</div>}
     </>
   );
 };
@@ -187,7 +185,7 @@ const AppWithProvider: React.FC = () => {
   return (
     <div className="App">
       <header className="App-header">
-        {isLoggedIn ? <LoggedInComponent /> : <NotLoggedInComponent />}
+        {isLoggedIn ? <LoggedInView /> : <NotLoggedInView />}
       </header>
     </div>
   );

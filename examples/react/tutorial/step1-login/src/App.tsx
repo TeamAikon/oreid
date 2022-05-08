@@ -1,7 +1,6 @@
 import {
   AuthProvider,
   OreId,
-  PopupPluginErrorResults,
   UserData,
 } from "oreid-js";
 import LoginButton from "oreid-login-button";
@@ -24,11 +23,11 @@ const oreId = new OreId({
 
 const NotLoggedInView: React.FC = () => {
   const oreId = useOreId();
-  const [errors, setErrors] = useState<string | undefined>();
+  const [error, setErrors] = useState<string>();
 
-  const onError = ({ errors }: PopupPluginErrorResults) => {
-    console.log("Login failed", errors);
-    setErrors(errors);
+  const onError = (error: Error) => {
+    console.log("Login failed", error.message);
+    setErrors(error.message);
   };
   const onSuccess = ({ user }: { user: UserData }) => {
     console.log("Login successfull. User Data: ", user);
@@ -55,7 +54,7 @@ const NotLoggedInView: React.FC = () => {
           onClick={() => loginWithOreidPopup(AuthProvider.Email)}
         />
       </div>
-      {errors && <div className="App-error">Error: {errors}</div>}
+      {error && <div className="App-error">Error: {error}</div>}
     </>
   );
 };
