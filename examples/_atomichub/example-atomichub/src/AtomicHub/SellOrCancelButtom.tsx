@@ -53,7 +53,7 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 	if (isLoading) return <>Loading...</>;
 	return (
 		<Button icon="/img/wax-chain-logo.wam" onClick={onClick}>
-			{onSale ? "Cancel Sale Offer" : "Offer to Sale"}
+			{onSale ? "Cancel Sale Offer" : "Offer for Sale"}
 		</Button>
 	);
 };

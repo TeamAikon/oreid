@@ -1,4 +1,4 @@
-import { AuthProvider, OreId, UserData, PopupPluginError } from "oreid-js";
+import { AuthProvider, OreId, UserData } from "oreid-js";
 import LoginButton from "oreid-login-button";
 // ! To use hooks from oreid-react make sure you added the OreidProvider (index.tx shows how to do this)
 import { OreidProvider, useIsLoggedIn, useOreId, useUser } from "oreid-react";
@@ -25,11 +25,11 @@ window.oreId = oreId;
 
 const NotLoggedInView: React.FC = () => {
 	const oreIdFromContext = useOreId();
-	const [errors, setErrors] = useState<PopupPluginError | undefined>();
+	const [error, setError] = useState<Error | null>();
 
-	const onError = (error: PopupPluginError) => {
+	const onError = (error: Error) => {
 		console.log("Login failed", error);
-		setErrors(error);
+		setError(error);
 	};
 	const onSuccess = ({ user }: { user: UserData }) => {
 		console.log("Login successfull. User Data: ", user);
@@ -45,7 +45,7 @@ const NotLoggedInView: React.FC = () => {
 						// ! provider is also optional, but its use is highly recommended.
 						oreIdFromContext.popup
 							.auth({
-								params: { provider: AuthProvider.Facebook },
+								provider: AuthProvider.Facebook,
 							})
 							.then(onSuccess)
 							.catch(onError);
@@ -58,7 +58,7 @@ const NotLoggedInView: React.FC = () => {
 						// ! provider is also optional, but its use is highly recommended.
 						oreIdFromContext.popup
 							.auth({
-								params: { provider: AuthProvider.Google },
+								provider: AuthProvider.Google,
 							})
 							.then(onSuccess)
 							.catch(onError);
@@ -71,14 +71,14 @@ const NotLoggedInView: React.FC = () => {
 						// ! provider is also optional, but its use is highly recommended.
 						oreIdFromContext.popup
 							.auth({
-								params: { provider: AuthProvider.Email },
+								provider: AuthProvider.Email,
 							})
 							.then(onSuccess)
 							.catch(onError);
 					}}
 				/>
 			</div>
-			{errors && <div className="App-error">Error: {errors.errors}</div>}
+			{error && <div className="App-error">Error: {error.message}</div>}
 		</>
 	);
 };

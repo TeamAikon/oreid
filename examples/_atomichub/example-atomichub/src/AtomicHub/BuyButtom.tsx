@@ -42,15 +42,14 @@ export const BuyButtom: React.FC<Props> = ({ sale }) => {
 	if (isLoading) return <>Loading...</>;
 	if (transactionId) {
 		return (
-			<Button
-				onClick={() => {
-					const blockExplorer = `https://wax-test.bloks.io/transaction/${transactionId}`;
-					window.open(blockExplorer, "_blank");
-				}}
-				disabled={isLoading}
+			<a
+				style={{ color: "#fff" }}
+				href={`https://wax-test.bloks.io/transaction/${transactionId}`}
+				target="_blank"
+				rel="noreferrer"
 			>
-				...{transactionId.slice(-15)}
-			</Button>
+				View on block explorer
+			</a>
 		);
 	}
 	return (
