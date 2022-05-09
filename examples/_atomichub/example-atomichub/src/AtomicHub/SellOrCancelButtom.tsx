@@ -1,7 +1,11 @@
+import { ChainNetwork } from "oreid-js";
+import { useOreId } from "oreid-react";
 import React, { useCallback, useEffect, useState } from "react";
-import { AtomichubAssets } from "./AtomicHubTypes";
 import { Button } from "../Button";
-import { isAssetOnSale } from "./helpers/isAssetOnSale";
+import { AtomichubAssets, AtomichubSale } from "./AtomicHubTypes";
+import { cancelOreIdSaleTransaction } from "./helpers/cancelOreIdSaleTransaction";
+import { createOreIdSaleTransaction } from "./helpers/createOreIdSaleTransaction";
+import { getAssetSale } from "./helpers/getAssetSale";
 
 interface Props {
 	asset: AtomichubAssets;
@@ -9,30 +13,68 @@ interface Props {
 
 export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 	const [isLoading, setIsLoading] = useState(true);
-	const [onSale, setOnSale] = useState(false);
+	const [sale, setSale] = useState<AtomichubSale | undefined>();
+	const [transactionId, setTransactionId] = useState("");
+	const oreId = useOreId();
 
 	useEffect(() => {
 		setIsLoading(true);
-		isAssetOnSale(asset.asset_id)
-			.then((isOnSale) => setOnSale(isOnSale))
+		getAssetSale(asset.asset_id)
+			.then((assetSale) => setSale(assetSale))
 			.finally(() => setIsLoading(false));
 	}, [asset]);
 
 	const createAssetSale = useCallback(async () => {
-		// TODO: Create transaction to sell my NFT
-		console.log("Offer my NFT for sale");
-	}, [asset]);
+		setIsLoading(true);
+		createOreIdSaleTransaction({
+			oreId,
+			chainNetwork: ChainNetwork.WaxTest,
+			assets: [asset],
+		})
+			.then((transaction) => {
+				oreId.popup
+					.sign({ transaction })
+					.then((result) => {
+						setTransactionId(result?.transactionId || "");
+					})
+					.catch(console.error)
+					.finally(() => setIsLoading(false));
+			})
+			.catch((error) => {
+				console.error(error);
+				setIsLoading(false);
+			});
+	}, [asset, oreId]);
+
 	const cancelAssetSale = useCallback(async () => {
-		// TODO: Create transaction to cancel my NFT offer
-		console.log("Cancel sales offer");
-	}, [asset]);
+		if (!sale) return;
+		setIsLoading(true);
+		cancelOreIdSaleTransaction({
+			sale,
+			oreId,
+			chainNetwork: ChainNetwork.WaxTest,
+		})
+			.then((transaction) => {
+				oreId.popup
+					.sign({ transaction })
+					.then((result) => {
+						setTransactionId(result?.transactionId || "");
+					})
+					.catch(console.error)
+					.finally(() => setIsLoading(false));
+			})
+			.catch((error) => {
+				console.error(error);
+				setIsLoading(false);
+			});
+	}, [oreId, sale]);
 
 	if (!asset.is_transferable) return null;
 
 	const onClick = () => {
 		setIsLoading(true);
 
-		if (onSale) {
+		if (sale) {
 			cancelAssetSale()
 				.then(() => {
 					// Do something
@@ -51,9 +93,21 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 	};
 
 	if (isLoading) return <>Loading...</>;
+	if (transactionId) {
+		return (
+			<a
+				style={{ color: "#fff" }}
+				href={`https://wax-test.bloks.io/transaction/${transactionId}`}
+				target="_blank"
+				rel="noreferrer"
+			>
+				View on block explorer
+			</a>
+		);
+	}
 	return (
 		<Button icon="/img/wax-chain-logo.wam" onClick={onClick}>
-			{onSale ? "Cancel Sale Offer" : "Offer for Sale"}
+			{sale ? "Cancel Sale Offer" : "Offer for Sale"}
 		</Button>
 	);
 };

@@ -27,7 +27,6 @@ export const BuyButtom: React.FC<Props> = ({ sale }) => {
 					.sign({ transaction })
 					.then((result) => {
 						setTransactionId(result.transactionId || "");
-						console.log({ result });
 						setIsLoading(false);
 					})
 					.catch(console.error)

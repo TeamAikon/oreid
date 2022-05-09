@@ -15,8 +15,6 @@ export const AssetsToBuy: React.FC<Props> = () => {
 		chainNetwork: ChainNetwork.WaxTest,
 	});
 
-	console.log({ sales });
-
 	let body: JSX.Element;
 
 	if (sales.length === 0) {
