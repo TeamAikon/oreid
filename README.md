@@ -16,20 +16,23 @@ ORE ID removes the friction between your app and your future users.
 
 <img src="./docs/images/OREID-GitHub-diagram-01.png">
 
-# Quickstart Guide
+# Quick Start Guide
 
-To run sample code:
+To run sample code, start with the React examples from our tutorial:
 
-- You'll need your App ID and API Key - you get them when you register your app with ORE ID
-- Populate .env file in root of project directory with your appId and apiKey (it will start with keys for a demo app)
+First, clone this repo to your local machine.
+```shell
+git clone https://github.com/TeamAikon/ore-id-docs.git
+```
 
-    ```
-    cd examples/react
-    npm install
-    npm start
-    ```
-
-You can find other example apps including React Native, in the `/examples` folder.
+Now, run the first example by entering the following:
+```shell
+cd examples/react/tutorial/step1-login
+npm install
+yarn start
+```
+    
+Continue onto step 2 and 3.  These will demonstrate ORE-ID signing and the new web-widget.
 
 # Usage
 
@@ -38,29 +41,100 @@ You can find other example apps including React Native, in the `/examples` folde
 
 ### Step 1 - Register your app and logo
 
-Apply [here](https://aikon.com/ore-id) for early access 
+Create a developer account [here](https://oreid.io/developer/new-app).
+
+Note your API-Key and APP-ID in the developer dashboard under "settings".
 
 ### Step 2 - Install library
 
 For Javascript apps, install the npm client module
-
-```
+```shell
 npm install oreid-js
+```
+
+Import oreid-js in your module:
+```typescript
+import { OreId } from 'oreid-js';
+```
+
+~ OR ~
+
+Require oreid-js in your application:
+```javascript
+const { OreId } = require('oreid-js');
+```
+
+Declare the ORE-ID Options
+```typescript
+let oreIdOptions: OreIdOptions = {
+    appName: "My Sample App",
+    appId: "t_fb2b....b6f7",
+    apiKey: "t_k071....daf1",
+    authCallbackUrl: 'http://localhost:8000'
+}
+```
+
+Initialize the library in your application:
+```typescript
+let oreId = new oreId(oreIdOptions);
 ```
 
 ### Step 3 - Call Login
 
-Call login and specify a provider (facebook, scatter, etc.) After login, your app will receive the user's blockchain account name (which maps to public/private keys). The user's info will automatically be stored in local state (cookie, etc.) and will be restored the next time the user uses your app. You can also call the user endpoint at any time to get the user's basic identity info (e.g. name, email, avatar picture)
+Call login and specify a provider (facebook, scatter, etc.) 
+```typescript
+async function loginUser() {
+    try {
+        let authProvider = AuthProvider.Google
+        
+        let loginOptions: LoginOptions = {
+            provider: authProvider,
+            chainNetwork: ChainNetwork.EosKylin
+        }
+        let loginResponse = await oreId.login(loginOptions)
+        console.log(loginResponse)
+    }
+    catch (error) {
+        console.error(error)
+    }
+}
+```
+
+ After login, your app will receive the user's blockchain account name (which maps to public/private keys).
+ ```text
+http://localhost:8000/?account=ore1sbx3rf4j&process_id=277xxxxxxx7f&access_token=ey...
+ ```
+ 
+The user's info will automatically be stored in local state (cookie, etc.) and will be restored the next time the user uses your app.
+
+```typscript
+async function retrieveUserInfo() {
+
+}
+```
+  
+You can also call the user endpoint at any time to get the user's basic identity info (e.g. name, email, avatar picture)
+```typescript
+async function retrieveUserInfoFromApi() {
+
+} 
+```
 
 ### Step 4 - Call Sign
 
-When your app needs the user to sign a blockchain transaction, you just specify the chain name (e.g. eos_main) and chain account if you know it. If you don't know which EOS blockchain accounts the user has or in which wallet they are stored, you can call the discover function that will prompt the user to unlock their wallet. Public keys stored in the wallet will be automatically remembered so you can help the user find the right wallet and keys quickly the next time they need to repeat a transaction. Awesome!
+When your app needs the user to sign a blockchain transaction, you just specify the chain name (e.g. eos_main) and chain account if you know it. 
+
+```typescript
+
+```
+
+If you don't know which EOS blockchain accounts the user has or in which wallet they are stored, you can call the discover function that will prompt the user to unlock their wallet. Public keys stored in the wallet will be automatically remembered so you can help the user find the right wallet and keys quickly the next time they need to repeat a transaction. Awesome!
 
 ### Step 5 - User can view and control account on the blockchain  
 
-The account is a blockchain account that can be easily viewed on the public blockchain using a block explorer.
+The account is a blockchain account that can be easily viewed on the public blockchain using a block explorer. [ORE Block Explorer](https://explorer.ore.network/)
 
-The user's account's private key can be transferred to his offline wallet when requested.
+The user's account's private key can be transferred to an offline wallet when requested.
 
 Search the chain for account details and token balances like this - [http://explorer.openrights.exchange/accounts/1pxnubvyqceu](http://explorer.openrights.exchange/accounts/1pxnubvyqceu)
 
