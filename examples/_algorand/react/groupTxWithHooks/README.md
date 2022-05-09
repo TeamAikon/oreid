@@ -32,5 +32,5 @@ docker build -f ./Dockerfile.prod . -t <dockerhubuser>/oreid-react
 
 It is now possible to run the container that was just created and tagged.
 ```shell
-docker run -t <dockerhubuser>/oreid-react(-dev)
+docker run -p 3000:3000 -t <dockerhubuser>/oreid-react(-dev)
 ```
