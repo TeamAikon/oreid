@@ -14,7 +14,7 @@ const REACT_APP_OREID_APP_ID = "t_4683afc074ab444ebdf1bf08ed8d1757";
 const oreId = new OreId({
 	appName: "ORE ID Sample App",
 	appId: REACT_APP_OREID_APP_ID,
-	oreIdUrl: "https://dev.service.oreid.io",
+	oreIdUrl: "https://staging.service.oreid.io",
 	plugins: {
 		popup: WebWidget(),
 	},
@@ -35,46 +35,34 @@ const NotLoggedInView: React.FC = () => {
 		console.log("Login successfull. User Data: ", user);
 	};
 
+	const loginWithOreId =(provider: AuthProvider) => {
+		oreIdFromContext.popup
+			.auth({
+				provider,
+			})
+			.then(onSuccess)
+			.catch(onError);
+	}
+
 	return (
 		<>
 			<div>
 				<LoginButton
 					provider="facebook"
 					onClick={() => {
-						// * onError and onSuccess are optional. They're just here to show that they exist.
-						// ! provider is also optional, but its use is highly recommended.
-						oreIdFromContext.popup
-							.auth({
-								provider: AuthProvider.Facebook,
-							})
-							.then(onSuccess)
-							.catch(onError);
+						loginWithOreId(AuthProvider.Facebook)
 					}}
 				/>
 				<LoginButton
 					provider="google"
 					onClick={() => {
-						// * onError and onSuccess are optional. They're just here to show that they exist.
-						// ! provider is also optional, but its use is highly recommended.
-						oreIdFromContext.popup
-							.auth({
-								provider: AuthProvider.Google,
-							})
-							.then(onSuccess)
-							.catch(onError);
+						loginWithOreId(AuthProvider.Google)
 					}}
 				/>
 				<LoginButton
 					provider="email"
 					onClick={() => {
-						// * onError and onSuccess are optional. They're just here to show that they exist.
-						// ! provider is also optional, but its use is highly recommended.
-						oreIdFromContext.popup
-							.auth({
-								provider: AuthProvider.Email,
-							})
-							.then(onSuccess)
-							.catch(onError);
+						loginWithOreId(AuthProvider.Email)
 					}}
 				/>
 			</div>
