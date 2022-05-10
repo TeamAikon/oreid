@@ -10,6 +10,7 @@ interface Props {
 }
 
 export const LoadMyAssets: React.FC<Props> = ({ setAssets }) => {
+	const [error, setError] = useState<Error | undefined>();
 	const [loading, setLoading] = useState(false);
 	const oreId = useOreId();
 	const account = oreId.auth.user.data.chainAccounts.find(
@@ -24,7 +25,7 @@ export const LoadMyAssets: React.FC<Props> = ({ setAssets }) => {
 		getAssetsFromCollection({ waxAccount, collection: "orenetworkv1" })
 			.then((myAssets) => setAssets(myAssets))
 			.catch((error) => {
-				console.error(error);
+				setError(error);
 				setAssets([]);
 			})
 			.finally(() => setLoading(false));
@@ -34,6 +35,9 @@ export const LoadMyAssets: React.FC<Props> = ({ setAssets }) => {
 			<Button disabled={loading} onClick={loadMyAssets}>
 				{loading ? "Loading..." : "Load My Assets"}
 			</Button>
+			{error && (
+				<div className="App-error-atomichub">Error: {error.message}</div>
+			)}
 			<br />
 		</>
 	);

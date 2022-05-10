@@ -25,8 +25,6 @@ export const cancelOreIdSaleTransaction = async ({
 		// offerId: sale.offer_id,
 	});
 
-	console.log("Transaction: ", JSON.stringify(transactionData));
-
 	return oreId.createTransaction({
 		account: oreId.auth.user.data.accountName,
 		chainAccount: account.chainAccount,

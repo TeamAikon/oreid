@@ -32,12 +32,19 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
 }
 
 
-h2,h3{
+h2,
+h3 {
   font-weight: 400;
+}
+
+.App-error-atomichub {
+  margin: 15px 0px;
+  font-size: 14px;
 }

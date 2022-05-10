@@ -13,6 +13,7 @@ interface Props {
 }
 
 export const ClaimMyToken: React.FC<Props> = ({ loadMyAssets }) => {
+	const [error, setError] = useState<Error | undefined>();
 	const [isLoading, setIsLoading] = useState(false);
 	const chainAccount = useUsercChainAccount({
 		chainNetwork: ChainNetwork.WaxTest,
@@ -21,7 +22,7 @@ export const ClaimMyToken: React.FC<Props> = ({ loadMyAssets }) => {
 	const onClick = () => {
 		setIsLoading(true);
 		claimMyToken({ chainAccount })
-			.catch(console.error)
+			.catch(setError)
 			.finally(() => {
 				setIsLoading(false);
 				loadMyAssets();
@@ -35,6 +36,9 @@ export const ClaimMyToken: React.FC<Props> = ({ loadMyAssets }) => {
 			<Button onClick={onClick} disabled={isLoading}>
 				{isLoading ? "Claiming..." : "Get my NFT"}
 			</Button>
+			{error && (
+				<div className="App-error-atomichub">Error: {error.message}</div>
+			)}
 		</>
 	);
 };

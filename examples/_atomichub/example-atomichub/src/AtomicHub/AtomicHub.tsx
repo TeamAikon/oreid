@@ -8,6 +8,7 @@ import { MyAssetsList } from "./MyAssetsList";
 import { WaxBalance } from "./WaxBalance";
 
 export const AtomicHub: React.FC = () => {
+	const [error, setError] = useState<Error | undefined>();
 	const [loading, setLoading] = useState(true);
 	const [assets, setAssets] = useState<AtomichubAssets[]>([]);
 
@@ -26,7 +27,7 @@ export const AtomicHub: React.FC = () => {
 			})
 			.catch((error) => {
 				setAssets([]);
-				console.error(error);
+				setError(error);
 			})
 			.finally(() => setLoading(false));
 	}, [waxAccount]);
@@ -42,6 +43,9 @@ export const AtomicHub: React.FC = () => {
 				<>Loading my assets...</>
 			) : (
 				<>
+					{error && (
+						<div className="App-error-atomichub">Error: {error.message}</div>
+					)}
 					<MyAssetsList assets={assets} loadMyAssets={loadMyAssets} />
 					<br />
 					{assets.length > 0 && <AssetsToBuy />}

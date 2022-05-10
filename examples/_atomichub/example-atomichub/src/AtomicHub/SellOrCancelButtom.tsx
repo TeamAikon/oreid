@@ -12,6 +12,7 @@ interface Props {
 }
 
 export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
+	const [error, setError] = useState<Error | undefined>();
 	const [isLoading, setIsLoading] = useState(true);
 	const [sale, setSale] = useState<AtomichubSale | undefined>();
 	const [transactionId, setTransactionId] = useState("");
@@ -21,6 +22,7 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 		setIsLoading(true);
 		getAssetSale(asset.asset_id)
 			.then((assetSale) => setSale(assetSale))
+			.catch(setError)
 			.finally(() => setIsLoading(false));
 	}, [asset]);
 
@@ -37,11 +39,11 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 					.then((result) => {
 						setTransactionId(result?.transactionId || "");
 					})
-					.catch(console.error)
+					.catch(setError)
 					.finally(() => setIsLoading(false));
 			})
 			.catch((error) => {
-				console.error(error);
+				setError(error);
 				setIsLoading(false);
 			});
 	}, [asset, oreId]);
@@ -60,11 +62,11 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 					.then((result) => {
 						setTransactionId(result?.transactionId || "");
 					})
-					.catch(console.error)
+					.catch(setError)
 					.finally(() => setIsLoading(false));
 			})
 			.catch((error) => {
-				console.error(error);
+				setError(error);
 				setIsLoading(false);
 			});
 	}, [oreId, sale]);
@@ -79,7 +81,7 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 				.then(() => {
 					// Do something
 				})
-				.catch(console.error)
+				.catch(setError)
 				.finally(() => setIsLoading(false));
 			return;
 		}
@@ -88,26 +90,36 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 			.then(() => {
 				// Do something
 			})
-			.catch(console.error)
+			.catch(setError)
 			.finally(() => setIsLoading(false));
 	};
 
 	if (isLoading) return <>Loading...</>;
 	if (transactionId) {
 		return (
-			<a
-				style={{ color: "#fff" }}
-				href={`https://wax-test.bloks.io/transaction/${transactionId}`}
-				target="_blank"
-				rel="noreferrer"
-			>
-				View on block explorer
-			</a>
+			<>
+				<a
+					style={{ color: "#fff" }}
+					href={`https://wax-test.bloks.io/transaction/${transactionId}`}
+					target="_blank"
+					rel="noreferrer"
+				>
+					View on block explorer
+				</a>
+				{error && (
+					<div className="App-error-atomichub">Error: {error.message}</div>
+				)}
+			</>
 		);
 	}
 	return (
-		<Button icon="/img/wax-chain-logo.wam" onClick={onClick}>
-			{sale ? "Cancel Sale Offer" : "Offer for Sale"}
-		</Button>
+		<>
+			<Button icon="/img/wax-chain-logo.wam" onClick={onClick}>
+				{sale ? "Cancel Sale Offer" : "Offer for Sale"}
+			</Button>
+			{error && (
+				<div className="App-error-atomichub">Error: {error.message}</div>
+			)}
+		</>
 	);
 };
