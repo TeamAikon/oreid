@@ -29,8 +29,12 @@ export const ClaimMyToken: React.FC<Props> = ({ loadMyAssets }) => {
 	};
 
 	return (
-		<Button onClick={onClick} disabled={isLoading}>
-			{isLoading ? "Claiming..." : "Claim my token"}
-		</Button>
+		<>
+			<h2>Welcome to ORE ID!</h2>
+			<h3>Claim your Free Limited Edition NFT!</h3>
+			<Button onClick={onClick} disabled={isLoading}>
+				{isLoading ? "Claiming..." : "Get my NFT"}
+			</Button>
+		</>
 	);
 };
