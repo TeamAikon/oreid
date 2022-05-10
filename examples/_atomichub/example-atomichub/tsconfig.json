@@ -21,6 +21,7 @@
     "jsx": "react-jsx"
   },
   "include": [
-    "src"
-, "src/.index-react18.tsx"  ]
+    "src",
+    "server.js"
+  ]
 }
