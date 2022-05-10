@@ -46,9 +46,10 @@ export const AtomicHub: React.FC = () => {
 					{error && (
 						<div className="App-error-atomichub">Error: {error.message}</div>
 					)}
-					<MyAssetsList assets={assets} loadMyAssets={loadMyAssets} />
+					<MyAssetsList account={waxAccount} assets={assets} loadMyAssets={loadMyAssets} />
 					<br />
-					{assets.length > 0 && <AssetsToBuy />}
+					{/* {assets.length > 0 && <AssetsToBuy />} */}
+					{<AssetsToBuy />}
 				</>
 			)}
 		</>

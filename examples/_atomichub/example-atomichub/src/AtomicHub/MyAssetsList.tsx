@@ -5,10 +5,11 @@ import { DisplayAssets } from "./DisplayAssets";
 import { SellOrCancelButtom } from "./SellOrCancelButtom";
 
 interface Props {
+	account: string;
 	assets: AtomichubAssets[];
 	loadMyAssets: () => void;
 }
-export const MyAssetsList: React.FC<Props> = ({ assets, loadMyAssets }) => {
+export const MyAssetsList: React.FC<Props> = ({ account, assets, loadMyAssets }) => {
 	if (assets.length === 0) {
 		return <ClaimMyToken loadMyAssets={loadMyAssets} />;
 	}
@@ -31,9 +32,13 @@ export const MyAssetsList: React.FC<Props> = ({ assets, loadMyAssets }) => {
 					/>
 				))}
 			</div>
-			Total: {assets.length}
-			<br />
-			<br />
+			<a 
+				style={{ color: "#fff" }}
+				href={`https://wax-test.atomichub.io/profile/${account}`}
+				target="_blank"
+				rel="noreferrer">
+				See on Atomic Hub
+			</a>
 		</>
 	);
 };

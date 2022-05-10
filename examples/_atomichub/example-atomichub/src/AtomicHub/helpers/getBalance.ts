@@ -12,6 +12,7 @@ export const getBalance = async ({
 		chainAccount,
 		"WAX"
 	);
+	if(!balance) return "0"
 	const [amount] = balance?.split(" ");
 	return amount?.replace(".", "") || "000000000";
 };
