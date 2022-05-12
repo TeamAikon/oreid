@@ -6366,10 +6366,10 @@ optionator@^0.9.1:
     type-check "^0.4.0"
     word-wrap "^1.2.3"
 
-oreid-js@^3.4.2:
-  version "3.4.2"
-  resolved "https://registry.yarnpkg.com/oreid-js/-/oreid-js-3.4.2.tgz#dbcb48121017cbb0436a3d16c496c23961058c35"
-  integrity sha512-JyCH3bBM5smqy4NKwgvjI5Y4DMgzhsBVXEDEvoesaLltw9XivQ3Cddkss1iXhy7NuP1LR1UWz8rahAGeggwq1Q==
+oreid-js@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/oreid-js/-/oreid-js-4.0.0.tgz#3b8704d635b2cffd8eac4f497af15449cf09e7a1"
+  integrity sha512-y3qUiDqL7sCIreIR7mB8BQR5xnCOXzQd2eG42VLkRNiSlHRLks+rEYuYt2BRIXUqyq1HsgJY2MMwi/74iIPpIQ==
   dependencies:
     "@aikon/eos-transit" "^4.0.8"
     "@msgpack/msgpack" "^2.7.2"
@@ -6391,17 +6391,17 @@ oreid-login-button@^1.1.2:
   resolved "https://registry.yarnpkg.com/oreid-login-button/-/oreid-login-button-1.1.2.tgz#807acbd2dcf537e5dcb0e86251f2cfbf78a4076f"
   integrity sha512-lnpzbynOmE32VBam3EKISB2AOwGsKilhxWHQ9hCVjWiMGdlAQ/T6buYnrJ7qfSVTmYhECQPVnSzzgJDTGDXIAA==
 
-oreid-react@^1.4.1-beta:
-  version "1.4.1-beta"
-  resolved "https://registry.yarnpkg.com/oreid-react/-/oreid-react-1.4.1-beta.tgz#53e454da92a1328a94f21339f0ec5609ea931578"
-  integrity sha512-BBg633aqVAoCfgVB8gnWRyjK+ay8v+ePTcuqGFhRg8vqrQQPw8DtNvlm2SjQfhyAAWo24KUBppcxeb3pt0WEcw==
+oreid-react@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/oreid-react/-/oreid-react-2.0.0.tgz#df349211d6c5f2f1d61a3dbfe94b4135b2226b98"
+  integrity sha512-xUqZ1fyw5QP4P82ysuyeVAp76gMC6XDAgiAyywxQPUTSlw0w54Mi6FXXKOzBF7RBNNqiFDr/uBODvieimppr2g==
   dependencies:
     lodash "^4.17.21"
 
-oreid-webwidget@^1.4.2:
-  version "1.4.2"
-  resolved "https://registry.yarnpkg.com/oreid-webwidget/-/oreid-webwidget-1.4.2.tgz#c858cceacb839900da187b4104953a64083f98d9"
-  integrity sha512-SzY61wOX/Hqzjt/aTOmh/1zT2ibVpUtarCJ/H8F4TxtcQpFH+RhmEngPPbIAC3xoxUQjxC5GiEOKi4KaqTEKOw==
+oreid-webpopup@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/oreid-webpopup/-/oreid-webpopup-2.0.0.tgz#b3866e6483409e9ac932191699b61e32342d2265"
+  integrity sha512-LdE571BtQz9iL85bX+pvOQC1Qrz2EsQt0pj0HIaS+wOS7VMzGw8wfoXBKqQuTpi+kgJN1mKHVXXiOe1mt82P7g==
   dependencies:
     promise-retry "^2.0.1"
 

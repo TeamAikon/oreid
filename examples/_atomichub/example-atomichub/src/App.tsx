@@ -2,7 +2,7 @@ import { AuthProvider, OreId, UserData } from "oreid-js";
 import LoginButton from "oreid-login-button";
 // ! To use hooks from oreid-react make sure you added the OreidProvider (index.tx shows how to do this)
 import { OreidProvider, useIsLoggedIn, useOreId, useUser } from "oreid-react";
-import { WebWidget } from "oreid-webwidget";
+import { WebPopup } from "oreid-webpopup";
 import React, { useEffect, useState } from "react";
 import "./App.css";
 import { AtomicHub } from "./AtomicHub";
@@ -16,7 +16,7 @@ const oreId = new OreId({
 	appId: REACT_APP_OREID_APP_ID,
 	oreIdUrl: "https://staging.service.oreid.io",
 	plugins: {
-		popup: WebWidget(),
+		popup: WebPopup(),
 	},
 });
 
