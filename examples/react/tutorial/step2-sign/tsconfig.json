@@ -22,5 +22,5 @@
   },
   "include": [
     "src"
-, "src/.index-react18.tsx"  ]
+  ]
 }

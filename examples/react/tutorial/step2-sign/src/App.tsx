@@ -12,7 +12,7 @@ import React, { useEffect, useState } from "react";
 import "./App.css";
 
 const REACT_APP_OREID_APP_ID = "demo_0097ed83e0a54e679ca46d082ee0e33a";
-const REACT_APP_OREID_API_KEY = "demo_k_97b33a2f8c984fb5b119567ca19e4a49";
+// const REACT_APP_OREID_API_KEY = "demo_k_97b33a2f8c984fb5b119567ca19e4a49";
 
 // * Initialize OreId
 const oreId = new OreId({
