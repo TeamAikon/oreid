@@ -67,7 +67,7 @@ class App extends Component {
       userInfo: {},
       sendEthForGas: false,
       popupResponse: null,
-      chainAccountIndex: '',
+      selectedChainAccountIndex: '',
       selectedChainAccountPermissionStringified: '',
     };
   }
@@ -78,7 +78,7 @@ class App extends Component {
       appName: 'ORE ID Sample App',
       appId,
       apiKey,
-      oreIdUrl:'https://staging.service.oreid.io',
+      oreIdUrl:'https://staging.service.oreid.io', // temporary
       plugins: {
         popup: WebPopup(),
       },
@@ -93,10 +93,6 @@ class App extends Component {
 
   // called by library to set local busy state
   setBusyCallback = (isBusy, isBusyMessage) => this.setState({ isBusy, isBusyMessage });
-
-  get loggedInProvider() {
-    return this.oreId.accessTokenHelper.decodedAccessToken['https://oreid.aikon.com/provider'];
-  }
 
   walletButtons = [
     { provider: ExternalWalletType.AlgoSigner, chainNetwork: ChainNetwork.AlgoTest },
@@ -206,10 +202,9 @@ class App extends Component {
     }
   }
 
-  handleLogin = async (provider) => {
+  handleLoginWithPopup = async (provider) => {
     try {
       this.clearErrors();
-      console.log('got to handleLogin')
       await this.oreId.popup.auth({ provider });
       const userData = this.oreId.auth.user.getData();
       this.setState({ userInfo: userData, isLoggedIn: true, loggedProvider: provider })
@@ -225,10 +220,10 @@ class App extends Component {
    *        To get a token to use for this demo app, use the Google OAuth Playground to get an OAuth Id Token for your own Google account - must select Scope: 'Google OAuth2 API v2' userinfo.profile and userinfo.email authorizations
    *        Use this link, login, then click [Exchange authorization code for tokens] button https://accounts.google.com/o/oauth2/v2/auth/oauthchooseaccount?redirect_uri=https%3A%2F%2Fdevelopers.google.com%2Foauthplayground&prompt=consent&response_type=code&client_id=407408718192.apps.googleusercontent.com&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&access_type=offline&flowName=GeneralOAuthFlow
    */
-  async handleLoginWithIdToken(idToken) {
+  async handleLoginWithToken(oauthToken) {
     try {
       this.clearErrors();
-      await this.oreId.auth.loginWithToken({ idToken }); // sets auth.accessToken using response
+      await this.oreId.auth.loginWithToken({ oauthToken }); // sets auth.accessToken using response
       await this.loadUserFromLocalStorage();
     } catch (error) {
       this.setState({ errorMessage: error.message });
@@ -294,7 +289,6 @@ class App extends Component {
     try {
       this.setResponseSignTransaction('','','','');
       const transactionData = await this.prepareTransactionData({ chainNetwork, chainAccount, permission, provider, externalWalletType, sendEthForGas, account });
-      console.log('handleSignSampleTransactionWithWallet transactionData:', transactionData)
       const transaction = await this.oreId.createTransaction(transactionData);
       let signResponse;
       if (externalWalletType) signResponse = await transaction.signWithWallet(externalWalletType);
@@ -337,7 +331,6 @@ class App extends Component {
   }
 
   async composeSampleTransaction({ chainNetwork, chainAccount, permission, externalWalletType, provider, sendEthForGas }) {
-    console.log('{ chainNetwork, chainAccount, permission, externalWalletType, provider, sendEthForGas }:', { chainNetwork, chainAccount, permission, externalWalletType, provider, sendEthForGas })
     let transaction;
     if (this.getChainType(chainNetwork) === 'algo') {
       transaction = this.createSampleTransactionAlgorand(chainAccount, permission);
@@ -356,7 +349,6 @@ class App extends Component {
         permission
       );
     }
-    console.log('composeSampleTransaction transaction:', transaction)
     return transaction;
   }
 
@@ -451,38 +443,6 @@ class App extends Component {
     }
   }
 
-  // /** compose object of properties that can be added to WebWidget React component */
-  // composePropsForWebWidget(action, actionParams) {
-  //   const webwidgetProps = {
-  //     onSuccess: (result) => {
-  //       console.log('widget results:', result);
-  //       this.setWidgetSuccess(result);
-  //     },
-  //     onError: (result) => {
-  //       this.setResponseErrors(result.errors);
-  //     }
-  //   };
-
-  //   // handle onSuccess differently depending on action type
-  //   switch (action) {
-  //   case 'sign':
-  //     webwidgetProps.onSuccess = ({ data }) => {
-  //       this.setResponseSignTransaction(data.signed_transaction, data.state, data.transaction_id, data.errors);
-  //     };
-  //     webwidgetProps.transaction = actionParams.transaction;
-  //     break;
-  //   case 'newChainAccount':
-  //     webwidgetProps.options = {
-  //       accountType: actionParams.accountType,
-  //       chainNetwork: actionParams.chainNetwork
-  //     };
-  //     break;
-  //   default:
-  //     break;
-  //   }
-  //   return webwidgetProps;
-  // }
-
   render() {
     let {
       errorMessage,
@@ -506,7 +466,7 @@ class App extends Component {
           {isBusy && (isBusyMessage || 'working...')}
         </h3>
         {errorMessage && (
-          <div data-tag="error-message" style={{ color: 'red', right: '50px', top: '50px', marginLeft: '20px', wordBreak: 'break-all', backgroundColor: 'yellow', padding: '10px', position: 'fixed' }}>
+          <div data-tag="error-message" style={{ color: 'red', right: '50px', top: '50px', marginLeft: '20px', wordBreak: 'break-all', backgroundColor: '#d3d3d3', padding: '10px', position: 'fixed' }}>
             {errorMessage}
           </div>
         )}
@@ -588,8 +548,8 @@ class App extends Component {
         <hr />
         <h3>Sign sample transaction with one of your keys</h3>
         Select transaction:
-        <select value={this.state.chainAccountIndex} onChange={(e) => {
-          this.setState({ chainAccountIndex: e.target.value, selectedChainAccountPermissionStringified: null })
+        <select value={this.state.selectedChainAccountIndex} onChange={(e) => {
+          this.setState({ selectedChainAccountIndex: e.target.value, selectedChainAccountPermissionStringified: null })
           this.selectDefaultPermissionForSelectedChainAccount(e.target.value)
         }}>
           <option value="" />
@@ -641,9 +601,8 @@ class App extends Component {
     </div>
   );
 
-  async handleSignWithWidget({ chainAccount, chainNetwork, permission }) {
+  async handleSignWithPopup({ chainAccount, chainNetwork, permission }) {
     this.clearErrors();
-    console.log('handleSignWithWidget permission:', permission)
     const { sendEthForGas, userInfo, loggedProvider } = this.state;
     let { accountName } = userInfo;
     const provider = loggedProvider || 'google';
@@ -655,19 +614,16 @@ class App extends Component {
       sendEthForGas,
       account: accountName
     });
-    console.log('widget transactionData:', transactionData)
     const transaction = await this.oreId.createTransaction(transactionData);
     try {
       const response = await this.oreId.popup.sign({ transaction})
-      console.log('sign response:', response)
       this.setResponseSignTransaction(response.signedTransaction, response.state, response.transactionId);
     } catch (error) {
-      console.log('sign error:', error)
       this.setState({ errorMessage: error.message });
     }
   }
 
-  async handleCreateNewAccountWithWidget({ chainNetwork, permission }) {
+  async handleCreateNewAccountWithPopup({ chainNetwork, permission }) {
     this.clearErrors();
     try {
       const response = await this.oreId.popup.newChainAccount({
@@ -680,8 +636,8 @@ class App extends Component {
     }
   }
 
-  selectDefaultPermissionForSelectedChainAccount(chainAccountIndex) {
-    const userChainAccount = this.state.userInfo.chainAccounts[chainAccountIndex];
+  selectDefaultPermissionForSelectedChainAccount(selectedChainAccountIndex) {
+    const userChainAccount = this.state.userInfo.chainAccounts[selectedChainAccountIndex];
     if(userChainAccount) {
       // select first permission for default
       this.setState({ selectedChainAccountPermissionStringified: JSON.stringify( userChainAccount?.permissions[0]) });
@@ -690,10 +646,9 @@ class App extends Component {
 
   // render one sign transaction button for each chain
   renderSignButtons = () => {
-    const { chainAccountIndex, selectedChainAccountPermissionStringified } = this.state;
-    if (chainAccountIndex === '') return null;
-    const userChainAccount = this.state.userInfo.chainAccounts[chainAccountIndex];
-    // const selectedPermissionStringified = selectedChainAccountPermissionStringified || userChainAccount?.permissions[0] // select first permission for default
+    const { selectedChainAccountIndex, selectedChainAccountPermissionStringified } = this.state;
+    if (selectedChainAccountIndex === '') return null;
+    const userChainAccount = this.state.userInfo.chainAccounts[selectedChainAccountIndex];
     const chainAccountPermission = selectedChainAccountPermissionStringified ? JSON.parse(selectedChainAccountPermissionStringified) : {};
     const provider = chainAccountPermission?.externalWalletType || 'oreid';
     return (
@@ -749,18 +704,18 @@ class App extends Component {
           />
         )}
         {!chainAccountPermission?.privateKeyStoredExterally && (
-          /* Show button to sign with OREID WebWidget  (don't show if the key is in a local wallet app) */
+          /* Show button to sign with OREID WebPopup  (don't show if the key is in a local wallet app) */
           <>
             <LoginButton
               key={provider}
               provider={provider}
-              text="Sign with Web Widget"
+              text="Sign Transaction"
               buttonStyle={{
                 cursor: 'pointer',
                 margin: '2px',
                 width: '50%'
               }}
-              onClick={() => this.handleSignWithWidget({chainAccount: userChainAccount?.chainAccount, chainNetwork: userChainAccount.chainNetwork, permission: chainAccountPermission?.name})}
+              onClick={() => this.handleSignWithPopup({chainAccount: userChainAccount?.chainAccount, chainNetwork: userChainAccount.chainNetwork, permission: chainAccountPermission?.name})}
             />
           </>
         )}
@@ -773,7 +728,7 @@ class App extends Component {
             margin: '2px',
             width: '50%'
           }}
-          onClick={() => this.handleCreateNewAccountWithWidget(userChainAccount)}
+          onClick={() => this.handleCreateNewAccountWithPopup(userChainAccount)}
         />
       </div>
     );
@@ -801,97 +756,97 @@ class App extends Component {
       <LoginButton
         provider="apple"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLogin('apple')}
+        onClick={() => this.handleLoginWithPopup('apple')}
       />
       <LoginButton
         provider="facebook"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLogin('facebook')}
+        onClick={() => this.handleLoginWithPopup('facebook')}
       />
       <LoginButton
         provider="twitter"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLogin('twitter')}
+        onClick={() => this.handleLoginWithPopup('twitter')}
       />
       <LoginButton
         provider="github"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLogin('github')}
+        onClick={() => this.handleLoginWithPopup('github')}
       />
       <LoginButton
         provider="twitch"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLogin('twitch')}
+        onClick={() => this.handleLoginWithPopup('twitch')}
       />
       <LoginButton
         provider="line"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLogin('line')}
+        onClick={() => this.handleLoginWithPopup('line')}
       />
       <LoginButton
         provider="kakao"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLogin('kakao')}
+        onClick={() => this.handleLoginWithPopup('kakao')}
       />
       <LoginButton
         provider="linkedin"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLogin('linkedin')}
+        onClick={() => this.handleLoginWithPopup('linkedin')}
       />
       <LoginButton
         provider="google"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLogin('google')}
+        onClick={() => this.handleLoginWithPopup('google')}
       />
       <LoginButton
         provider="email"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLogin('email')}
+        onClick={() => this.handleLoginWithPopup('email')}
       />
       <LoginButton
         provider="phone"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLogin('phone')}
+        onClick={() => this.handleLoginWithPopup('phone')}
       />
       <LoginButton
         provider="scatter"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLogin('scatter')}
+        onClick={() => this.handleLoginWithPopup('scatter')}
       />
       <LoginButton
         provider="ledger"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLogin('ledger')}
+        onClick={() => this.handleLoginWithPopup('ledger')}
       />
       <LoginButton
         provider="meetone"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLogin('meetone')}
+        onClick={() => this.handleLoginWithPopup('meetone')}
       />
       <LoginButton
         provider="lynx"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLogin('lynx')}
+        onClick={() => this.handleLoginWithPopup('lynx')}
       />
       <LoginButton
         provider="portis"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLogin('portis')}
+        onClick={() => this.handleLoginWithPopup('portis')}
       />
       <LoginButton
         provider="whalevault"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLogin('whalevault')}
+        onClick={() => this.handleLoginWithPopup('whalevault')}
       />
       <LoginButton
         provider="simpleos"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLogin('simpleos')}
+        onClick={() => this.handleLoginWithPopup('simpleos')}
       />
       <LoginButton
         provider="keycat"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLogin('keycat')}
+        onClick={() => this.handleLoginWithPopup('keycat')}
       />
       <div style={{ flexBasis: '100%', display: 'flex', justifyContent: 'center' }}>
         <span style={{ display: 'flex', flexDirection: 'column' }}>
@@ -902,8 +857,8 @@ class App extends Component {
           <LoginButton
             provider="oreid"
             buttonStyle={loginButtonStyle}
-            text="Login with id token"
-            onClick={() => this.handleLoginWithIdToken(this.state.loginWithIdToken)}
+            text="Login with token"
+            onClick={() => this.handleLoginWithToken(this.state.loginWithIdToken)}
           />
         </span>
       </div>
