@@ -1,9 +1,9 @@
 import dotenv from 'dotenv';
 import React, { Component } from 'react';
 import LoginButton from 'oreid-login-button';
-import { OreId } from 'oreid-js';
+import { OreId, ExternalWalletType, ChainNetwork } from 'oreid-js';
 import {
-  ABI,
+  // ABI,
   addEthForGas,
   init,
   getGasParams,
@@ -11,10 +11,10 @@ import {
   getEthBalance,
   getErc20Balance
 } from './eth';
-import { encode as base64Encode } from 'base-64';
+// import { encode as base64Encode } from 'base-64';
 import algoSignerProvider from 'eos-transit-algosigner-provider';
 import scatterProvider from 'eos-transit-scatter-provider';
-import OreIdWebWidget from 'oreid-react-web-widget';
+import { WebPopup } from "oreid-webpopup";
 // import ledgerProvider from 'eos-transit-ledger-provider';
 import lynxProvider from 'eos-transit-lynx-provider';
 import meetoneProvider from 'eos-transit-meetone-provider';
@@ -24,22 +24,17 @@ import simpleosProvider from 'eos-transit-simpleos-provider';
 import web3Provider from 'eos-transit-web3-provider';
 import walletconnectProvider from 'eos-transit-walletconnect-provider';
 import {
-  EOS_CHAIN_NETWORK,
   ERC20_FUNDING_AMOUNT,
   ERC20_TRANSFER_AMOUNT,
-  ETH_TRANSFER_AMOUNT,
-  ALGO_CHAIN_NETWORK,
-  ETH_CHAIN_NETWORK
+  ETH_TRANSFER_AMOUNT
 } from './constants';
 import { composeAlgorandSampleTransaction } from './algorand';
 
 dotenv.config();
 
 const {
-  REACT_APP_OREID_APP_ID: appId, // Provided when you register your app
-  REACT_APP_OREID_API_KEY: apiKey, // Provided when you register your app
-  REACT_APP_OREID_SERVICE_KEY: serviceKey, // Optional - required for some advanced features including autoSign and custodial accounts
-  REACT_APP_OREID_URL: oreIdUrl, // HTTPS Address of OREID server
+  REACT_APP_OREID_APP_ID: appId = 'demo_0097ed83e0a54e679ca46d082ee0e33a', // Provided when you register your app
+  REACT_APP_OREID_API_KEY: apiKey, // Optional - required for some advanced features including autoSign and custodial accounts
   REACT_APP_BACKGROUND_COLOR: backgroundColor, // Background color shown during login flow
   REACT_APP_ETHEREUM_CONTRACT_ADDRESS: ethereumContractAddress,
   REACT_APP_ETHEREUM_CONTRACT_ACCOUNT_ADDRESS: ethereumContractAccountAddress,
@@ -49,10 +44,7 @@ const {
   REACT_APP_ALGORAND_EXAMPLE_TO_ADDRESS: transferAlgoToAddress // address of account to send Algos to (for sample transaction)
 } = process.env;
 
-const authCallbackUrl = `${window.location.origin}/authcallback`; // The url called by the server when login flow is finished - must match one of the callback strings listed in the App Registration
-const signCallbackUrl = `${window.location.origin}/signcallback`; // The url called by the server when transaction signing flow is finished - must match one of the callback strings listed in the App Registration
-
-let eosTransitWalletProviders = [
+const eosTransitWalletProviders = [
   scatterProvider(),
   lynxProvider(),
   meetoneProvider(),
@@ -64,6 +56,8 @@ let eosTransitWalletProviders = [
   walletconnectProvider()
 ];
 
+const loginButtonStyle = { width: 200, marginTop: '24px', cursor: 'pointer' };
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -72,53 +66,64 @@ class App extends Component {
       isLoggedIn: false,
       userInfo: {},
       sendEthForGas: false,
-      showWidget: false,
-      webWidgetProps: {},
-      widgetResponse: null
+      popupResponse: null,
+      selectedChainAccountIndex: '',
+      selectedChainAccountPermissionStringified: '',
     };
-    this.handleLogin = this.handleLogin.bind(this);
-    this.handleLogout = this.handleLogout.bind(this);
-    this.handleSignButton = this.handleSignButton.bind(this);
-    this.toggleSendEthForGas = this.toggleSendEthForGas.bind(this);
+  }
+
+  async componentDidMount() {
+    // intialize oreId
+    this.oreId = new OreId({
+      appName: 'ORE ID Sample App',
+      appId,
+      apiKey,
+      oreIdUrl:'https://staging.service.oreid.io', // temporary
+      plugins: {
+        popup: WebPopup(),
+      },
+      backgroundColor,
+      eosTransitWalletProviders,
+      setBusyCallback: this.setBusyCallback
+    });
+    await this.oreId.init();
+    await this.loadUserFromLocalStorage();
+    console.log(this.userInfo)
   }
 
   // called by library to set local busy state
-  setBusyCallback = (isBusy, isBusyMessage) => {
-    this.setState({ isBusy, isBusyMessage });
-  };
+  setBusyCallback = (isBusy, isBusyMessage) => this.setState({ isBusy, isBusyMessage });
 
-  // intialize oreId
-  oreId = new OreId({
-    appName: 'ORE ID Sample App',
-    appId,
-    apiKey,
-    serviceKey,
-    oreIdUrl,
-    authCallbackUrl,
-    signCallbackUrl,
-    backgroundColor,
-    eosTransitWalletProviders,
-    setBusyCallback: this.setBusyCallback
-  });
+  walletButtons = [
+    { provider: ExternalWalletType.AlgoSigner, chainNetwork: ChainNetwork.AlgoTest },
+    { provider: ExternalWalletType.Keycat, chainNetwork: ChainNetwork.EosKylin },
+    { provider: ExternalWalletType.Ledger, chainNetwork: ChainNetwork.EosKylin },
+    { provider: ExternalWalletType.Lynx, chainNetwork: ChainNetwork.EosKylin },
+    { provider: ExternalWalletType.Meetone, chainNetwork: ChainNetwork.EosKylin },
+    { provider: ExternalWalletType.Portis, chainNetwork: ChainNetwork.EosKylin },
+    { provider: ExternalWalletType.Scatter, chainNetwork: ChainNetwork.EosKylin },
+    { provider: ExternalWalletType.SimpleEos, chainNetwork: ChainNetwork.EosKylin },
+    { provider: ExternalWalletType.TokenPocket, chainNetwork: ChainNetwork.EosKylin },
+    { provider: ExternalWalletType.Web3, chainNetwork: ChainNetwork.EthRopsten },
+    { provider: ExternalWalletType.WhaleVault, chainNetwork: ChainNetwork.EosKylin }
+  ]
 
   async componentWillMount() {
-    this.loadUserFromLocalStorage();
-    this.handleAuthCallback();
-    this.handleSignCallback();
   }
 
-  /** Load the user from local storage - user info is automatically saved to local storage by oreId.getUserInfoFromApi() */
+  /** Load the user from local storage - user info is automatically saved to local storage by oreId.auth.user.getData() */
   async loadUserFromLocalStorage() {
-    let { accessToken } = this.oreId;
+    const { accessToken } = this.oreId;
     if (!accessToken) return;
-    let userInfo = (await this.oreId.getUser()) || {};
-    this.setState({ userInfo, isLoggedIn: true });
+    await this.loadUserFromApi();
   }
 
-  async loadUserFromApi(account) {
+  async loadUserFromApi() {
     try {
-      const userInfo = (await this.oreId.getUserInfoFromApi(account)) || {};
+      await this.oreId.auth.user.getData();
+      const userInfo = this.oreId.auth.user.data;
       this.setState({ userInfo, isLoggedIn: true });
+      console.log({ userInfo });
     } catch (error) {
       this.setState({ errorMessage: error.message });
     }
@@ -132,66 +137,77 @@ class App extends Component {
     });
   }
 
-  handleLogout() {
+  handleLogout = () => {
     this.clearErrors();
     this.oreId.logout(); // clears local user state (stored in local storage or cookie)
-    // this.setState({ userInfo: {}, isLoggedIn: false });
-    // call logout on ORE ID to delete OAuth tokens
-    window.location = `${oreIdUrl}/logout?app_id=${this.oreId.options.appId}&providers=all&callback_url=${window.location.origin}`;
+    this.setState({ isLoggedIn: false })
   }
 
-  async handleSignButton({
+  handleSignWithWallet = async ({
     chainAccount,
     chainNetwork,
     permission,
-    externalWalletType: provider
-  }) {
+    externalWalletType,
+    provider
+  }) => {
     this.clearErrors();
     const { sendEthForGas, userInfo } = this.state;
-    let { accountName } = userInfo;
-    provider = provider || 'oreid'; // default to ore id
-    await this.handleSignSampleTransaction(
+    await this.handleSignSampleTransactionWithWallet({
+      externalWalletType,
       provider,
-      accountName,
+      account: userInfo.accountName,
       chainAccount,
       chainNetwork,
       permission,
       sendEthForGas
-    );
+      });
   }
 
-  async handleWalletDiscoverButton({ provider, chainNetwork }) {
+  handleWalletDiscoverButton = async ({ provider, chainNetwork } = {}) => {
     try {
       this.clearErrors();
-      let { accountName } = this.state.userInfo;
+      const { accountName } = this.state.userInfo;
 
-      if (!this.oreId.canDiscover(provider)) {
+      if (!this.oreId.transitHelper.canDiscover(provider)) {
         console.log(
           'Provider doesn\'t support discover, so discover function will call wallet provider\'s login instead.'
         );
       }
-      await this.oreId.discover({
-        provider,
+      await this.oreId.transitHelper.discover({
+        walletType: provider,
         chainNetwork,
         oreAccount: accountName
       });
-      this.loadUserFromApi(this.state.userInfo.accountName); // reload user from ore id api - to show new keys discovered
+      this.loadUserFromApi(); // reload user from ore id api - to show new keys discovered
     } catch (error) {
       this.setState({ errorMessage: error.message });
     }
   }
 
-  async handleLogin(provider, chainNetwork = EOS_CHAIN_NETWORK) {
+  handleSignStringWithWallet = async ({ provider, chainNetwork }) => {
     try {
       this.clearErrors();
-      let loginResponse = await this.oreId.login({ provider, chainNetwork });
-      // if the login responds with a loginUrl, then redirect the browser to it to start the user's OAuth login flow
-      let { isLoggedIn, account, loginUrl } = loginResponse;
-      if (loginUrl) {
-        // redirect browser to loginURL
-        window.location = loginUrl;
-      }
-      this.setState({ userInfo: { accountName: account }, isLoggedIn, loggedProvider: provider });
+      const { signedString } = await this.oreId.signStringWithWallet({
+        account: this.state.userInfo?.accountName,
+        walletType: provider,
+        provider,
+        chainNetwork,
+        string: 'Sign Arbitrary',
+        message: 'Placeholder'
+      });
+      this.setState({ popupResponse: signedString });
+      console.log(`Signed String: ${signedString}`);
+    } catch (error) {
+      this.setState({ errorMessage: error.message });
+    }
+  }
+
+  handleLoginWithPopup = async (provider) => {
+    try {
+      this.clearErrors();
+      await this.oreId.popup.auth({ provider });
+      const userData = this.oreId.auth.user.getData();
+      this.setState({ userInfo: userData, isLoggedIn: true, loggedProvider: provider })
     } catch (error) {
       this.setState({ errorMessage: error.message });
     }
@@ -204,18 +220,10 @@ class App extends Component {
    *        To get a token to use for this demo app, use the Google OAuth Playground to get an OAuth Id Token for your own Google account - must select Scope: 'Google OAuth2 API v2' userinfo.profile and userinfo.email authorizations
    *        Use this link, login, then click [Exchange authorization code for tokens] button https://accounts.google.com/o/oauth2/v2/auth/oauthchooseaccount?redirect_uri=https%3A%2F%2Fdevelopers.google.com%2Foauthplayground&prompt=consent&response_type=code&client_id=407408718192.apps.googleusercontent.com&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&access_type=offline&flowName=GeneralOAuthFlow
    */
-  async handleLoginWithIdToken(idToken, chainNetwork = EOS_CHAIN_NETWORK) {
+  async handleLoginWithToken(oauthToken) {
     try {
       this.clearErrors();
-      let loginResponse = await this.oreId.login({ idToken, chainNetwork }); // no provider required - will use 'oreid' as provider
-      let { accessToken, errors } = loginResponse;
-      if (errors) {
-        this.setState({ errorMessage: errors });
-        return;
-      }
-      // if the idToken is valid, login responds with an accessToken
-      this.oreId.accessToken = accessToken;
-      await this.oreId.getUserInfoFromApi();
+      await this.oreId.auth.loginWithToken({ oauthToken }); // sets auth.accessToken using response
       await this.loadUserFromLocalStorage();
     } catch (error) {
       this.setState({ errorMessage: error.message });
@@ -269,24 +277,28 @@ class App extends Component {
     return transaction;
   }
 
-  async handleSignSampleTransaction(
+  async handleSignSampleTransactionWithWallet({
+    externalWalletType,
     provider,
     account,
     chainAccount,
     chainNetwork,
     permission,
     sendEthForGas
-  ) {
+  }) {
     try {
-      let signOptions = await this.prepareSignOptions({ chainNetwork, chainAccount, permission, provider, sendEthForGas, account });
       this.setResponseSignTransaction('','','','');
-      let signResponse = await this.oreId.sign(signOptions);
+      const transactionData = await this.prepareTransactionData({ chainNetwork, chainAccount, permission, provider, externalWalletType, sendEthForGas, account });
+      const transaction = await this.oreId.createTransaction(transactionData);
+      let signResponse;
+      if (externalWalletType) signResponse = await transaction.signWithWallet(externalWalletType);
+      else signResponse = await transaction.getSignUrl();
+      console.log({ signResponse });
       // if the sign responds with a signUrl, then redirect the browser to it to call the signing flow
-      let { signUrl, signedTransaction, transactionId } =
-        signResponse || {};
+      const { signUrl, signedTransaction, transactionId } = signResponse || {};
       if (signUrl) {
         // redirect browser to signUrl
-        window.location = signUrl;
+        window.location.href = signUrl;
       }
       if (signedTransaction) {
         this.setState({
@@ -299,36 +311,37 @@ class App extends Component {
     }
   }
 
-  async prepareSignOptions({ chainNetwork, chainAccount, permission, provider, sendEthForGas, account }) {
-    const transaction = await this.composeSampleTransaction({ chainNetwork, chainAccount, permission, provider, sendEthForGas });
+  async prepareTransactionData({ chainNetwork, chainAccount, permission, externalWalletType, provider, sendEthForGas, account }) {
+    const sampleTransaction = await this.composeSampleTransaction({ chainNetwork, chainAccount, permission, externalWalletType, provider, sendEthForGas });
 
-    let signOptions = {
-      provider: provider || '',
+    const transactionData = {
       account: account || '',
-      broadcast: true,
       chainAccount: chainAccount || '',
       chainNetwork: chainNetwork || '',
-      state: 'abc',
-      transaction,
-      accountIsTransactionPermission: false,
-      returnSignedTransaction: true,
-      preventAutoSign: false // prevent auto sign even if transaction is auto signable
+      transaction: sampleTransaction,
+      signOptions: {
+        broadcast: true,
+        preventAutoSign: false,
+        provider: externalWalletType || provider,
+        returnSignedTransaction: true,
+        state: 'abc'
+      }
     };
-    return signOptions;
+    return transactionData;
   }
 
-  async composeSampleTransaction({ chainNetwork, chainAccount, permission, provider, sendEthForGas }) {
+  async composeSampleTransaction({ chainNetwork, chainAccount, permission, externalWalletType, provider, sendEthForGas }) {
     let transaction;
     if (this.getChainType(chainNetwork) === 'algo') {
       transaction = this.createSampleTransactionAlgorand(chainAccount, permission);
-      transaction = this.wrapTxActionArrayForOreId(provider, transaction);
+      transaction = this.wrapTxActionArrayForOreId(externalWalletType || provider, transaction);
     }
     if (this.getChainType(chainNetwork) === 'eth') {
       if (sendEthForGas) {
         await this.fundEthereumAccountIfNeeded(chainAccount, chainNetwork);
       }
       transaction = this.createSampleTransactionEthereum(chainAccount, permission);
-      transaction = this.wrapTxActionArrayForOreId(provider, transaction);
+      transaction = this.wrapTxActionArrayForOreId(externalWalletType || provider, transaction);
     }
     if (this.getChainType(chainNetwork) === 'eos') {
       transaction = this.createSampleTransactionEos(
@@ -359,12 +372,12 @@ class App extends Component {
   createSampleTransactionEthereum(actor, permission = 'active') {
     return {
       from: actor,
-      to: ethereumContractAddress,
-      contract: {
-        abi: ABI,
-        parameters: [ethereumContractAccountAddress, ERC20_TRANSFER_AMOUNT],
-        method: 'transfer'
-      },
+      to: '0x0d165491039B70c6Ea97d6Ccf6C4A861BfF20899',
+      // contract: {
+      //   abi: ABI,
+      //   parameters: [ethereumContractAccountAddress, ERC20_TRANSFER_AMOUNT],
+      //   method: 'transfer'
+      // },
       gasLimit: 145000
     };
   }
@@ -415,97 +428,19 @@ class App extends Component {
     }
   }
 
-  async toggleSendEthForGas() {
-    this.setState({ sendEthForGas: !this.state.sendEthForGas });
-  }
-
-  /*
-  Handle the authCallback coming back from ORE-ID with an "account" parameter indicating that a user has logged in
-*/
-  async handleAuthCallback() {
-    const url = window.location.href;
-    if (/authcallback/i.test(url)) {
-      const { account, errors, state } = this.oreId.handleAuthResponse(url);
-      if (state) console.log(`state returned with request:${state}`);
-      if (!errors) {
-        this.loadUserFromApi(account);
-      }
-    }
-  }
-
-  /**  Handle the signCallback coming back from ORE-ID with a "signedTransaction" parameter providing the transaction object with signatures attached */
-  async handleSignCallback() {
-    const url = window.location.href;
-    if (/signcallback/i.test(url)) {
-      const { signedTransaction, state, transactionId, errors } = this.oreId.handleSignResponse(url);
-      this.setResponseSignTransaction(signedTransaction, state, transactionId, errors);
-    }
-  }
+  toggleSendEthForGas = () => this.setState({ sendEthForGas: !this.state.sendEthForGas });
 
   /** update display of sign transction response */
-  setResponseSignTransaction(signedTransaction, state, transactionId, errors) {
-    if (!errors) {
-      this.setState({ errorMessage: '' });
-      if (state) this.setState({ signState: state });
-      if (signedTransaction) {
-        this.setState({
-          signedTransaction: JSON.stringify(signedTransaction)
-        });
-      }
-      if (transactionId) {
-        this.setState({ transactionId: JSON.stringify(transactionId) });
-      }
-    } else {
-      this.setState({ errorMessage: errors.join(', ') });
+  setResponseSignTransaction(signedTransaction, state, transactionId) {
+    if (state) this.setState({ signState: state });
+    if (signedTransaction) {
+      this.setState({
+        signedTransaction: JSON.stringify(signedTransaction)
+      });
     }
-  }
-
-  setResponseErrors(errors) {
-    if (typeof errors === 'string') {
-      this.setState({ errorMessage: errors.replace(', ') });
-    } else {
-      this.setState({ errorMessage: errors.join(', ') });
+    if (transactionId) {
+      this.setState({ transactionId: JSON.stringify(transactionId) });
     }
-  }
-
-  setWidgetSuccess({ data }) {
-    this.setState({ widgetResponse: JSON.stringify(data) });
-  }
-
-  /** compose object of properties that can be added to WebWidget React component */
-  composePropsForWebWidget(action, actionParams) {
-    const oreIdOptions = {
-      appName: this.oreId.options.appName,
-      appId: this.oreId.options.appId,
-      oreIdUrl: this.oreId.options.oreIdUrl,
-      accessToken: this.oreId.accessToken
-    };
-
-    const widgetProps = {
-      oreIdOptions,
-      action: {
-        name: action, // e.g. 'sign'
-        params: actionParams
-      },
-      onSuccess: (result) => {
-        console.log('widget results:', result);
-        this.setState({ showWidget: false });
-        this.setWidgetSuccess(result);
-      },
-      onError: (result) => {
-        this.setResponseErrors(result.errors);
-        this.setState({ showWidget: false });
-      }
-    };
-
-    // handle onSuccess differently depending on action type
-    if (action === 'sign') {
-      widgetProps.onSuccess = ({ data }) => {
-        this.setResponseSignTransaction(data.signed_transaction, data.state, data.transaction_id, data.errors);
-        this.setState({ showWidget: false });
-      };
-    };
-    return widgetProps;
   }
 
   render() {
@@ -517,8 +452,7 @@ class App extends Component {
       signedTransaction,
       signState,
       transactionId,
-      showWidget,
-      widgetResponse
+      popupResponse
     } = this.state;
 
     return (
@@ -527,20 +461,15 @@ class App extends Component {
           {!isLoggedIn && this.renderLoginButtons()}
           {isLoggedIn && this.renderUserInfo()}
           {isLoggedIn && this.renderSigningOptions()}
-          {isLoggedIn && this.renderEthereumGasCheckBox()}
-          {isLoggedIn && showWidget && (
-            <OreIdWebWidget
-              show={showWidget}
-              {...this.state.webWidgetProps}
-            />
-          )}
         </div>
         <h3 style={{ color: 'green', margin: '50px' }}>
           {isBusy && (isBusyMessage || 'working...')}
         </h3>
-        <div data-tag={'error-message'} style={{ color: 'red', margin: '50px' }}>
-          {errorMessage && errorMessage}
-        </div>
+        {errorMessage && (
+          <div data-tag="error-message" style={{ color: 'red', right: '50px', top: '50px', marginLeft: '20px', wordBreak: 'break-all', backgroundColor: '#d3d3d3', padding: '10px', position: 'fixed' }}>
+            {errorMessage}
+          </div>
+        )}
         <div
           id="transactionId"
           style={{ color: 'blue', marginLeft: '50px', marginTop: '50px' }}
@@ -563,8 +492,8 @@ class App extends Component {
           style={{ color: 'green', marginLeft: '50px', marginTop: '10px' }}
         >
           <p data-testid="web-widget-response" className="log">
-            {widgetResponse &&
-              `Web Widget Response: ${widgetResponse}`}
+            {popupResponse &&
+              `Response: ${popupResponse}`}
           </p>
         </div>
         <div
@@ -576,6 +505,7 @@ class App extends Component {
           </p>
         </div>
         {isLoggedIn && this.renderDiscoverOptions()}
+        {isLoggedIn && this.renderSignStringWithWallet()}
       </div>
     );
   }
@@ -601,6 +531,7 @@ class App extends Component {
             marginTop: 20,
             padding: '10px',
             backgroundColor: '#FFFBE6',
+            cursor: 'pointer',
             borderRadius: '5px'
           }}
         >
@@ -611,14 +542,23 @@ class App extends Component {
   }
 
   renderSigningOptions() {
-    let { permissions } = this.state.userInfo;
-    this.permissionsToRender = (permissions || []).slice(0);
-
+    const { chainAccounts } = this.state.userInfo;
     return (
       <div style={{ marginTop: 50, marginLeft: 20 }}>
+        <hr />
         <h3>Sign sample transaction with one of your keys</h3>
+        Select transaction:
+        <select value={this.state.selectedChainAccountIndex} onChange={(e) => {
+          this.setState({ selectedChainAccountIndex: e.target.value, selectedChainAccountPermissionStringified: null })
+          this.selectDefaultPermissionForSelectedChainAccount(e.target.value)
+        }}>
+          <option value="" />
+          {chainAccounts?.map((chainAccount, index) => (
+            <option key={index} value={index}>{`${chainAccount.chainAccount} (${chainAccount.chainNetwork})`}</option>
+          ))}
+        </select>
         <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-          {this.renderSignButtons(this.permissionsToRender)}
+          {this.renderSignButtons()}
         </div>
       </div>
     );
@@ -634,84 +574,85 @@ class App extends Component {
           onChange={this.toggleSendEthForGas}
           checked={sendEthForGas}
         />
-        <label for="eth" style={{ paddingLeft: 10 }}>
+        <label htmlFor="eth" style={{ paddingLeft: 10 }}>
           For Ethereum - Check the box above if you want to automatically send Eth for gas required for sample transaction if needed
         </label>
       </div>
     );
   }
 
-  renderDiscoverOptions() {
-    this.walletButtons = [
-      { provider: 'scatter', chainNetwork: EOS_CHAIN_NETWORK },
-      { provider: 'ledger', chainNetwork: EOS_CHAIN_NETWORK },
-      { provider: 'lynx', chainNetwork: EOS_CHAIN_NETWORK },
-      { provider: 'meetone', chainNetwork: EOS_CHAIN_NETWORK },
-      { provider: 'tokenpocket', chainNetwork: EOS_CHAIN_NETWORK },
-      { provider: 'portis', chainNetwork: EOS_CHAIN_NETWORK },
-      { provider: 'whalevault', chainNetwork: EOS_CHAIN_NETWORK },
-      { provider: 'simpleos', chainNetwork: EOS_CHAIN_NETWORK },
-      { provider: 'keycat', chainNetwork: EOS_CHAIN_NETWORK },
-      { provider: 'algosigner', chainNetwork: ALGO_CHAIN_NETWORK },
-      { provider: 'web3', chainNetwork: ETH_CHAIN_NETWORK }
-    ];
-    return (
-      <div style={{ marginTop: 50, marginLeft: 20 }}>
-        <h3>Or discover a key in your wallet</h3>
-        <div style={{ display: 'flex' }}>
-          {this.renderWalletDiscoverButtons(this.walletButtons)}
-        </div>
+  renderDiscoverOptions = () => (
+    <div style={{ marginTop: 50, marginLeft: 20 }}>
+      <hr />
+      <h3>Or discover a key in your wallet</h3>
+      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+        {this.renderWalletButtons(this.handleWalletDiscoverButton)}
       </div>
-    );
-  }
+    </div>
+  );
 
-  async handleSignWithWidget({ chainAccount, chainNetwork, permission }) {
+  renderSignStringWithWallet = () => (
+    <div style={{ marginTop: 50, marginLeft: 20 }}>
+      <hr />
+      <h3>Or sign string with your wallet</h3>
+      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+        {this.renderWalletButtons(this.handleSignStringWithWallet)}
+      </div>
+    </div>
+  );
+
+  async handleSignWithPopup({ chainAccount, chainNetwork, permission }) {
     this.clearErrors();
     const { sendEthForGas, userInfo, loggedProvider } = this.state;
     let { accountName } = userInfo;
     const provider = loggedProvider || 'google';
-    const signOptions = await this.prepareSignOptions(
-      { chainNetwork,
-        chainAccount,
-        permission,
-        provider,
-        sendEthForGas,
-        account: accountName
-      }
-    );
-    const webWidgetSignActionParams = {
-      ...signOptions,
-      accessToken: this.oreId.accessToken,
-      transaction: base64Encode(JSON.stringify(signOptions.transaction))
-    };
-    const webWidgetProps = this.composePropsForWebWidget('sign', webWidgetSignActionParams);
-    this.setState({
-      showWidget: true,
-      webWidgetProps
+    const transactionData = await this.prepareTransactionData({
+      chainNetwork,
+      chainAccount,
+      permission,
+      provider,
+      sendEthForGas,
+      account: accountName
     });
+    const transaction = await this.oreId.createTransaction(transactionData);
+    try {
+      const response = await this.oreId.popup.sign({ transaction})
+      this.setResponseSignTransaction(response.signedTransaction, response.state, response.transactionId);
+    } catch (error) {
+      this.setState({ errorMessage: error.message });
+    }
   }
 
-  async handleCreateNewAccountWithWidget({ chainNetwork, permission }) {
+  async handleCreateNewAccountWithPopup({ chainNetwork, permission }) {
     this.clearErrors();
-    const newAccountActionParams = {
-      accessToken: this.oreId.accessToken,
-      chainNetwork,
-      accountType: 'native',
-      provider: 'google'
-    };
-    const webWidgetProps = this.composePropsForWebWidget('newAccount', newAccountActionParams);
-    this.setState({
-      showWidget: true,
-      webWidgetProps
-    });
+    try {
+      const response = await this.oreId.popup.newChainAccount({
+        chainNetwork,
+        accountType: 'native',
+      })
+      this.setState({ popupResponse: JSON.stringify(response) });
+    } catch (error) {
+      this.setState({ errorMessage: error.message });
+    }
+  }
+
+  selectDefaultPermissionForSelectedChainAccount(selectedChainAccountIndex) {
+    const userChainAccount = this.state.userInfo.chainAccounts[selectedChainAccountIndex];
+    if(userChainAccount) {
+      // select first permission for default
+      this.setState({ selectedChainAccountPermissionStringified: JSON.stringify( userChainAccount?.permissions[0]) });
+    }
   }
 
   // render one sign transaction button for each chain
-  renderSignButtons = (permissions) => permissions.map((permission, index) => {
-    let provider = permission.externalWalletType || 'oreid';
-    let providerButtonDescription = permission.externalWalletType || 'Callback';
+  renderSignButtons = () => {
+    const { selectedChainAccountIndex, selectedChainAccountPermissionStringified } = this.state;
+    if (selectedChainAccountIndex === '') return null;
+    const userChainAccount = this.state.userInfo.chainAccounts[selectedChainAccountIndex];
+    const chainAccountPermission = selectedChainAccountPermissionStringified ? JSON.parse(selectedChainAccountPermissionStringified) : {};
+    const provider = chainAccountPermission?.externalWalletType || 'oreid';
     return (
-      <div key={index} style={{
+      <div style={{
         width: '700px',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
@@ -722,7 +663,7 @@ class App extends Component {
         borderRadius: '10px'
       }}>
         <div>
-          <strong>Chain: </strong> {permission.chainNetwork}
+          <strong>Chain: </strong> {userChainAccount.chainNetwork}
         </div>
         <div style={{
           width: '100%',
@@ -730,184 +671,199 @@ class App extends Component {
           whiteSpace: 'nowrap',
           overflow: 'hidden'
         }}>
-          <strong>Account: </strong>{permission.chainAccount}
+          <strong>Account: </strong>{userChainAccount.chainAccount}
         </div>
         <div>
-          <strong>Permission: </strong> {permission.permission}
+          <strong>Permission: </strong>
+          <select value={selectedChainAccountPermissionStringified} onChange={(e) => { 
+            this.setState({ selectedChainAccountPermissionStringified: e.target.value });
+            }}>
+            {userChainAccount.permissions.map((permission, index) => (
+              <option key={index} value={JSON.stringify(permission)}>{`${permission.name} (${permission.accountType})`}</option>
+            ))}
+          </select>
         </div>
+        {chainAccountPermission?.privateKeyStoredExterally && (
+          <LoginButton
+            key={provider}
+            provider={provider}
+            data-tag={`sign-${provider}`}
+            buttonStyle={{
+              cursor: 'pointer',
+              margin: '2px',
+              width: '50%'
+            }}
+            text={`Sign via ${chainAccountPermission?.externalWalletType}`}
+            onClick={() => this.handleSignWithWallet({
+              chainAccount: userChainAccount.chainAccount,
+              chainNetwork: userChainAccount.chainNetwork,
+              permission: chainAccountPermission?.name,
+              externalWalletType: chainAccountPermission?.externalWalletType,
+              provider: chainAccountPermission?.externalWalletType
+            })}
+          />
+        )}
+        {!chainAccountPermission?.privateKeyStoredExterally && (
+          /* Show button to sign with OREID WebPopup  (don't show if the key is in a local wallet app) */
+          <>
+            <LoginButton
+              key={provider}
+              provider={provider}
+              text="Sign Transaction"
+              buttonStyle={{
+                cursor: 'pointer',
+                margin: '2px',
+                width: '50%'
+              }}
+              onClick={() => this.handleSignWithPopup({chainAccount: userChainAccount?.chainAccount, chainNetwork: userChainAccount.chainNetwork, permission: chainAccountPermission?.name})}
+            />
+          </>
+        )}
         <LoginButton
+          key={'newchainaccount'}
           provider={provider}
-          data-tag={`sign-${provider}-${index}`}
+          text="Create New Chain Account"
           buttonStyle={{
+            cursor: 'pointer',
             margin: '2px',
             width: '50%'
           }}
-          text={`Sign with ${providerButtonDescription}`}
-          onClick={() => {
-            this.handleSignButton(permission);
-          }}
-        >Sign Sample Transaction with {provider}</LoginButton>
-        { /* Show button to sign with OREID WebWidget (don't show if the key is in a local wallet app)*/
-          !permission.externalWalletType &&
-          <LoginButton
-            provider={provider}
-            text="Sign with Web Widget"
-            buttonStyle={{
-              margin: '2px',
-              width: '50%'
-            }}
-            onClick={() => this.handleSignWithWidget(permission)}
-          />
-        }
-        { /* Show button to sign with OREID WebWidget (don't show if the key is in a local wallet app)*/
-          !permission.externalWalletType &&
-          <LoginButton
-            provider={provider}
-            text="Create account with Web Widget"
-            buttonStyle={{
-              margin: '2px',
-              width: '50%'
-            }}
-            onClick={() => this.handleCreateNewAccountWithWidget(permission)}
-          />
-        }
+          onClick={() => this.handleCreateNewAccountWithPopup(userChainAccount)}
+        />
       </div>
     );
-  });
+  };
 
-  // render one sign transaction button for each chain
-  renderWalletDiscoverButtons = (walletButtons) => walletButtons.map((wallet, index) => {
-    let { provider } = wallet;
-    return (
-      <div style={{ margin: '5px' }} key={index}>
-        <LoginButton
-          provider={provider}
-          data-tag={`discover-${provider}-${index}`}
-          buttonStyle={{
-            width: '100%',
-            minHeight: '75px'
-          }}
-          text={`${provider}`}
-          onClick={() => { this.handleWalletDiscoverButton(wallet); }}
-        >{`${provider}`}</LoginButton>
-      </div>
-    );
-  });
+  // render wallet button for each chain
+  renderWalletButtons = (handleClick) => this.walletButtons.map((wallet, index) => (
+    <div style={{ margin: '5px' }} key={index}>
+      <LoginButton
+        provider={wallet.provider}
+        data-tag={`discover-${wallet.provider}-${index}`}
+        buttonStyle={{
+          width: '100%',
+          minHeight: '75px',
+          cursor: 'pointer'
+        }}
+        onClick={() => handleClick(wallet)}
+        text={wallet.provider}
+      />
+    </div>
+  ));
 
-  renderLoginButtons() {
-    const buttonStyle = { width: 200, marginTop: '24px' };
-    return (
-      <div>
-        <LoginButton
-          provider="apple"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('apple')}
-        />
-        <LoginButton
-          provider="facebook"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('facebook')}
-        />
-        <LoginButton
-          provider="twitter"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('twitter')}
-        />
-        <LoginButton
-          provider="github"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('github')}
-        />
-        <LoginButton
-          provider="twitch"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('twitch')}
-        />
-        <LoginButton
-          provider="line"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('line')}
-        />
-        <LoginButton
-          provider="kakao"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('kakao')}
-        />
-        <LoginButton
-          provider="linkedin"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('linkedin')}
-        />
-        <LoginButton
-          provider="google"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('google')}
-        />
-        <LoginButton
-          provider="email"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('email')}
-        />
-        <LoginButton
-          provider="phone"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('phone')}
-        />
-        <LoginButton
-          provider="scatter"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('scatter')}
-        />
-        <LoginButton
-          provider="ledger"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('ledger')}
-        />
-        <LoginButton
-          provider="meetone"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('meetone')}
-        />
-        <LoginButton
-          provider="lynx"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('lynx')}
-        />
-        <LoginButton
-          provider="portis"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('portis')}
-        />
-        <LoginButton
-          provider="whalevault"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('whalevault')}
-        />
-        <LoginButton
-          provider="simpleos"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('simpleos')}
-        />
-        <LoginButton
-          provider="keycat"
-          buttonStyle={buttonStyle}
-          onClick={() => this.handleLogin('keycat')}
-        />
-        <span>
-          <LoginButton
-            provider="google"
-            buttonStyle={buttonStyle}
-            text="Login with id token"
-            onClick={() => this.handleLoginWithIdToken(this.state.loginWithIdToken)}
-          />
+  renderLoginButtons = () => (
+    <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '15px' }}>
+      <LoginButton
+        provider="apple"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLoginWithPopup('apple')}
+      />
+      <LoginButton
+        provider="facebook"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLoginWithPopup('facebook')}
+      />
+      <LoginButton
+        provider="twitter"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLoginWithPopup('twitter')}
+      />
+      <LoginButton
+        provider="github"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLoginWithPopup('github')}
+      />
+      <LoginButton
+        provider="twitch"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLoginWithPopup('twitch')}
+      />
+      <LoginButton
+        provider="line"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLoginWithPopup('line')}
+      />
+      <LoginButton
+        provider="kakao"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLoginWithPopup('kakao')}
+      />
+      <LoginButton
+        provider="linkedin"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLoginWithPopup('linkedin')}
+      />
+      <LoginButton
+        provider="google"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLoginWithPopup('google')}
+      />
+      <LoginButton
+        provider="email"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLoginWithPopup('email')}
+      />
+      <LoginButton
+        provider="phone"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLoginWithPopup('phone')}
+      />
+      <LoginButton
+        provider="scatter"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLoginWithPopup('scatter')}
+      />
+      <LoginButton
+        provider="ledger"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLoginWithPopup('ledger')}
+      />
+      <LoginButton
+        provider="meetone"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLoginWithPopup('meetone')}
+      />
+      <LoginButton
+        provider="lynx"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLoginWithPopup('lynx')}
+      />
+      <LoginButton
+        provider="portis"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLoginWithPopup('portis')}
+      />
+      <LoginButton
+        provider="whalevault"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLoginWithPopup('whalevault')}
+      />
+      <LoginButton
+        provider="simpleos"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLoginWithPopup('simpleos')}
+      />
+      <LoginButton
+        provider="keycat"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLoginWithPopup('keycat')}
+      />
+      <div style={{ flexBasis: '100%', display: 'flex', justifyContent: 'center' }}>
+        <span style={{ display: 'flex', flexDirection: 'column' }}>
           <label>
             Id Token:
-            <input type="text" value={this.state.loginWithIdToken} onChange={(e) => { this.setState({ loginWithIdToken: e.target.value });}} />
+            <input type="text" value={this.state.loginWithIdToken} onChange={(e) => this.setState({ loginWithIdToken: e.target.value })} />
           </label>
+          <LoginButton
+            provider="oreid"
+            buttonStyle={loginButtonStyle}
+            text="Login with token"
+            onClick={() => this.handleLoginWithToken(this.state.loginWithIdToken)}
+          />
         </span>
       </div>
-    );
-  }
+    </div>
+  );
 }
 
 export default App;
