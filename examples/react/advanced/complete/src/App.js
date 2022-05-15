@@ -35,6 +35,7 @@ dotenv.config();
 const {
   REACT_APP_OREID_APP_ID: appId = 'demo_0097ed83e0a54e679ca46d082ee0e33a', // Provided when you register your app
   REACT_APP_OREID_API_KEY: apiKey, // Optional - required for some advanced features including autoSign and custodial accounts
+  REACT_APP_OREID_URL: oreIdUrl = 'https://service.oreid.io', // HTTPS Address of OREID server
   REACT_APP_BACKGROUND_COLOR: backgroundColor, // Background color shown during login flow
   REACT_APP_ETHEREUM_CONTRACT_ADDRESS: ethereumContractAddress,
   REACT_APP_ETHEREUM_CONTRACT_ACCOUNT_ADDRESS: ethereumContractAccountAddress,
@@ -78,7 +79,7 @@ class App extends Component {
       appName: 'ORE ID Sample App',
       appId,
       apiKey,
-      oreIdUrl:'https://staging.service.oreid.io', // temporary
+      oreIdUrl:'https://staging.service.oreid.io', // temporary  ... REACT_APP_OREID_URL
       plugins: {
         popup: WebPopup(),
       },
