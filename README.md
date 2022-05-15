@@ -18,9 +18,11 @@ ORE ID removes the friction between your app and your future users.
 
 # Quick Start Guide
 
-Try it now with CodeSandox
+Try it now in CodeSandbox
 
-[<img src="./docs/images/code-sandbox.logo.png" width="150"/>](https://githubbox.com/TeamAikon/oreid/tree/master/examples/react/tutorial/step2-sign)
+<a target="_blank" href="https://githubbox.com/TeamAikon/oreid/tree/master/examples/react/tutorial/step2-sign">
+    <img src="./docs/images/code-sandbox.logo.png" width="150"/>
+</a>
 
 OR
 
