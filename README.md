@@ -1,4 +1,5 @@
 <img src="https://storage.googleapis.com/oreid-files/partners/oreid-logo.svg" width="70" height="70">
+<script async defer src="https://buttons.github.io/buttons.js"></script>
 
 # ORE ID - Authentication for Blockchain
 
@@ -18,6 +19,12 @@ ORE ID removes the friction between your app and your future users.
 
 # Quick Start Guide
 
+Try it now
+
+<a class="github-button" href="https://githubbox.com/TeamAikon/oreid/tree/master/examples/react/tutorial/step2-sign" data-icon="octicon-play" aria-label="Open in CodeSandbox">Open in CodeSandbox</a>
+
+OR
+
 To run sample code, start with the React examples from our tutorial:
 
 First, clone this repo to your local machine.
@@ -28,8 +35,14 @@ git clone https://github.com/TeamAikon/oreid.git
 Now, run the first example by entering the following:
 ```shell
 cd examples/react/tutorial/step1-login
+
+yarn (or npm install)
+yarn start (or npm run start)
+
+OR
+
 npm install
-yarn start
+npm run start
 ```
     
 Continue on with other steps in the tutorial.
