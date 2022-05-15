@@ -2,7 +2,6 @@ import dotenv from 'dotenv';
 import React, { Component } from 'react';
 import LoginButton from 'oreid-login-button';
 import { OreId, ExternalWalletType, ChainNetwork } from 'oreid-js';
-import { defaultOreIdServiceUrl } from 'oreid-js/dist/constants';
 import {
   // ABI,
   addEthForGas,
@@ -15,7 +14,7 @@ import {
 // import { encode as base64Encode } from 'base-64';
 import algoSignerProvider from 'eos-transit-algosigner-provider';
 import scatterProvider from 'eos-transit-scatter-provider';
-import { createOreIdWebWidget } from 'oreid-webwidget';
+import { WebPopup } from "oreid-webpopup";
 // import ledgerProvider from 'eos-transit-ledger-provider';
 import lynxProvider from 'eos-transit-lynx-provider';
 import meetoneProvider from 'eos-transit-meetone-provider';
@@ -35,9 +34,7 @@ dotenv.config();
 
 const {
   REACT_APP_OREID_APP_ID: appId = 'demo_0097ed83e0a54e679ca46d082ee0e33a', // Provided when you register your app
-  REACT_APP_OREID_API_KEY: apiKey, // Provided when you register your app
-  REACT_APP_OREID_SERVICE_KEY: serviceKey, // Optional - required for some advanced features including autoSign and custodial accounts
-  REACT_APP_OREID_URL: oreIdUrl = defaultOreIdServiceUrl, // HTTPS Address of OREID server
+  REACT_APP_OREID_API_KEY: apiKey, // Optional - required for some advanced features including autoSign and custodial accounts
   REACT_APP_BACKGROUND_COLOR: backgroundColor, // Background color shown during login flow
   REACT_APP_ETHEREUM_CONTRACT_ADDRESS: ethereumContractAddress,
   REACT_APP_ETHEREUM_CONTRACT_ACCOUNT_ADDRESS: ethereumContractAccountAddress,
@@ -46,9 +43,6 @@ const {
   REACT_APP_ETHEREUM_FUNDING_ACCOUNT_PRIVATE_KEY: ethereumFundingAddressPrivateKey,
   REACT_APP_ALGORAND_EXAMPLE_TO_ADDRESS: transferAlgoToAddress // address of account to send Algos to (for sample transaction)
 } = process.env;
-
-const authCallbackUrl = `${window.location.origin}/authcallback`; // The url called by the server when login flow is finished - must match one of the callback strings listed in the App Registration
-const signCallbackUrl = `${window.location.origin}/signcallback`; // The url called by the server when transaction signing flow is finished - must match one of the callback strings listed in the App Registration
 
 const eosTransitWalletProviders = [
   scatterProvider(),
@@ -72,32 +66,33 @@ class App extends Component {
       isLoggedIn: false,
       userInfo: {},
       sendEthForGas: false,
-      widgetResponse: null,
-      chainAccountItem: '',
-      chainAccountPermissionItem: ''
+      popupResponse: null,
+      chainAccountIndex: '',
+      selectedChainAccountPermissionStringified: '',
     };
   }
 
   async componentDidMount() {
-    this.webwidget = await createOreIdWebWidget(this.oreId, window);
+    // intialize oreId
+    this.oreId = new OreId({
+      appName: 'ORE ID Sample App',
+      appId,
+      apiKey,
+      oreIdUrl:'https://staging.service.oreid.io',
+      plugins: {
+        popup: WebPopup(),
+      },
+      backgroundColor,
+      eosTransitWalletProviders,
+      setBusyCallback: this.setBusyCallback
+    });
+    await this.oreId.init();
+    await this.loadUserFromLocalStorage();
+    console.log(this.userInfo)
   }
 
   // called by library to set local busy state
   setBusyCallback = (isBusy, isBusyMessage) => this.setState({ isBusy, isBusyMessage });
-
-  // intialize oreId
-  oreId = new OreId({
-    appName: 'ORE ID Sample App',
-    appId,
-    apiKey,
-    serviceKey,
-    oreIdUrl,
-    authCallbackUrl,
-    signCallbackUrl,
-    backgroundColor,
-    eosTransitWalletProviders,
-    setBusyCallback: this.setBusyCallback
-  });
 
   get loggedInProvider() {
     return this.oreId.accessTokenHelper.decodedAccessToken['https://oreid.aikon.com/provider'];
@@ -118,16 +113,6 @@ class App extends Component {
   ]
 
   async componentWillMount() {
-    await this.loadUserFromLocalStorage();
-    this.handleAuthCallback();
-    this.handleSignCallback();
-    window.oreId = this.oreId;
-    window.webwidget = this.webwidget;
-    document.addEventListener('click', (e) => {
-      if (this.state.errorMessage && !e.target.contains(document.querySelector('[data-tag=error-message]'))) {
-        this.setState({ errorMessage: null });
-      }
-    });
   }
 
   /** Load the user from local storage - user info is automatically saved to local storage by oreId.auth.user.getData() */
@@ -159,15 +144,10 @@ class App extends Component {
   handleLogout = () => {
     this.clearErrors();
     this.oreId.logout(); // clears local user state (stored in local storage or cookie)
-    // this.setState({ userInfo: {}, isLoggedIn: false });
-    // call logout on ORE ID to delete OAuth tokens
-    this.webwidget.onLogout({
-      onSuccess: () => this.setState({ isLoggedIn: false })
-    });
-    // window.location = `${oreIdUrl}/logout?app_id=${this.oreId.options.appId}&providers=all&callback_url=${window.location.origin}`;
+    this.setState({ isLoggedIn: false })
   }
 
-  handleSignButton = async ({
+  handleSignWithWallet = async ({
     chainAccount,
     chainNetwork,
     permission,
@@ -176,15 +156,15 @@ class App extends Component {
   }) => {
     this.clearErrors();
     const { sendEthForGas, userInfo } = this.state;
-    await this.handleSignSampleTransaction(
+    await this.handleSignSampleTransactionWithWallet({
       externalWalletType,
       provider,
-      userInfo.accountName,
+      account: userInfo.accountName,
       chainAccount,
       chainNetwork,
       permission,
       sendEthForGas
-    );
+      });
   }
 
   handleWalletDiscoverButton = async ({ provider, chainNetwork } = {}) => {
@@ -219,27 +199,20 @@ class App extends Component {
         string: 'Sign Arbitrary',
         message: 'Placeholder'
       });
+      this.setState({ popupResponse: signedString });
       console.log(`Signed String: ${signedString}`);
     } catch (error) {
       this.setState({ errorMessage: error.message });
     }
   }
 
-  handleLogin = async (provider, chainNetwork = ChainNetwork.EosKylin) => {
+  handleLogin = async (provider) => {
     try {
       this.clearErrors();
-      this.webwidget.onAuth({
-        params: { provider },
-        onSuccess: (userData) => this.setState({ userInfo: userData, isLoggedIn: true, loggedProvider: provider }),
-        onError: async () => {
-          // redirect the browser to it to start the user's OAuth login flow
-          const { loginUrl } = await this.oreId.auth.getLoginUrl({ provider, chainNetwork });
-          if (loginUrl && !this.oreId.accessToken) {
-            // redirect browser to loginURL
-            window.location.href = loginUrl;
-          }
-        }
-      });
+      console.log('got to handleLogin')
+      await this.oreId.popup.auth({ provider });
+      const userData = this.oreId.auth.user.getData();
+      this.setState({ userInfo: userData, isLoggedIn: true, loggedProvider: provider })
     } catch (error) {
       this.setState({ errorMessage: error.message });
     }
@@ -252,17 +225,10 @@ class App extends Component {
    *        To get a token to use for this demo app, use the Google OAuth Playground to get an OAuth Id Token for your own Google account - must select Scope: 'Google OAuth2 API v2' userinfo.profile and userinfo.email authorizations
    *        Use this link, login, then click [Exchange authorization code for tokens] button https://accounts.google.com/o/oauth2/v2/auth/oauthchooseaccount?redirect_uri=https%3A%2F%2Fdevelopers.google.com%2Foauthplayground&prompt=consent&response_type=code&client_id=407408718192.apps.googleusercontent.com&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&access_type=offline&flowName=GeneralOAuthFlow
    */
-  async handleLoginWithIdToken(idToken, chainNetwork = ChainNetwork.EosKylin) {
+  async handleLoginWithIdToken(idToken) {
     try {
       this.clearErrors();
-      let loginResponse = await this.oreId.login({ idToken, chainNetwork }); // no provider required - will use 'oreid' as provider
-      let { accessToken, errors } = loginResponse;
-      if (errors) {
-        this.setState({ errorMessage: errors });
-        return;
-      }
-      // if the idToken is valid, login responds with an accessToken
-      this.oreId.accessToken = accessToken;
+      await this.oreId.auth.loginWithToken({ idToken }); // sets auth.accessToken using response
       await this.loadUserFromLocalStorage();
     } catch (error) {
       this.setState({ errorMessage: error.message });
@@ -316,7 +282,7 @@ class App extends Component {
     return transaction;
   }
 
-  async handleSignSampleTransaction(
+  async handleSignSampleTransactionWithWallet({
     externalWalletType,
     provider,
     account,
@@ -324,19 +290,18 @@ class App extends Component {
     chainNetwork,
     permission,
     sendEthForGas
-  ) {
+  }) {
     try {
-      const transactionData = await this.prepareTransactionData({ chainNetwork, chainAccount, permission, provider, externalWalletType, sendEthForGas, account });
-      console.log({ transactionData });
       this.setResponseSignTransaction('','','','');
+      const transactionData = await this.prepareTransactionData({ chainNetwork, chainAccount, permission, provider, externalWalletType, sendEthForGas, account });
+      console.log('handleSignSampleTransactionWithWallet transactionData:', transactionData)
       const transaction = await this.oreId.createTransaction(transactionData);
       let signResponse;
       if (externalWalletType) signResponse = await transaction.signWithWallet(externalWalletType);
       else signResponse = await transaction.getSignUrl();
       console.log({ signResponse });
       // if the sign responds with a signUrl, then redirect the browser to it to call the signing flow
-      const { signUrl, signedTransaction, transactionId } =
-        signResponse || {};
+      const { signUrl, signedTransaction, transactionId } = signResponse || {};
       if (signUrl) {
         // redirect browser to signUrl
         window.location.href = signUrl;
@@ -372,6 +337,7 @@ class App extends Component {
   }
 
   async composeSampleTransaction({ chainNetwork, chainAccount, permission, externalWalletType, provider, sendEthForGas }) {
+    console.log('{ chainNetwork, chainAccount, permission, externalWalletType, provider, sendEthForGas }:', { chainNetwork, chainAccount, permission, externalWalletType, provider, sendEthForGas })
     let transaction;
     if (this.getChainType(chainNetwork) === 'algo') {
       transaction = this.createSampleTransactionAlgorand(chainAccount, permission);
@@ -390,6 +356,7 @@ class App extends Component {
         permission
       );
     }
+    console.log('composeSampleTransaction transaction:', transaction)
     return transaction;
   }
 
@@ -471,96 +438,50 @@ class App extends Component {
 
   toggleSendEthForGas = () => this.setState({ sendEthForGas: !this.state.sendEthForGas });
 
-  /*
-  Handle the authCallback coming back from ORE-ID with an "account" parameter indicating that a user has logged in
-*/
-  async handleAuthCallback() {
-    const url = window.location.href;
-    let errors;
-    let state;
-    if (/authcallback/i.test(url)) {
-      try {
-        ;({ errors, state } = this.oreId.auth.handleAuthCallback(url));
-        if (state) console.log(`state returned with request:${state}`);
-      } catch (error) {
-        console.error(error);
-      }
-      if (!errors) {
-        window.location.replace('/');
-      }
-    }
-  }
-
-  /**  Handle the signCallback coming back from ORE-ID with a "signedTransaction" parameter providing the transaction object with signatures attached */
-  async handleSignCallback() {
-    const url = window.location.href;
-    if (/signcallback/i.test(url)) {
-      const { signedTransaction, state, transactionId, errors } = this.oreId.handleSignCallback(url);
-      this.setResponseSignTransaction(signedTransaction, state, transactionId, errors);
-    }
-  }
-
   /** update display of sign transction response */
-  setResponseSignTransaction(signedTransaction, state, transactionId, errors) {
-    if (!errors) {
-      this.setState({ errorMessage: '' });
-      if (state) this.setState({ signState: state });
-      if (signedTransaction) {
-        this.setState({
-          signedTransaction: JSON.stringify(signedTransaction)
-        });
-      }
-      if (transactionId) {
-        this.setState({ transactionId: JSON.stringify(transactionId) });
-      }
-    } else {
-      this.setState({ errorMessage: errors.join(', ') });
+  setResponseSignTransaction(signedTransaction, state, transactionId) {
+    if (state) this.setState({ signState: state });
+    if (signedTransaction) {
+      this.setState({
+        signedTransaction: JSON.stringify(signedTransaction)
+      });
+    }
+    if (transactionId) {
+      this.setState({ transactionId: JSON.stringify(transactionId) });
     }
   }
 
-  setResponseErrors(errors) {
-    if (typeof errors === 'string') {
-      this.setState({ errorMessage: errors.replace(', ') });
-    } else {
-      this.setState({ errorMessage: errors.join(', ') });
-    }
-  }
+  // /** compose object of properties that can be added to WebWidget React component */
+  // composePropsForWebWidget(action, actionParams) {
+  //   const webwidgetProps = {
+  //     onSuccess: (result) => {
+  //       console.log('widget results:', result);
+  //       this.setWidgetSuccess(result);
+  //     },
+  //     onError: (result) => {
+  //       this.setResponseErrors(result.errors);
+  //     }
+  //   };
 
-  setWidgetSuccess({ data }) {
-    this.setState({ widgetResponse: JSON.stringify(data) });
-  }
-
-  /** compose object of properties that can be added to WebWidget React component */
-  composePropsForWebWidget(action, actionParams) {
-    const webwidgetProps = {
-      onSuccess: (result) => {
-        console.log('widget results:', result);
-        this.setWidgetSuccess(result);
-      },
-      onError: (result) => {
-        this.setResponseErrors(result.errors);
-      }
-    };
-
-    // handle onSuccess differently depending on action type
-    switch (action) {
-    case 'sign':
-      webwidgetProps.onSuccess = ({ data }) => {
-        this.setResponseSignTransaction(data.signed_transaction, data.state, data.transaction_id, data.errors);
-      };
-      webwidgetProps.transaction = actionParams.transaction;
-      break;
-    case 'newChainAccount':
-      webwidgetProps.options = {
-        accountType: actionParams.accountType,
-        chainNetwork: actionParams.chainNetwork
-      };
-      break;
-    default:
-      break;
-    }
-    return webwidgetProps;
-  }
+  //   // handle onSuccess differently depending on action type
+  //   switch (action) {
+  //   case 'sign':
+  //     webwidgetProps.onSuccess = ({ data }) => {
+  //       this.setResponseSignTransaction(data.signed_transaction, data.state, data.transaction_id, data.errors);
+  //     };
+  //     webwidgetProps.transaction = actionParams.transaction;
+  //     break;
+  //   case 'newChainAccount':
+  //     webwidgetProps.options = {
+  //       accountType: actionParams.accountType,
+  //       chainNetwork: actionParams.chainNetwork
+  //     };
+  //     break;
+  //   default:
+  //     break;
+  //   }
+  //   return webwidgetProps;
+  // }
 
   render() {
     let {
@@ -571,7 +492,7 @@ class App extends Component {
       signedTransaction,
       signState,
       transactionId,
-      widgetResponse
+      popupResponse
     } = this.state;
 
     return (
@@ -611,8 +532,8 @@ class App extends Component {
           style={{ color: 'green', marginLeft: '50px', marginTop: '10px' }}
         >
           <p data-testid="web-widget-response" className="log">
-            {widgetResponse &&
-              `Web Widget Response: ${widgetResponse}`}
+            {popupResponse &&
+              `Response: ${popupResponse}`}
           </p>
         </div>
         <div
@@ -624,7 +545,7 @@ class App extends Component {
           </p>
         </div>
         {isLoggedIn && this.renderDiscoverOptions()}
-        {isLoggedIn && this.renderSignWithWallet()}
+        {isLoggedIn && this.renderSignStringWithWallet()}
       </div>
     );
   }
@@ -666,9 +587,13 @@ class App extends Component {
       <div style={{ marginTop: 50, marginLeft: 20 }}>
         <hr />
         <h3>Sign sample transaction with one of your keys</h3>
-        <select value={this.state.chainAccountItem} onChange={(e) => this.setState({ chainAccountItem: e.target.value, chainAccountPermissionItem: '0' })}>
+        Select transaction:
+        <select value={this.state.chainAccountIndex} onChange={(e) => {
+          this.setState({ chainAccountIndex: e.target.value, selectedChainAccountPermissionStringified: null })
+          this.selectDefaultPermissionForSelectedChainAccount(e.target.value)
+        }}>
           <option value="" />
-          {chainAccounts.map((chainAccount, index) => (
+          {chainAccounts?.map((chainAccount, index) => (
             <option key={index} value={index}>{`${chainAccount.chainAccount} (${chainAccount.chainNetwork})`}</option>
           ))}
         </select>
@@ -706,7 +631,7 @@ class App extends Component {
     </div>
   );
 
-  renderSignWithWallet = () => (
+  renderSignStringWithWallet = () => (
     <div style={{ marginTop: 50, marginLeft: 20 }}>
       <hr />
       <h3>Or sign string with your wallet</h3>
@@ -718,6 +643,7 @@ class App extends Component {
 
   async handleSignWithWidget({ chainAccount, chainNetwork, permission }) {
     this.clearErrors();
+    console.log('handleSignWithWidget permission:', permission)
     const { sendEthForGas, userInfo, loggedProvider } = this.state;
     let { accountName } = userInfo;
     const provider = loggedProvider || 'google';
@@ -729,30 +655,47 @@ class App extends Component {
       sendEthForGas,
       account: accountName
     });
+    console.log('widget transactionData:', transactionData)
     const transaction = await this.oreId.createTransaction(transactionData);
-    const webWidgetProps = this.composePropsForWebWidget('sign', { transaction });
-    this.webwidget.onSign(webWidgetProps);
+    try {
+      const response = await this.oreId.popup.sign({ transaction})
+      console.log('sign response:', response)
+      this.setResponseSignTransaction(response.signedTransaction, response.state, response.transactionId);
+    } catch (error) {
+      console.log('sign error:', error)
+      this.setState({ errorMessage: error.message });
+    }
   }
 
   async handleCreateNewAccountWithWidget({ chainNetwork, permission }) {
     this.clearErrors();
-    const newAccountActionParams = {
-      accessToken: this.oreId.accessToken,
-      chainNetwork,
-      accountType: 'native',
-      provider: 'google'
-    };
-    const webWidgetProps = this.composePropsForWebWidget('newChainAccount', newAccountActionParams);
-    this.webwidget.onNewChainAccount(webWidgetProps);
+    try {
+      const response = await this.oreId.popup.newChainAccount({
+        chainNetwork,
+        accountType: 'native',
+      })
+      this.setState({ popupResponse: JSON.stringify(response) });
+    } catch (error) {
+      this.setState({ errorMessage: error.message });
+    }
+  }
+
+  selectDefaultPermissionForSelectedChainAccount(chainAccountIndex) {
+    const userChainAccount = this.state.userInfo.chainAccounts[chainAccountIndex];
+    if(userChainAccount) {
+      // select first permission for default
+      this.setState({ selectedChainAccountPermissionStringified: JSON.stringify( userChainAccount?.permissions[0]) });
+    }
   }
 
   // render one sign transaction button for each chain
   renderSignButtons = () => {
-    const { chainAccountItem, chainAccountPermissionItem } = this.state;
-    if (chainAccountItem === '') return null;
-    const userChainAccount = this.state.userInfo.chainAccounts[chainAccountItem];
-    const chainAccountPermission = userChainAccount.permissions[chainAccountPermissionItem];
-    const provider = chainAccountPermission.externalWalletType || 'oreid';
+    const { chainAccountIndex, selectedChainAccountPermissionStringified } = this.state;
+    if (chainAccountIndex === '') return null;
+    const userChainAccount = this.state.userInfo.chainAccounts[chainAccountIndex];
+    // const selectedPermissionStringified = selectedChainAccountPermissionStringified || userChainAccount?.permissions[0] // select first permission for default
+    const chainAccountPermission = selectedChainAccountPermissionStringified ? JSON.parse(selectedChainAccountPermissionStringified) : {};
+    const provider = chainAccountPermission?.externalWalletType || 'oreid';
     return (
       <div style={{
         width: '700px',
@@ -777,35 +720,39 @@ class App extends Component {
         </div>
         <div>
           <strong>Permission: </strong>
-          <select value={chainAccountPermissionItem} onChange={(e) => this.setState({ chainAccountPermissionItem: e.target.value })}>
+          <select value={selectedChainAccountPermissionStringified} onChange={(e) => { 
+            this.setState({ selectedChainAccountPermissionStringified: e.target.value });
+            }}>
             {userChainAccount.permissions.map((permission, index) => (
-              <option key={index} value={index}>{`${permission.name} (${permission.accountType})`}</option>
+              <option key={index} value={JSON.stringify(permission)}>{`${permission.name} (${permission.accountType})`}</option>
             ))}
           </select>
         </div>
-        <LoginButton
-          key={chainAccountPermission?.externalWalletType}
-          provider={provider}
-          data-tag={`sign-${provider}`}
-          buttonStyle={{
-            cursor: 'pointer',
-            margin: '2px',
-            width: '50%'
-          }}
-          text={`Sign via ${chainAccountPermission?.externalWalletType || 'Callback'}`}
-          onClick={() => this.handleSignButton({
-            chainAccount: userChainAccount.chainAccount,
-            chainNetwork: userChainAccount.chainNetwork,
-            permission: chainAccountPermission,
-            externalWalletType: chainAccountPermission?.externalWalletType,
-            provider: !chainAccountPermission?.externalWalletType && this.loggedInProvider
-          })}
-        />
-        {!chainAccountPermission.externalWalletType && (
-          /* Show button to sign with OREID WebWidget  (don't show if the key is in a local wallet app)*/
+        {chainAccountPermission?.privateKeyStoredExterally && (
+          <LoginButton
+            key={provider}
+            provider={provider}
+            data-tag={`sign-${provider}`}
+            buttonStyle={{
+              cursor: 'pointer',
+              margin: '2px',
+              width: '50%'
+            }}
+            text={`Sign via ${chainAccountPermission?.externalWalletType}`}
+            onClick={() => this.handleSignWithWallet({
+              chainAccount: userChainAccount.chainAccount,
+              chainNetwork: userChainAccount.chainNetwork,
+              permission: chainAccountPermission?.name,
+              externalWalletType: chainAccountPermission?.externalWalletType,
+              provider: chainAccountPermission?.externalWalletType
+            })}
+          />
+        )}
+        {!chainAccountPermission?.privateKeyStoredExterally && (
+          /* Show button to sign with OREID WebWidget  (don't show if the key is in a local wallet app) */
           <>
             <LoginButton
-              key={chainAccountPermission.externalWalletType}
+              key={provider}
               provider={provider}
               text="Sign with Web Widget"
               buttonStyle={{
@@ -813,21 +760,21 @@ class App extends Component {
                 margin: '2px',
                 width: '50%'
               }}
-              onClick={() => this.handleSignWithWidget(userChainAccount)}
-            />
-            <LoginButton
-              key={provider}
-              provider={provider}
-              text="Create account with Web Widget"
-              buttonStyle={{
-                cursor: 'pointer',
-                margin: '2px',
-                width: '50%'
-              }}
-              onClick={() => this.handleCreateNewAccountWithWidget(userChainAccount)}
+              onClick={() => this.handleSignWithWidget({chainAccount: userChainAccount?.chainAccount, chainNetwork: userChainAccount.chainNetwork, permission: chainAccountPermission?.name})}
             />
           </>
         )}
+        <LoginButton
+          key={'newchainaccount'}
+          provider={provider}
+          text="Create New Chain Account"
+          buttonStyle={{
+            cursor: 'pointer',
+            margin: '2px',
+            width: '50%'
+          }}
+          onClick={() => this.handleCreateNewAccountWithWidget(userChainAccount)}
+        />
       </div>
     );
   };
