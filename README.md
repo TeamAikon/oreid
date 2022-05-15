@@ -1,5 +1,4 @@
 <img src="https://storage.googleapis.com/oreid-files/partners/oreid-logo.svg" width="70" height="70">
-<script async defer src="https://buttons.github.io/buttons.js"></script>
 
 # ORE ID - Authentication for Blockchain
 
@@ -19,9 +18,9 @@ ORE ID removes the friction between your app and your future users.
 
 # Quick Start Guide
 
-Try it now
+Try it now with CodeSandox
 
-<a class="github-button" href="https://githubbox.com/TeamAikon/oreid/tree/master/examples/react/tutorial/step2-sign" data-icon="octicon-play" aria-label="Open in CodeSandbox">Open in CodeSandbox</a>
+[<img src="./docs/images/code-sandbox.logo.png" width="150"/>](https://githubbox.com/TeamAikon/oreid/tree/master/examples/react/tutorial/step2-sign)
 
 OR
 
