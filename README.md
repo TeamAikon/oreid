@@ -37,8 +37,8 @@ Now, run the first example by entering the following:
 ```shell
 cd examples/react/tutorial/step1-login
 
-yarn (or npm install)
-yarn start (or npm run start)
+yarn
+yarn start
 
 OR
 
@@ -89,19 +89,14 @@ await oreId.init();
 
 ### Step 3 - Call Login
 
-Call login and specify a provider (facebook, scatter, etc.) 
+Call login and specify a provider (facebook, google, etc.) 
 ```typescript
-async function loginUser() {
-    try {
-        await oreId.popup.auth({ provider: 'google' })
-        const userData = await oreid.auth.user.getData()
-        console.log(`Hello ${userData.name}`)
-        console.log(`Your blockchain accounts are: ${userData.chainAccounts}`)
-    }
-    catch (error) {
-        console.error(error)
-    }
-}
+// launch the login flow
+await oreId.popup.auth({ provider: 'google' })
+const userData = await oreid.auth.user.getData()
+console.log(`Hello ${userData.name}`)
+console.log(`Your blockchain accounts are: ${userData.chainAccounts}`)
+
 ```
 
  After login, your app will receive the user's blockchain accounts/addresses (that maps to public/private keys).
@@ -117,18 +112,16 @@ When your app needs the user to sign a blockchain transaction, you just specify 
 
 ```typescript
 // sign a blockchain transaction
-oreId.createTransaction({
-    transaction: { from, to, value, ... }, // blockchain transaction (differs by chainNetwork)
-    chainAccount: '0x...',
-    chainNetwork: 'eth_ropsten',
-}).then(transaction => {
-    // have the user approve signature
-    oreId.popup.sign({ transaction })
-    .then({ transactionId } => { ... })
-    .catch( onError );
+const transaction = await oreId.createTransaction({
+  transaction: { from, to, value, ... }, // blockchain transaction (differs by chainNetwork)
+  chainAccount: '0x...',
+  chainNetwork: 'eth_ropsten',
 })
 
+// have the user approve signature
+const { transactionId } = await oreId.popup.sign({ transaction })
 ```
+
 <br>
 
 If a user has a blockchain wallet (e.g. Metamask) you can call the discover function that will prompt the user to unlock their wallet and request the list of accounts stored in the wallet. Public keys stored in the wallet will be automatically remembered so you can help the user find the right wallet and keys quickly the next time they need to repeat a transaction. Awesome!
@@ -139,18 +132,6 @@ User's can review the blockchain account info and transactions they've signed wi
 
 <br>
 
-## Proxy Server for Production Apps
-
-If you are building an app that runs entirely in the browser (like a create-react-app app does), you must run a simple proxy server to protect your api-key. When the React app tries to call an ORE ID API endpoint, the proxy server will inject your api-key into the request header.<br>
-The [oreid-js](https://www.npmjs.com/package/oreid-js) npm module includes Express middleware that makes it easy to configure your proxy server. 
-
-```javascript
-// proxy server middlewear that injects apikeys/secrets into request headers
-addOreidExpressMiddleware(expressApp, { apiKey: 'my secret api key' })
-```
-
-Take a look at the complete example of using a proxy server [here](https://github.com/TeamAikon/ore-id-docs/tree/master/examples/react/advanced/react-server).
-
 ## Example projects
 
 Refer to the examples folder for the following sample projects
@@ -158,8 +139,6 @@ Refer to the examples folder for the following sample projects
 - ReactJS - Several ReactJS apps that includes React Login button component
 
 - React Native - A React Native app that includes a React OAuth flow modal component
-
-- Express Server - A simple Express server that includes the use of middleware to automate handling of callbacks
   
 - Proxy Server - A complete example using a Proxy Server to run along side an app that runs completely in the browser (like a create-react-app app)
 
