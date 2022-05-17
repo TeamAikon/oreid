@@ -1,3 +1,4 @@
+const addProxyRoutes = require('./src/setupProxy.js')
 const path = require('path');
 const express = require('express');
 
@@ -5,6 +6,8 @@ const PORT = 8080;
 
 try {
   const app = express();
+
+  addProxyRoutes(app) // shares setup with Create React App dev server
 
   // Hosts Frontend - Static files built with npm run build
   app.use('/', express.static(`${__dirname}/build`));
