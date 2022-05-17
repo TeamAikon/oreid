@@ -11,6 +11,7 @@ interface Props {}
 export const AssetsToBuy: React.FC<Props> = () => {
 	const [loading, setLoading] = useState(false);
 	const [sales, setSales] = useState<AtomichubSale[]>([]);
+	const [nothingForSale, setNothingForSale] = useState(false);
 	const waxAccount = useUsercChainAccount({
 		chainNetwork: ChainNetwork.WaxTest,
 	});
@@ -30,11 +31,15 @@ export const AssetsToBuy: React.FC<Props> = () => {
 								(sale) => sale.seller !== waxAccount
 							);
 							setSales(salesList);
+							if(salesList.length === 0) setNothingForSale(true)
+							setLoading(false);
 						}
-					);
+					).catch(error => {
+						console.log(error)
+					});
 				}}
 			>
-				{loading ? "Loading..." : "Load listed tokens"}
+				{loading ? "Loading..." : nothingForSale ? "Nothing for sale" : "Load listed tokens"}
 			</Button>
 		);
 	} else {
