@@ -6,15 +6,25 @@ import { AtomichubAssets, AtomichubSale } from "./AtomicHubTypes";
 import { cancelOreIdSaleTransaction } from "./helpers/cancelOreIdSaleTransaction";
 import { createOreIdSaleTransaction } from "./helpers/createOreIdSaleTransaction";
 import { getAssetSale } from "./helpers/getAssetSale";
+import { transferTransaction } from "./helpers/transferTransaction";
 
 interface Props {
 	asset: AtomichubAssets;
+}
+
+type TransferInfo = {
+	assetIds: string[];
+	fromAccount: string;
+	toAccount: string;
+	memo: string;
+	permission: string;
 }
 
 export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 	const [error, setError] = useState<Error | undefined>();
 	const [isLoading, setIsLoading] = useState(true);
 	const [sale, setSale] = useState<AtomichubSale | undefined>();
+	const [transferInfo, setTransferInfo] = useState<AtomichubSale | undefined>();
 	const [transactionId, setTransactionId] = useState("");
 	const oreId = useOreId();
 
@@ -26,6 +36,7 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 			.finally(() => setIsLoading(false));
 	}, [asset]);
 
+	// Create NFT Sale offer
 	const createAssetSale = useCallback(async () => {
 		setIsLoading(true);
 		createOreIdSaleTransaction({
@@ -48,6 +59,7 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 			});
 	}, [asset, oreId]);
 
+	// Cancel NFT Sale
 	const cancelAssetSale = useCallback(async () => {
 		if (!sale) return;
 		setIsLoading(true);
@@ -71,9 +83,33 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 			});
 	}, [oreId, sale]);
 
+	// transfer NFT
+	// const transfer = useCallback(async () => {
+	// 	if (!transferInfo) return;
+	// 	setIsLoading(true);
+	// 	transferTransaction({
+	// 		...transferInfo,
+	// 		oreId,
+	// 		chainNetwork: ChainNetwork.WaxTest,
+	// 	})
+	// 		.then((transaction) => {
+	// 			oreId.popup
+	// 				.sign({ transaction })
+	// 				.then((result) => {
+	// 					setTransactionId(result?.transactionId || "");
+	// 				})
+	// 				.catch(setError)
+	// 				.finally(() => setIsLoading(false));
+	// 		})
+	// 		.catch((error) => {
+	// 			setError(error);
+	// 			setIsLoading(false);
+	// 		});
+	// }, [oreId, transferInfo]);
+
 	if (!asset.is_transferable) return null;
 
-	const onClick = () => {
+	const onClickSellOrCancel = () => {
 		setIsLoading(true);
 
 		if (sale) {
@@ -92,6 +128,19 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 			})
 			.catch(setError)
 			.finally(() => setIsLoading(false));
+	};
+
+	const onClickTransfer = () => {
+		setIsLoading(true);
+
+		cancelAssetSale()
+			.then(() => {
+				// Do something
+			})
+			.catch(setError)
+			.finally(() => setIsLoading(false));
+		return;
+
 	};
 
 	if (isLoading) return <>Loading...</>;
@@ -114,7 +163,10 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 	}
 	return (
 		<>
-			<Button icon="/img/wax-chain-logo.wam" onClick={onClick}>
+			<Button icon="/img/wax-chain-logo.wam" onClick={onClickSellOrCancel}>
+				{"Transfer"}
+			</Button>
+			<Button icon="/img/wax-chain-logo.wam" onClick={onClickSellOrCancel}>
 				{sale ? "Cancel Sale Offer" : "Offer for Sale"}
 			</Button>
 			{error && (

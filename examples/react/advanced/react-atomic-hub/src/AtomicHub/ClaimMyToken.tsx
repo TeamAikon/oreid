@@ -1,11 +1,14 @@
 import { ChainNetwork } from "oreid-js";
 import React, { useState } from "react";
 import { Button } from "../Button";
+import { callMintNft } from "./helpers/callMintNft";
 import { useUsercChainAccount } from "./hooks/useUsercChainAccount";
 
-const claimMyToken = async ({ chainAccount }: { chainAccount: string }) => {
+const mintMyNft = async ({ chainAccount }: { chainAccount: string }) => {
 	// TODO: Call API to generate and send token to my account here.
-	console.log("Claiming!!!");
+	console.log("Claiming NFT");
+	const transactionId = await callMintNft({ accountName: chainAccount }) || {}
+	console.log(`generated NFT - TxId: ${transactionId}`);
 };
 
 interface Props {
@@ -21,11 +24,13 @@ export const ClaimMyToken: React.FC<Props> = ({ loadMyAssets }) => {
 
 	const onClick = () => {
 		setIsLoading(true);
-		claimMyToken({ chainAccount })
+		mintMyNft({ chainAccount })
+			.then(() => {
+				setTimeout(() => { loadMyAssets(); }, 5000)
+			})
 			.catch(setError)
 			.finally(() => {
 				setIsLoading(false);
-				loadMyAssets();
 			});
 	};
 

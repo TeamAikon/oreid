@@ -1,15 +1,22 @@
 import { ChainNetwork, OreId, Transaction } from "oreid-js";
-import { AtomichubSale } from "../AtomicHubTypes";
-import { cancelSaleTransaction } from "../createTransactions/cancelSaleTransaction";
+import { transferNftTransaction } from "../createTransactions/transferTransaction";
 
-export const cancelOreIdSaleTransaction = async ({
+export const transferTransaction = async ({
 	oreId,
+	assetIds,
 	chainNetwork,
-	sale,
+	fromAccount,
+	toAccount,
+	memo,
+	permission,
 }: {
-	sale: AtomichubSale;
 	oreId: OreId;
 	chainNetwork: ChainNetwork;
+	assetIds: string[];
+	fromAccount: string;
+	toAccount: string;
+	memo: string;
+	permission?: string;
 }): Promise<Transaction> => {
 	const account = oreId.auth.user.data.chainAccounts.find(
 		(chainAccount) => chainAccount.chainNetwork === chainNetwork
@@ -18,10 +25,12 @@ export const cancelOreIdSaleTransaction = async ({
 		throw new Error(`No account found for ${chainNetwork}`);
 	}
 
-	const transactionData = cancelSaleTransaction({
-		accountName: account.chainAccount,
-		permission: "active",
-		saleId: sale.sale_id,
+	const transactionData = transferNftTransaction({
+		assetIds,
+		fromAccount,
+		toAccount,
+		permission: permission || "active",
+		memo,
 		// offerId: sale.offer_id,
 	});
 
