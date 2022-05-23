@@ -15,7 +15,7 @@ export const transferNftTransaction = ({
 TransferNftParams) => {
 	return [
 		{
-			account: "atomicmarket",
+			account: "atomicassets",
 			name: "transfer",
 			authorization: [
 				{
@@ -24,8 +24,8 @@ TransferNftParams) => {
 				},
 			],
 			data: {
-				account_from: fromAccount,
-				account_to: toAccount,
+				from: fromAccount,
+				to: toAccount,
 			  asset_ids: assetIds,
 				memo
 			},

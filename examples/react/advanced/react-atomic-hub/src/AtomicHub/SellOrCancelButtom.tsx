@@ -7,24 +7,16 @@ import { cancelOreIdSaleTransaction } from "./helpers/cancelOreIdSaleTransaction
 import { createOreIdSaleTransaction } from "./helpers/createOreIdSaleTransaction";
 import { getAssetSale } from "./helpers/getAssetSale";
 import { transferTransaction } from "./helpers/transferTransaction";
+import { aikonNftAuthor } from '../constants'
 
 interface Props {
 	asset: AtomichubAssets;
-}
-
-type TransferInfo = {
-	assetIds: string[];
-	fromAccount: string;
-	toAccount: string;
-	memo: string;
-	permission: string;
 }
 
 export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 	const [error, setError] = useState<Error | undefined>();
 	const [isLoading, setIsLoading] = useState(true);
 	const [sale, setSale] = useState<AtomichubSale | undefined>();
-	const [transferInfo, setTransferInfo] = useState<AtomichubSale | undefined>();
 	const [transactionId, setTransactionId] = useState("");
 	const oreId = useOreId();
 
@@ -84,28 +76,33 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 	}, [oreId, sale]);
 
 	// transfer NFT
-	// const transfer = useCallback(async () => {
-	// 	if (!transferInfo) return;
-	// 	setIsLoading(true);
-	// 	transferTransaction({
-	// 		...transferInfo,
-	// 		oreId,
-	// 		chainNetwork: ChainNetwork.WaxTest,
-	// 	})
-	// 		.then((transaction) => {
-	// 			oreId.popup
-	// 				.sign({ transaction })
-	// 				.then((result) => {
-	// 					setTransactionId(result?.transactionId || "");
-	// 				})
-	// 				.catch(setError)
-	// 				.finally(() => setIsLoading(false));
-	// 		})
-	// 		.catch((error) => {
-	// 			setError(error);
-	// 			setIsLoading(false);
-	// 		});
-	// }, [oreId, transferInfo]);
+	const transferNft = useCallback(async () => {
+		// transfer to another account
+		const transferParams = {
+			assetIds: [asset.asset_id],
+			fromAccount: oreId.auth.accountName,
+			toAccount: aikonNftAuthor,  // TODO: User should be able to enter this account name on the WaX network
+			memo: 'Transfer NFT',
+			permission: 'active',
+			oreId,
+			chainNetwork: ChainNetwork.WaxTest,
+		}
+		setIsLoading(true);
+		transferTransaction(transferParams)
+			.then((transaction) => {
+				oreId.popup
+					.sign({ transaction })
+					.then((result) => {
+						setTransactionId(result?.transactionId || "");
+					})
+					.catch(setError)
+					.finally(() => setIsLoading(false));
+			})
+			.catch((error) => {
+				setError(error);
+				setIsLoading(false);
+			});
+	}, [oreId]);
 
 	if (!asset.is_transferable) return null;
 
@@ -132,8 +129,7 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 
 	const onClickTransfer = () => {
 		setIsLoading(true);
-
-		cancelAssetSale()
+		transferNft()
 			.then(() => {
 				// Do something
 			})
@@ -163,8 +159,8 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 	}
 	return (
 		<>
-			<Button icon="/img/wax-chain-logo.wam" onClick={onClickSellOrCancel}>
-				{"Transfer"}
+			<Button icon="/img/wax-chain-logo.wam" onClick={onClickTransfer}>
+				{"Transfer Back"}
 			</Button>
 			<Button icon="/img/wax-chain-logo.wam" onClick={onClickSellOrCancel}>
 				{sale ? "Cancel Sale Offer" : "Offer for Sale"}
