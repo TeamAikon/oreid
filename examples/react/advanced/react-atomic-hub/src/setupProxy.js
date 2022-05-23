@@ -1,9 +1,13 @@
 const { createProxyMiddleware } = require("http-proxy-middleware");
 
 module.exports = function (app) {
-  app.use('/resizer.atomichub.io', 
-  createProxyMiddleware({ 
-    target: 'https://resizer.atomichub.io', 
-    pathRewrite: { '^/resizer.atomichub.io': '' },
-    changeOrigin: true } ))
+  const filter = (pathname, req) => {
+    return req.hostname == 'localhost';
+};
+
+  app.use('/api', 
+    createProxyMiddleware(filter, { 
+      target: 'http://localhost:3001', 
+      changeOrigin: true } 
+      ))
 };

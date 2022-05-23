@@ -12,6 +12,7 @@
 # limitations under the License.
 
 # gcloud --project ore-id-dev app deploy dispatch.yaml
+# gcloud --project ore-id app deploy app.yaml
 
 # [START app_yaml]
 # [START runtime]
