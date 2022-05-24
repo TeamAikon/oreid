@@ -11,7 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# gcloud --project ore-id-dev app deploy dispatch.yaml
 # gcloud --project ore-id app deploy app.yaml
 
 # [START app_yaml]
@@ -21,6 +20,17 @@ runtime: nodejs
 env: flex
 service: demo
 # service: demo-staging
+handlers:
+# Serve all static files with url ending with a file extension
+  - url: /static
+    static_dir: build/static
+  - url: /(.*\..+)$
+    static_files: build/\1
+    upload: build/(.*\..+)$
+  # Catch all handler to index.html
+  - url: /.*
+    static_files: build/index.html
+    upload: build/index.html
 
 # [END runtime]
 default_expiration: "0m"
