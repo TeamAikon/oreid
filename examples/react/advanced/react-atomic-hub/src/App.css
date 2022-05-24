@@ -1,5 +1,8 @@
-.App {
+html {
   background-color: #151F44;
+}
+
+.App {
   color: #fff;
   font-size: 16px;
   overflow: hidden;

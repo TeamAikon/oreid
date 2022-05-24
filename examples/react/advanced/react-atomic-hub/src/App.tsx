@@ -6,7 +6,7 @@ import { WebPopup } from "oreid-webpopup";
 import React, { useEffect, useState } from "react";
 import "./App.css";
 import { AtomicHub } from "./AtomicHub";
-import { Button } from "./Button";
+import { Header } from "./Header";
 
 const REACT_APP_OREID_APP_ID = "t_4683afc074ab444ebdf1bf08ed8d1757";
 
@@ -45,68 +45,43 @@ const NotLoggedInView: React.FC = () => {
 	};
 
 	return (
-		<>
-			<div>
-				<LoginButton
-					provider="facebook"
-					onClick={() => {
-						loginWithOreId(AuthProvider.Facebook);
-					}}
-				/>
-				<LoginButton
-					provider="google"
-					onClick={() => {
-						loginWithOreId(AuthProvider.Google);
-					}}
-				/>
-				<LoginButton
-					provider="email"
-					onClick={() => {
-						loginWithOreId(AuthProvider.Email);
-					}}
-				/>
-			</div>
+		<div
+			style={{ display: "flex", alignItems: "center", flexDirection: "column" }}
+		>
+			<LoginButton
+				provider="facebook"
+				onClick={() => {
+					loginWithOreId(AuthProvider.Facebook);
+				}}
+			/>
+			<LoginButton
+				provider="google"
+				onClick={() => {
+					loginWithOreId(AuthProvider.Google);
+				}}
+			/>
+			<LoginButton
+				provider="email"
+				onClick={() => {
+					loginWithOreId(AuthProvider.Email);
+				}}
+			/>
 			{error && <div className="App-error">Error: {error.message}</div>}
-		</>
+		</div>
 	);
 };
 
 const LoggedInView: React.FC = () => {
-	const oreIdFromContext = useOreId();
 	const user = useUser();
-
 	if (!user) return null;
-
-	const { accountName, email, name, picture } = user;
-	return (
-		<>
-			<div style={{ marginTop: 50 }}>
-				<h4>User Info</h4>
-				<img
-					src={picture.toString()}
-					style={{ width: 100, height: 100, paddingBottom: 30 }}
-					alt={"user"}
-				/>
-				<br />
-				OreId account: {accountName}
-				<br />
-				{name}
-				<br />
-				{email}
-				<br />
-				<br />
-				<Button onClick={() => oreIdFromContext.logout()}>Logout</Button>
-				<br />
-			</div>
-			<AtomicHub />
-		</>
-	);
+	return <AtomicHub />;
 };
 
 const AppWithProvider: React.FC = () => {
 	const isLoggedIn = useIsLoggedIn();
 	return (
 		<div className="App">
+			<Header />
 			{isLoggedIn ? <LoggedInView /> : <NotLoggedInView />}
 		</div>
 	);

@@ -1,0 +1,15 @@
+.Header {
+    background: #2A3566;
+    width: 100%;
+    padding: 20px 120px;
+    position: fixed;
+    top: 0;
+    display: block;
+
+    .content {
+        width: calc(100% - 240px);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+}
