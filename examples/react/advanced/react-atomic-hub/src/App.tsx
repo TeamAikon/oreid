@@ -80,23 +80,26 @@ const LoggedInView: React.FC = () => {
 	const { accountName, email, name, picture } = user;
 	return (
 		<>
-			<div style={{ marginTop: 50 }}>
-				<h4>User Info</h4>
-				<img
-					src={picture.toString()}
-					style={{ width: 100, height: 100, paddingBottom: 30 }}
-					alt={"user"}
-				/>
-				<br />
-				OreId account: {accountName}
-				<br />
-				{name}
-				<br />
-				{email}
-				<br />
-				<br />
-				<Button onClick={() => oreIdFromContext.logout()}>Logout</Button>
-				<br />
+			<div style={{ marginBottom: 50 }}>
+				<div>
+					<img
+						src={picture.toString()}
+						style={{ width: 100, height: 100, paddingBottom: 30 }}
+						alt={"user"}
+					/>
+				</div>
+				<div>
+					<br />
+					OreId account: {accountName}
+					<br />
+					{name}
+					<br />
+					{email}
+					<br />
+					<br />
+					<Button onClick={() => oreIdFromContext.logout()}>Logout</Button>
+					<br />
+				</div>
 			</div>
 			<AtomicHub />
 		</>
