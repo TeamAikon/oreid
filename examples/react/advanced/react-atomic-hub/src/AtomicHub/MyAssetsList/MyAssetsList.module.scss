@@ -1,0 +1,8 @@
+.MyAssetsList {
+    .list {
+        display: flex;
+        flex-flow: row wrap;
+        align-content: space-between;
+        justify-content: space-between;
+    }
+}

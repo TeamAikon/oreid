@@ -2,7 +2,7 @@ import { ChainNetwork } from "oreid-js";
 import { useOreId } from "oreid-react";
 import React, { useState } from "react";
 import { AtomichubSale } from "./AtomicHubTypes";
-import { Button } from "../Button";
+import { ButtonGradient } from "./ButtonGradient";
 import { createOreIdBuyTransaction } from "./helpers/createOreIdBuyTransaction";
 import { shiftDecimal } from "./helpers/shiftDecimal";
 
@@ -47,7 +47,7 @@ export const BuyButtom: React.FC<Props> = ({ sale }) => {
 					style={{ color: "#fff" }}
 					href={`https://wax-test.bloks.io/transaction/${transactionId}`}
 					target="_blank"
-					rel="noreferrer"
+					rel="noopener noreferrer"
 				>
 					View on block explorer
 				</a>
@@ -59,18 +59,17 @@ export const BuyButtom: React.FC<Props> = ({ sale }) => {
 	}
 	return (
 		<>
-			<Button
+			<ButtonGradient
 				icon="/img/wax-chain-logo.wam"
 				onClick={onClick}
 				disabled={isLoading}
 			>
-				Buy for{" "}
 				{shiftDecimal({
 					amount: sale.price.amount,
 					precision: sale.price.token_precision,
 				})}{" "}
 				{sale.price.token_symbol.toUpperCase()}
-			</Button>
+			</ButtonGradient>
 			{error && (
 				<div className="App-error-atomichub">Error: {error.message}</div>
 			)}

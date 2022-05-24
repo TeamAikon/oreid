@@ -1,13 +1,13 @@
 import { ChainNetwork } from "oreid-js";
 import { useOreId } from "oreid-react";
 import React, { useCallback, useEffect, useState } from "react";
-import { Button } from "../Button";
 import { AtomichubAssets, AtomichubSale } from "./AtomicHubTypes";
+import { ButtonGradient } from "./ButtonGradient";
 import { cancelOreIdSaleTransaction } from "./helpers/cancelOreIdSaleTransaction";
 import { createOreIdSaleTransaction } from "./helpers/createOreIdSaleTransaction";
 import { getAssetSale } from "./helpers/getAssetSale";
 import { transferTransaction } from "./helpers/transferTransaction";
-import { aikonNftAuthor } from '../constants'
+import { aikonNftAuthor } from "../constants";
 
 interface Props {
 	asset: AtomichubAssets;
@@ -81,12 +81,12 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 		const transferParams = {
 			assetIds: [asset.asset_id],
 			fromAccount: oreId.auth.accountName,
-			toAccount: aikonNftAuthor,  // TODO: User should be able to enter this account name on the WaX network
-			memo: 'Transfer NFT',
-			permission: 'active',
+			toAccount: aikonNftAuthor, // TODO: User should be able to enter this account name on the WaX network
+			memo: "Transfer NFT",
+			permission: "active",
 			oreId,
 			chainNetwork: ChainNetwork.WaxTest,
-		}
+		};
 		setIsLoading(true);
 		transferTransaction(transferParams)
 			.then((transaction) => {
@@ -102,7 +102,7 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 				setError(error);
 				setIsLoading(false);
 			});
-	}, [oreId]);
+	}, [oreId, asset.asset_id]);
 
 	if (!asset.is_transferable) return null;
 
@@ -135,8 +135,6 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 			})
 			.catch(setError)
 			.finally(() => setIsLoading(false));
-		return;
-
 	};
 
 	if (isLoading) return <>Loading...</>;
@@ -147,7 +145,7 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 					style={{ color: "#fff" }}
 					href={`https://wax-test.bloks.io/transaction/${transactionId}`}
 					target="_blank"
-					rel="noreferrer"
+					rel="noopener noreferrer"
 				>
 					View on block explorer
 				</a>
@@ -159,12 +157,15 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 	}
 	return (
 		<>
-			<Button icon="/img/wax-chain-logo.wam" onClick={onClickTransfer}>
+			<ButtonGradient icon="/img/wax-chain-logo.wam" onClick={onClickTransfer}>
 				{"Transfer Back"}
-			</Button>
-			<Button icon="/img/wax-chain-logo.wam" onClick={onClickSellOrCancel}>
+			</ButtonGradient>
+			<ButtonGradient
+				icon="/img/wax-chain-logo.wam"
+				onClick={onClickSellOrCancel}
+			>
 				{sale ? "Cancel Sale Offer" : "Offer for Sale"}
-			</Button>
+			</ButtonGradient>
 			{error && (
 				<div className="App-error-atomichub">Error: {error.message}</div>
 			)}

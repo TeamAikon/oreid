@@ -1,0 +1,27 @@
+.DisplayAssets {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .image {
+        height: 152.77px;
+        // height: auto;
+        width: 141px;
+        border-radius: 8px;
+    }
+
+    .content {
+        width: 195px;
+
+
+        font-family: Montserrat;
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 20px;
+        letter-spacing: 1px;
+
+        button {
+            margin-top: 18px;
+        }
+    }
+}

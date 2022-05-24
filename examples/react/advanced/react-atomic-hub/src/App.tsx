@@ -35,14 +35,14 @@ const NotLoggedInView: React.FC = () => {
 		console.log("Login successfull. User Data: ", user);
 	};
 
-	const loginWithOreId =(provider: AuthProvider) => {
+	const loginWithOreId = (provider: AuthProvider) => {
 		oreIdFromContext.popup
 			.auth({
 				provider,
 			})
 			.then(onSuccess)
 			.catch(onError);
-	}
+	};
 
 	return (
 		<>
@@ -50,19 +50,19 @@ const NotLoggedInView: React.FC = () => {
 				<LoginButton
 					provider="facebook"
 					onClick={() => {
-						loginWithOreId(AuthProvider.Facebook)
+						loginWithOreId(AuthProvider.Facebook);
 					}}
 				/>
 				<LoginButton
 					provider="google"
 					onClick={() => {
-						loginWithOreId(AuthProvider.Google)
+						loginWithOreId(AuthProvider.Google);
 					}}
 				/>
 				<LoginButton
 					provider="email"
 					onClick={() => {
-						loginWithOreId(AuthProvider.Email)
+						loginWithOreId(AuthProvider.Email);
 					}}
 				/>
 			</div>
@@ -107,9 +107,7 @@ const AppWithProvider: React.FC = () => {
 	const isLoggedIn = useIsLoggedIn();
 	return (
 		<div className="App">
-			<header className="App-header">
-				{isLoggedIn ? <LoggedInView /> : <NotLoggedInView />}
-			</header>
+			{isLoggedIn ? <LoggedInView /> : <NotLoggedInView />}
 		</div>
 	);
 };

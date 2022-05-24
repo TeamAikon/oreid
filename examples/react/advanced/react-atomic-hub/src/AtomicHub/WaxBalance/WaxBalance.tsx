@@ -1,8 +1,12 @@
 import { ChainNetwork } from "oreid-js";
 import React, { useEffect, useState } from "react";
-import { getBalance } from "./helpers/getBalance";
-import { shiftDecimal } from "./helpers/shiftDecimal";
-import { useUsercChainAccount } from "./hooks/useUsercChainAccount";
+import { Card } from "../Card";
+import { getBalance } from "../helpers/getBalance";
+import { shiftDecimal } from "../helpers/shiftDecimal";
+import { useUsercChainAccount } from "../hooks/useUsercChainAccount";
+import { ReactComponent as WaxIcon } from "./WaxIcon.svg";
+
+import styles from "./WaxBalance.module.scss";
 
 export const WaxBalance: React.FC = () => {
 	const [loading, setLoading] = useState(false);
@@ -22,11 +26,14 @@ export const WaxBalance: React.FC = () => {
 
 	if (loading) return null;
 	return (
-		<>
-			<h3>WAX Balance: {shiftDecimal({ precision: 8, amount: balance })}</h3>
-			{error && (
-				<div className="App-error-atomichub">Error: {error.message}</div>
-			)}
-		</>
+		<Card>
+			<div className={styles.WaxBalance}>
+				<span>Balance:</span> <WaxIcon />
+				<span>{shiftDecimal({ precision: 8, amount: balance })} WAX</span>
+				{error && (
+					<div className="App-error-atomichub">Error: {error.message}</div>
+				)}
+			</div>
+		</Card>
 	);
 };

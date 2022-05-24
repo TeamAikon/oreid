@@ -1,6 +1,8 @@
 import { ChainNetwork } from "oreid-js";
+import { useUser } from "oreid-react";
 import React, { useCallback, useEffect, useState } from "react";
 import { AssetsToBuy } from "./AssetsToBuy";
+import style from "./AtomicHub.module.scss";
 import { AtomichubAssets } from "./AtomicHubTypes";
 import { getAssetsFromCollection } from "./helpers/getAssetsFromCollection";
 import { useUsercChainAccount } from "./hooks/useUsercChainAccount";
@@ -8,6 +10,9 @@ import { MyAssetsList } from "./MyAssetsList";
 import { WaxBalance } from "./WaxBalance";
 
 export const AtomicHub: React.FC = () => {
+	const userData = useUser();
+	console.log({ userData });
+
 	const [error, setError] = useState<Error | undefined>();
 	const [loading, setLoading] = useState(true);
 	const [assets, setAssets] = useState<AtomichubAssets[]>([]);
@@ -37,8 +42,12 @@ export const AtomicHub: React.FC = () => {
 	}, [loadMyAssets]);
 
 	return (
-		<>
-			<WaxBalance />
+		<div className={style.AtomicHub}>
+			<section className={style.welcome}>
+				<h2>Welcome to ORE ID!</h2>
+				<WaxBalance />
+			</section>
+
 			{loading ? (
 				<>Loading my assets...</>
 			) : (
@@ -46,12 +55,18 @@ export const AtomicHub: React.FC = () => {
 					{error && (
 						<div className="App-error-atomichub">Error: {error.message}</div>
 					)}
-					<MyAssetsList account={waxAccount} assets={assets} loadMyAssets={loadMyAssets} />
-					<br />
-					{/* {assets.length > 0 && <AssetsToBuy />} */}
-					{<AssetsToBuy />}
+					<section>
+						<MyAssetsList
+							account={waxAccount}
+							assets={assets}
+							loadMyAssets={loadMyAssets}
+						/>
+					</section>
+					<section>
+						<AssetsToBuy />
+					</section>
 				</>
 			)}
-		</>
+		</div>
 	);
 };
