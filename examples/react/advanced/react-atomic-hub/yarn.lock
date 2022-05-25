@@ -10053,10 +10053,10 @@ oreid-login-button@^1.1.2:
   resolved "https://registry.yarnpkg.com/oreid-login-button/-/oreid-login-button-1.1.3.tgz#8807c9bbdd302bfcdef58698a3b0d2f6cc667aa9"
   integrity sha512-2KiwR1NT1HqWY548ivzfY1pBwFGeXNEriSFLU6XnlariMc61zha3VKAExJe4yjst8sQ3piAjAxRF19id3cFVlw==
 
-oreid-profile@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/oreid-profile/-/oreid-profile-1.0.1.tgz#1bc82d885e1d7ccd4a8c4f3f60d486d42c253e29"
-  integrity sha512-lfMqPTS9gEXkloZItf6Vh9LiWXCmmre/EV/lzPgDyLSrUkflTOBQRmyQDDh8hfDypmKsWRMs8tN2D/7X5TGjLg==
+oreid-profile@1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/oreid-profile/-/oreid-profile-1.0.2.tgz#d7d3c1b39cade1fc63b0e40fd5838806f2a61faf"
+  integrity sha512-ce0JXVti2UF+9zTgN0NKZp3zLZm4c9FkzE6YZ1I2MwMyuCIZ0F1SlSL6oH9S5kkR0TGUvb/WwqR1QwWQk0u7gw==
   dependencies:
     "@material-ui/core" "^4.12.4"
     "@material-ui/icons" "^4.11.3"

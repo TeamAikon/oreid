@@ -31,14 +31,15 @@ export const MyAssetsList: React.FC<Props> = ({
 					/>
 				))}
 			</div>
-			<a
-				style={{ color: "#fff" }}
-				href={`https://wax-test.atomichub.io/profile/${account}`}
-				target="_blank"
-				rel="noopener noreferrer"
-			>
-				See on Atomic Hub
-			</a>
+			<div className={styles.SeeOnAtomicHub}>
+				<a
+					href={`https://wax-test.atomichub.io/profile/${account}`}
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					See on Atomic Hub
+				</a>
+			</div>
 		</div>
 	);
 };

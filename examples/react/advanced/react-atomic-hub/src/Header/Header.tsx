@@ -13,6 +13,8 @@ export const Header: React.FC = () => {
 				<Logo />
 				<div>
 					<OreIdProfileButton
+						align="right"
+						//@ts-ignore
 						oreId={oreId}
 						style={{
 							backgroundColor: "#2A3566",

@@ -1,18 +1,15 @@
 import { ChainNetwork } from "oreid-js";
-import { useUser } from "oreid-react";
 import React, { useCallback, useEffect, useState } from "react";
 import { AssetsToBuy } from "./AssetsToBuy";
 import style from "./AtomicHub.module.scss";
 import { AtomichubAssets } from "./AtomicHubTypes";
 import { getAssetsFromCollection } from "./helpers/getAssetsFromCollection";
+import { useInterval } from "./hooks/useInterval";
 import { useUsercChainAccount } from "./hooks/useUsercChainAccount";
 import { MyAssetsList } from "./MyAssetsList";
 import { WaxBalance } from "./WaxBalance";
 
 export const AtomicHub: React.FC = () => {
-	const userData = useUser();
-	console.log({ userData });
-
 	const [error, setError] = useState<Error | undefined>();
 	const [loading, setLoading] = useState(true);
 	const [assets, setAssets] = useState<AtomichubAssets[]>([]);
@@ -37,9 +34,13 @@ export const AtomicHub: React.FC = () => {
 			.finally(() => setLoading(false));
 	}, [waxAccount]);
 
+	// first load
 	useEffect(() => {
 		loadMyAssets();
 	}, [loadMyAssets]);
+	useInterval(() => {
+		loadMyAssets();
+	}, 60000);
 
 	return (
 		<div className={style.AtomicHub}>

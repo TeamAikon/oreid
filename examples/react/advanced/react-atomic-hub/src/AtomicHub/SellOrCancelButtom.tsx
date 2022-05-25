@@ -1,6 +1,6 @@
 import { ChainNetwork } from "oreid-js";
 import { useOreId } from "oreid-react";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { AtomichubAssets, AtomichubSale } from "./AtomicHubTypes";
 import { ButtonGradient } from "./ButtonGradient";
 import { cancelOreIdSaleTransaction } from "./helpers/cancelOreIdSaleTransaction";
@@ -8,13 +8,14 @@ import { createOreIdSaleTransaction } from "./helpers/createOreIdSaleTransaction
 import { getAssetSale } from "./helpers/getAssetSale";
 import { transferTransaction } from "./helpers/transferTransaction";
 import { aikonNftAuthor } from "../constants";
+import { ErrorContext } from "./ErrorProvider/ErrorContext";
 
 interface Props {
 	asset: AtomichubAssets;
 }
 
 export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
-	const [error, setError] = useState<Error | undefined>();
+	const { setError } = useContext(ErrorContext);
 	const [isLoading, setIsLoading] = useState(true);
 	const [sale, setSale] = useState<AtomichubSale | undefined>();
 	const [transactionId, setTransactionId] = useState("");
@@ -26,7 +27,7 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 			.then((assetSale) => setSale(assetSale))
 			.catch(setError)
 			.finally(() => setIsLoading(false));
-	}, [asset]);
+	}, [asset, setError]);
 
 	// Create NFT Sale offer
 	const createAssetSale = useCallback(async () => {
@@ -49,7 +50,7 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 				setError(error);
 				setIsLoading(false);
 			});
-	}, [asset, oreId]);
+	}, [asset, oreId, setError]);
 
 	// Cancel NFT Sale
 	const cancelAssetSale = useCallback(async () => {
@@ -73,7 +74,7 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 				setError(error);
 				setIsLoading(false);
 			});
-	}, [oreId, sale]);
+	}, [oreId, sale, setError]);
 
 	// transfer NFT
 	const transferNft = useCallback(async () => {
@@ -102,7 +103,7 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 				setError(error);
 				setIsLoading(false);
 			});
-	}, [oreId, asset.asset_id]);
+	}, [oreId, asset.asset_id, setError]);
 
 	if (!asset.is_transferable) return null;
 
@@ -149,15 +150,12 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 				>
 					View on block explorer
 				</a>
-				{error && (
-					<div className="App-error-atomichub">Error: {error.message}</div>
-				)}
 			</>
 		);
 	}
 	return (
 		<>
-			<ButtonGradient icon="/img/wax-chain-logo.wam" onClick={onClickTransfer}>
+			<ButtonGradient onClick={onClickTransfer}>
 				{"Transfer Back"}
 			</ButtonGradient>
 			<ButtonGradient
@@ -166,9 +164,6 @@ export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 			>
 				{sale ? "Cancel Sale Offer" : "Offer for Sale"}
 			</ButtonGradient>
-			{error && (
-				<div className="App-error-atomichub">Error: {error.message}</div>
-			)}
 		</>
 	);
 };
