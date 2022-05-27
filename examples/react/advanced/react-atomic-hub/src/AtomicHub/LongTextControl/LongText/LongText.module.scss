@@ -1,0 +1,16 @@
+.LongText {
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  .container {
+    min-width: 0;
+  }
+
+  .copy {
+    &.start {
+      margin-right: 10px;
+    }
+  }
+}

@@ -21,6 +21,15 @@ export const AssetsToBuy: React.FC<Props> = () => {
 	let body: JSX.Element;
 
 	if (sales.length === 0) {
+		let label = "";
+		if (loading) {
+			label = "Loading...";
+		} else if (nothingForSale) {
+			label = "Nothing for sale";
+		} else {
+			label = "Load listed tokens";
+		}
+
 		body = (
 			<ButtonGradient
 				disabled={loading}
@@ -41,11 +50,7 @@ export const AssetsToBuy: React.FC<Props> = () => {
 						});
 				}}
 			>
-				{loading
-					? "Loading..."
-					: nothingForSale
-					? "Nothing for sale"
-					: "Load listed tokens"}
+				{label}
 			</ButtonGradient>
 		);
 	} else {

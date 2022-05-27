@@ -1,9 +1,17 @@
 .MyAssetsList {
+    @media (max-width: 960px) {
+        padding: 0 5%;
+    }
+
     .list {
         display: flex;
         flex-flow: row wrap;
         align-content: space-between;
         justify-content: space-between;
+
+        @media (max-width: 960px) {
+            justify-content: center;
+        }
     }
 
     .SeeOnAtomicHub {

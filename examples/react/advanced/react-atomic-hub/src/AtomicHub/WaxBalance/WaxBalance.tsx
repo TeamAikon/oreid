@@ -7,6 +7,7 @@ import { useUsercChainAccount } from "../hooks/useUsercChainAccount";
 import { ReactComponent as WaxIcon } from "./WaxIcon.svg";
 
 import styles from "./WaxBalance.module.scss";
+import { precisionDisplay } from "../helpers/precisionDisplay";
 
 export const WaxBalance: React.FC = () => {
 	const [loading, setLoading] = useState(false);
@@ -29,7 +30,13 @@ export const WaxBalance: React.FC = () => {
 		<Card>
 			<div className={styles.WaxBalance}>
 				<span>Balance:</span> <WaxIcon />
-				<span>{shiftDecimal({ precision: 8, amount: balance })} WAX</span>
+				<span>
+					{precisionDisplay({
+						value: shiftDecimal({ precision: 8, amount: balance }),
+						precision: 5,
+					})}{" "}
+					WAX
+				</span>
 				{error && (
 					<div className="App-error-atomichub">Error: {error.message}</div>
 				)}

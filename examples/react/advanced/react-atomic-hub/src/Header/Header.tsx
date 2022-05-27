@@ -10,7 +10,9 @@ export const Header: React.FC = () => {
 	return (
 		<header className={style.Header}>
 			<div className={style.content}>
-				<Logo />
+				<a href="https://developer.oreid.io/">
+					<Logo />
+				</a>
 				<div>
 					<OreIdProfileButton
 						align="right"

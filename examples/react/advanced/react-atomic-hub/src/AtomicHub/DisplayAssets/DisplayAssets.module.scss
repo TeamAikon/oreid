@@ -3,6 +3,10 @@
     justify-content: space-between;
     align-items: center;
 
+    @media (max-width: 960px) {
+        width: 100%;
+    }
+
     .image {
         height: 152.77px;
         // height: auto;
@@ -12,6 +16,10 @@
 
     .content {
         width: 195px;
+
+        @media (max-width: 960px) {
+            width: 140px;
+        }
 
 
         font-family: Montserrat;

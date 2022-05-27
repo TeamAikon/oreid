@@ -8,6 +8,7 @@ import { useInterval } from "./hooks/useInterval";
 import { useUsercChainAccount } from "./hooks/useUsercChainAccount";
 import { MyAssetsList } from "./MyAssetsList";
 import { WaxBalance } from "./WaxBalance";
+import { isEqual } from "lodash";
 
 export const AtomicHub: React.FC = () => {
 	const [error, setError] = useState<Error | undefined>();
@@ -19,20 +20,24 @@ export const AtomicHub: React.FC = () => {
 	});
 
 	const loadMyAssets = useCallback(() => {
-		setLoading(true);
+		const updateAssets = (update: AtomichubAssets[]) => {
+			if (!isEqual(assets, update)) {
+				setAssets(update);
+			}
+		};
 		getAssetsFromCollection({
 			waxAccount,
 			collection: "orenetworkv1",
 		})
 			.then((myAssets) => {
-				setAssets(myAssets);
+				updateAssets(myAssets);
 			})
 			.catch((error) => {
-				setAssets([]);
+				updateAssets([]);
 				setError(error);
 			})
 			.finally(() => setLoading(false));
-	}, [waxAccount]);
+	}, [waxAccount, assets]);
 
 	// first load
 	useEffect(() => {
@@ -46,7 +51,9 @@ export const AtomicHub: React.FC = () => {
 		<div className={style.AtomicHub}>
 			<section className={style.welcome}>
 				<h2>Welcome to ORE ID!</h2>
-				<WaxBalance />
+				<div className={style.balance}>
+					<WaxBalance />
+				</div>
 			</section>
 
 			{loading ? (

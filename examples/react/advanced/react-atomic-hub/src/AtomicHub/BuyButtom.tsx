@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { AtomichubSale } from "./AtomicHubTypes";
 import { ButtonGradient } from "./ButtonGradient";
 import { createOreIdBuyTransaction } from "./helpers/createOreIdBuyTransaction";
+import { precisionDisplay } from "./helpers/precisionDisplay";
 import { shiftDecimal } from "./helpers/shiftDecimal";
 
 interface Props {
@@ -64,9 +65,12 @@ export const BuyButtom: React.FC<Props> = ({ sale }) => {
 				onClick={onClick}
 				disabled={isLoading}
 			>
-				{shiftDecimal({
-					amount: sale.price.amount,
-					precision: sale.price.token_precision,
+				{precisionDisplay({
+					value: shiftDecimal({
+						amount: sale.price.amount,
+						precision: sale.price.token_precision,
+					}),
+					precision: 5,
 				})}{" "}
 				{sale.price.token_symbol.toUpperCase()}
 			</ButtonGradient>

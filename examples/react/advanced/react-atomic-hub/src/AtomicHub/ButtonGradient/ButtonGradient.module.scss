@@ -19,6 +19,11 @@
     font-size: 14px;
     line-height: 17px;
     color: #fff;
+
+    @media (max-width: 960px) {
+        min-width: 140px;
+        max-width: 100%;
+    }
 }
 
 .MyButtonImage {

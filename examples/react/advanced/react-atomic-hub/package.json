@@ -14,13 +14,15 @@
     "eosjs": "^22.1.0",
     "express": "^4.18.1",
     "http-proxy-middleware": "^2.0.6",
+    "lodash": "^4.17.21",
     "oreid-js": "^4.0.5",
     "oreid-login-button": "^1.1.2",
     "oreid-profile": "1.0.2",
     "oreid-react": "^2.0.0",
     "oreid-webpopup": "^2.0.0",
     "path": "^0.12.7",
-    "react": "^16.13.1",
+    "react": "^16.9.0",
+    "react-copy-to-clipboard": "^5.1.0",
     "react-dom": "^16.9.0",
     "react-scripts": "3.4.1",
     "sass": "^1.52.1",
@@ -30,10 +32,15 @@
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
     "@types/jest": "^27.4.1",
+    "@types/lodash": "^4.14.182",
     "@types/node": "^16.11.26",
     "@types/react": "^16.9.0",
+    "@types/react-copy-to-clipboard": "^5.0.2",
     "@types/react-dom": "^16.9.8",
     "ts-node": "^10.7.0"
+  },
+  "resolutions": {
+    "react-error-overlay": "6.0.9"
   },
   "scripts": {
     "build": "npm run build-frontend && npm run build-backend",

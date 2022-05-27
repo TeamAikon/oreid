@@ -10,4 +10,8 @@
     svg {
         margin: 0px 10px;
     }
+
+    @media (max-width: 960px) {
+        justify-content: center;
+    }
 }
