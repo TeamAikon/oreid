@@ -27,7 +27,7 @@ export const WaxBalance: React.FC = () => {
 
 	if (loading) return null;
 	return (
-		<Card>
+		<Card className={styles.card}>
 			<div className={styles.WaxBalance}>
 				<span>Balance:</span> <WaxIcon />
 				<span>
@@ -38,7 +38,7 @@ export const WaxBalance: React.FC = () => {
 					WAX
 				</span>
 				{error && (
-					<div className="App-error-atomichub">Error: {error.message}</div>
+					<div className="App-error-NFTMarketplace">Error: {error.message}</div>
 				)}
 			</div>
 		</Card>

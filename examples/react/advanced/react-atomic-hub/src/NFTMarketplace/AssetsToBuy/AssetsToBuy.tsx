@@ -1,6 +1,6 @@
 import { ChainNetwork } from "oreid-js";
 import React, { useState } from "react";
-import { AtomichubSale } from "../AtomicHubTypes";
+import { NFTMarketplaceSale } from "../NFTMarketplaceTypes";
 import { BuyButtom } from "../BuyButtom";
 import { DisplayAssets } from "../DisplayAssets";
 import { getSalesFromCollection } from "../helpers/getSalesFromCollection";
@@ -12,7 +12,7 @@ import styles from "./AssetsToBuy.module.scss";
 interface Props {}
 export const AssetsToBuy: React.FC<Props> = () => {
 	const [loading, setLoading] = useState(false);
-	const [sales, setSales] = useState<AtomichubSale[]>([]);
+	const [sales, setSales] = useState<NFTMarketplaceSale[]>([]);
 	const [nothingForSale, setNothingForSale] = useState(false);
 	const waxAccount = useUsercChainAccount({
 		chainNetwork: ChainNetwork.WaxTest,
@@ -72,7 +72,7 @@ export const AssetsToBuy: React.FC<Props> = () => {
 	}
 	return (
 		<div className={styles.AssetsToBuy}>
-			<h2>NFTs to Buy on Atomic Hub</h2>
+			<h2>NFTs to Buy on NFT Marketplace</h2>
 			{body}
 			<br />
 		</div>

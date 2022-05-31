@@ -1,12 +1,12 @@
 import { ChainNetwork } from "oreid-js";
 import { useOreId } from "oreid-react";
 import React, { useState } from "react";
-import { AtomichubAssets } from "./AtomicHubTypes";
+import { NFTMarketplaceAssets } from "./NFTMarketplaceTypes";
 import { Button } from "../Button";
 import { getAssetsFromCollection } from "./helpers/getAssetsFromCollection";
 
 interface Props {
-	setAssets: (assets: AtomichubAssets[]) => void;
+	setAssets: (assets: NFTMarketplaceAssets[]) => void;
 }
 
 export const LoadMyAssets: React.FC<Props> = ({ setAssets }) => {
@@ -36,7 +36,7 @@ export const LoadMyAssets: React.FC<Props> = ({ setAssets }) => {
 				{loading ? "Loading..." : "Load My Assets"}
 			</Button>
 			{error && (
-				<div className="App-error-atomichub">Error: {error.message}</div>
+				<div className="App-error-NFTMarketplace">Error: {error.message}</div>
 			)}
 			<br />
 		</>

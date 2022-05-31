@@ -4,6 +4,8 @@ import { ButtonGradient } from "../ButtonGradient";
 import { callMintNft } from "../helpers/callMintNft";
 import { useUsercChainAccount } from "../hooks/useUsercChainAccount";
 
+import styles from "./ClaimMyToken.module.scss";
+
 const mintMyNft = async ({ chainAccount }: { chainAccount: string }) => {
 	// TODO: Call API to generate and send token to my account here.
 	console.log("Claiming NFT");
@@ -19,6 +21,7 @@ interface Props {
 export const ClaimMyToken: React.FC<Props> = ({ loadMyAssets }) => {
 	const [error, setError] = useState<Error | undefined>();
 	const [isLoading, setIsLoading] = useState(false);
+	const [claimed, setClaimed] = useState(false);
 	const chainAccount = useUsercChainAccount({
 		chainNetwork: ChainNetwork.WaxTest,
 	});
@@ -27,6 +30,7 @@ export const ClaimMyToken: React.FC<Props> = ({ loadMyAssets }) => {
 		setIsLoading(true);
 		mintMyNft({ chainAccount })
 			.then(() => {
+				setClaimed(true);
 				setTimeout(() => {
 					loadMyAssets();
 				}, 5000);
@@ -37,15 +41,24 @@ export const ClaimMyToken: React.FC<Props> = ({ loadMyAssets }) => {
 			});
 	};
 
+	let label: string;
+	if (isLoading) {
+		label = "Claiming...";
+	} else if (!claimed) {
+		label = "Get my NFT";
+	} else {
+		label = "NFT Requested";
+	}
+
 	return (
-		<>
+		<div className={styles.ClaimMyToken}>
 			<h3>Claim your Free Limited Edition NFT!</h3>
-			<ButtonGradient onClick={onClick} disabled={isLoading}>
-				{isLoading ? "Claiming..." : "Get my NFT"}
+			<ButtonGradient onClick={onClick} disabled={isLoading || claimed}>
+				{label}
 			</ButtonGradient>
 			{error && (
-				<div className="App-error-atomichub">Error: {error.message}</div>
+				<div className="App-error-NFTMarketplace">Error: {error.message}</div>
 			)}
-		</>
+		</div>
 	);
 };

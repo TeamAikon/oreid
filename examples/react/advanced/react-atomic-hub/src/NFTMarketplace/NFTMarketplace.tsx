@@ -1,8 +1,8 @@
 import { ChainNetwork } from "oreid-js";
 import React, { useCallback, useEffect, useState } from "react";
 import { AssetsToBuy } from "./AssetsToBuy";
-import style from "./AtomicHub.module.scss";
-import { AtomichubAssets } from "./AtomicHubTypes";
+import style from "./NFTMarketplace.module.scss";
+import { NFTMarketplaceAssets } from "./NFTMarketplaceTypes";
 import { getAssetsFromCollection } from "./helpers/getAssetsFromCollection";
 import { useInterval } from "./hooks/useInterval";
 import { useUsercChainAccount } from "./hooks/useUsercChainAccount";
@@ -10,17 +10,17 @@ import { MyAssetsList } from "./MyAssetsList";
 import { WaxBalance } from "./WaxBalance";
 import { isEqual } from "lodash";
 
-export const AtomicHub: React.FC = () => {
+export const NFTMarketplace: React.FC = () => {
 	const [error, setError] = useState<Error | undefined>();
 	const [loading, setLoading] = useState(true);
-	const [assets, setAssets] = useState<AtomichubAssets[]>([]);
+	const [assets, setAssets] = useState<NFTMarketplaceAssets[]>([]);
 
 	const waxAccount = useUsercChainAccount({
 		chainNetwork: ChainNetwork.WaxTest,
 	});
 
 	const loadMyAssets = useCallback(() => {
-		const updateAssets = (update: AtomichubAssets[]) => {
+		const updateAssets = (update: NFTMarketplaceAssets[]) => {
 			if (!isEqual(assets, update)) {
 				setAssets(update);
 			}
@@ -48,7 +48,7 @@ export const AtomicHub: React.FC = () => {
 	}, 60000);
 
 	return (
-		<div className={style.AtomicHub}>
+		<div className={style.NFTMarketplace}>
 			<section className={style.welcome}>
 				<h2>Welcome to ORE ID!</h2>
 				<div className={style.balance}>
@@ -61,7 +61,9 @@ export const AtomicHub: React.FC = () => {
 			) : (
 				<>
 					{error && (
-						<div className="App-error-atomichub">Error: {error.message}</div>
+						<div className="App-error-nft-marketplace">
+							Error: {error.message}
+						</div>
 					)}
 					<section>
 						<MyAssetsList

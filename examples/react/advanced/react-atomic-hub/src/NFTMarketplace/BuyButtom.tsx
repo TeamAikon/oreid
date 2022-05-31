@@ -1,14 +1,14 @@
 import { ChainNetwork } from "oreid-js";
 import { useOreId } from "oreid-react";
 import React, { useState } from "react";
-import { AtomichubSale } from "./AtomicHubTypes";
+import { NFTMarketplaceSale } from "./NFTMarketplaceTypes";
 import { ButtonGradient } from "./ButtonGradient";
 import { createOreIdBuyTransaction } from "./helpers/createOreIdBuyTransaction";
 import { precisionDisplay } from "./helpers/precisionDisplay";
 import { shiftDecimal } from "./helpers/shiftDecimal";
 
 interface Props {
-	sale: AtomichubSale;
+	sale: NFTMarketplaceSale;
 }
 
 export const BuyButtom: React.FC<Props> = ({ sale }) => {
@@ -53,7 +53,7 @@ export const BuyButtom: React.FC<Props> = ({ sale }) => {
 					View on block explorer
 				</a>
 				{error && (
-					<div className="App-error-atomichub">Error: {error.message}</div>
+					<div className="App-error-NFTMarketplace">Error: {error.message}</div>
 				)}
 			</>
 		);
@@ -75,7 +75,7 @@ export const BuyButtom: React.FC<Props> = ({ sale }) => {
 				{sale.price.token_symbol.toUpperCase()}
 			</ButtonGradient>
 			{error && (
-				<div className="App-error-atomichub">Error: {error.message}</div>
+				<div className="App-error-NFTMarketplace">Error: {error.message}</div>
 			)}
 		</>
 	);
