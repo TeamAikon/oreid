@@ -1,11 +1,14 @@
 import { ChainNetwork } from "oreid-js";
 import React, { useCallback, useEffect, useState } from "react";
 import { AssetsToBuy } from "./AssetsToBuy";
+import style from "./AtomicHub.module.scss";
 import { AtomichubAssets } from "./AtomicHubTypes";
 import { getAssetsFromCollection } from "./helpers/getAssetsFromCollection";
+import { useInterval } from "./hooks/useInterval";
 import { useUsercChainAccount } from "./hooks/useUsercChainAccount";
 import { MyAssetsList } from "./MyAssetsList";
 import { WaxBalance } from "./WaxBalance";
+import { isEqual } from "lodash";
 
 export const AtomicHub: React.FC = () => {
 	const [error, setError] = useState<Error | undefined>();
@@ -17,28 +20,42 @@ export const AtomicHub: React.FC = () => {
 	});
 
 	const loadMyAssets = useCallback(() => {
-		setLoading(true);
+		const updateAssets = (update: AtomichubAssets[]) => {
+			if (!isEqual(assets, update)) {
+				setAssets(update);
+			}
+		};
 		getAssetsFromCollection({
 			waxAccount,
 			collection: "orenetworkv1",
 		})
 			.then((myAssets) => {
-				setAssets(myAssets);
+				updateAssets(myAssets);
 			})
 			.catch((error) => {
-				setAssets([]);
+				updateAssets([]);
 				setError(error);
 			})
 			.finally(() => setLoading(false));
-	}, [waxAccount]);
+	}, [waxAccount, assets]);
 
+	// first load
 	useEffect(() => {
 		loadMyAssets();
 	}, [loadMyAssets]);
+	useInterval(() => {
+		loadMyAssets();
+	}, 60000);
 
 	return (
-		<>
-			<WaxBalance />
+		<div className={style.AtomicHub}>
+			<section className={style.welcome}>
+				<h2>Welcome to ORE ID!</h2>
+				<div className={style.balance}>
+					<WaxBalance />
+				</div>
+			</section>
+
 			{loading ? (
 				<>Loading my assets...</>
 			) : (
@@ -46,12 +63,18 @@ export const AtomicHub: React.FC = () => {
 					{error && (
 						<div className="App-error-atomichub">Error: {error.message}</div>
 					)}
-					<MyAssetsList account={waxAccount} assets={assets} loadMyAssets={loadMyAssets} />
-					<br />
-					{/* {assets.length > 0 && <AssetsToBuy />} */}
-					{<AssetsToBuy />}
+					<section>
+						<MyAssetsList
+							account={waxAccount}
+							assets={assets}
+							loadMyAssets={loadMyAssets}
+						/>
+					</section>
+					<section>
+						<AssetsToBuy />
+					</section>
 				</>
 			)}
-		</>
+		</div>
 	);
 };

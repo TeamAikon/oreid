@@ -1,0 +1,17 @@
+.WaxBalance {
+    display: flex;
+    align-items: center;
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+
+    svg {
+        margin: 0px 10px;
+    }
+
+    @media (max-width: 960px) {
+        justify-content: center;
+    }
+}

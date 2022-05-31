@@ -1,11 +1,13 @@
 import { ChainNetwork } from "oreid-js";
 import React, { useState } from "react";
-import { AtomichubSale } from "./AtomicHubTypes";
-import { Button } from "../Button";
-import { BuyButtom } from "./BuyButtom";
-import { DisplayAssets } from "./DisplayAssets";
-import { getSalesFromCollection } from "./helpers/getSalesFromCollection";
-import { useUsercChainAccount } from "./hooks/useUsercChainAccount";
+import { AtomichubSale } from "../AtomicHubTypes";
+import { BuyButtom } from "../BuyButtom";
+import { DisplayAssets } from "../DisplayAssets";
+import { getSalesFromCollection } from "../helpers/getSalesFromCollection";
+import { useUsercChainAccount } from "../hooks/useUsercChainAccount";
+import { ButtonGradient } from "../ButtonGradient";
+
+import styles from "./AssetsToBuy.module.scss";
 
 interface Props {}
 export const AssetsToBuy: React.FC<Props> = () => {
@@ -19,39 +21,41 @@ export const AssetsToBuy: React.FC<Props> = () => {
 	let body: JSX.Element;
 
 	if (sales.length === 0) {
+		let label = "";
+		if (loading) {
+			label = "Loading...";
+		} else if (nothingForSale) {
+			label = "Nothing for sale";
+		} else {
+			label = "Load listed tokens";
+		}
+
 		body = (
-			<Button
+			<ButtonGradient
 				disabled={loading}
 				icon="/img/atomic-hub-logo.svg"
 				onClick={() => {
 					setLoading(true);
-					getSalesFromCollection({ collection: "orenetworkv1" }).then(
-						(marketSales) => {
+					getSalesFromCollection({ collection: "orenetworkv1" })
+						.then((marketSales) => {
 							const salesList = marketSales.filter(
 								(sale) => sale.seller !== waxAccount
 							);
 							setSales(salesList);
-							if(salesList.length === 0) setNothingForSale(true)
+							if (salesList.length === 0) setNothingForSale(true);
 							setLoading(false);
-						}
-					).catch(error => {
-						console.log(error)
-					});
+						})
+						.catch((error) => {
+							console.log(error);
+						});
 				}}
 			>
-				{loading ? "Loading..." : nothingForSale ? "Nothing for sale" : "Load listed tokens"}
-			</Button>
+				{label}
+			</ButtonGradient>
 		);
 	} else {
 		body = (
-			<div
-				style={{
-					display: "flex",
-					marginBottom: "25px",
-					flexWrap: "wrap",
-					justifyContent: "center",
-				}}
-			>
+			<div className={styles.list}>
 				{sales
 					.map((sale) => {
 						return sale.assets.map((asset) => (
@@ -67,10 +71,10 @@ export const AssetsToBuy: React.FC<Props> = () => {
 		);
 	}
 	return (
-		<>
+		<div className={styles.AssetsToBuy}>
 			<h2>NFTs to Buy on Atomic Hub</h2>
 			{body}
 			<br />
-		</>
+		</div>
 	);
 };

@@ -1,0 +1,68 @@
+.LoginPage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .logo {
+        margin-bottom: 40px;
+    }
+
+    .btnLogin {
+        border: none;
+        background: #FFFFFF;
+        box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.15);
+        border-radius: 10px;
+        width: 176px;
+        padding: 8px 24px;
+
+
+        font-family: 'Montserrat';
+        font-style: normal;
+        font-weight: 700;
+        font-size: 14px;
+        line-height: 17px;
+        color: #333333;
+
+        margin-bottom: 40px;
+        cursor: pointer;
+
+        display: flex;
+        align-items: center;
+
+        img {
+            width: 21px;
+            height: 21px;
+            margin-right: 17px;
+        }
+
+    }
+
+    .content {
+        color: #FFFFFF;
+        margin-bottom: 40px;
+
+        h2 {
+            font-family: Montserrat;
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 38px;
+            letter-spacing: 0.5px;
+            text-align: center;
+            margin: 0px 0px 10px 0px;
+        }
+
+        p {
+            font-family: Montserrat;
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 17px;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+    }
+
+    .footer {
+        position: fixed;
+        bottom: 60px;
+    }
+}

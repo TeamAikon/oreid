@@ -1,0 +1,48 @@
+.AtomicHub {
+    width: 960px;
+    margin: 0 auto;
+
+    @media (max-width: 960px) {
+        width: 100%;
+    }
+
+    .welcome {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+
+        @media (max-width: 960px) {
+            padding: 5%;
+            flex-flow: row wrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        @media (max-width: 960px) {
+            &>.balance {
+                width: 90%;
+            }
+        }
+
+        h2 {
+            font-family: 'Montserrat';
+            font-style: normal;
+            font-weight: 700;
+            font-size: 32px;
+            line-height: 38px;
+            /* identical to box height, or 120% */
+
+            text-align: center;
+            letter-spacing: 0.5px;
+
+            /* White */
+            color: #FFFFFF;
+
+            @media (max-width: 960px) {
+                width: 90%;
+            }
+
+        }
+    }
+}
