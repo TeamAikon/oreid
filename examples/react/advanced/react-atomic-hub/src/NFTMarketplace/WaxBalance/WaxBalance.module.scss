@@ -19,6 +19,10 @@
 }
 
 .card {
+    @media (max-width: 960px) {
+        width: calc(100% - 48px);
+    }
+
     @media (min-width: 961px) {
         width: 255px;
     }

@@ -7,7 +7,6 @@ export const getAssetsFromCollection = async ({
 	waxAccount: string;
 	collection: string;
 }): Promise<NFTMarketplaceAssets[]> => {
-	return [];
 	const response = await fetch(
 		`https://test.wax.api.atomicassets.io/atomicassets/v1/assets?collection_name=${collection}&owner=${waxAccount}&page=1&limit=1000&order=desc&sort=asset_id`
 	);

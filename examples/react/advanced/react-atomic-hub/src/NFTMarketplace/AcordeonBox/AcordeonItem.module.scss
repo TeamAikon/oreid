@@ -1,0 +1,48 @@
+.AcordeonItem {
+    background: #2A3566;
+    margin-bottom: 20px;
+    border: 0px;
+    border-left: 10px solid #00E7C7;
+    border-radius: 16px;
+    padding: 16px;
+
+    &:last-child {
+        margin-bottom: 0px;
+    }
+
+
+
+    .label {
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+
+        .text {
+            width: calc(100% - 30px);
+
+        }
+
+        .arrow {
+            width: 20px;
+
+        }
+    }
+
+    .content {
+        display: none;
+    }
+
+    &.open {
+        .label {
+            margin-bottom: 10px;
+
+            .arrow {
+                transform: rotate(180deg);
+            }
+        }
+
+        .content {
+            display: block;
+        }
+    }
+}
