@@ -1,13 +1,13 @@
 import { ChainNetwork, OreId, Transaction } from "oreid-js";
-import { NFTMarketplaceAssets } from "../NFTMarketplaceTypes";
-import { createSaleTransaction } from "../createTransactions/createSaleTransaction";
+import { AtomicHubSale } from "../AtomicHubTypes";
+import { createBuyNftTransaction } from "../createTransactions/createBuyNftTransaction";
 
-export const createOreIdSaleTransaction = async ({
+export const createOreIdBuyTransaction = async ({
 	oreId,
 	chainNetwork,
-	assets,
+	sale,
 }: {
-	assets: NFTMarketplaceAssets[];
+	sale: AtomicHubSale;
 	oreId: OreId;
 	chainNetwork: ChainNetwork;
 }): Promise<Transaction> => {
@@ -18,15 +18,17 @@ export const createOreIdSaleTransaction = async ({
 		throw new Error(`No account found for ${chainNetwork}`);
 	}
 
-	const transactionData = createSaleTransaction({
+	const transactionData = createBuyNftTransaction({
 		accountName: account.chainAccount,
 		permission: "active",
-		assetsId: assets.map((asset) => asset.asset_id),
+		assetsIdToBuy: sale.assets.map((asset) => asset.asset_id),
+		saleId: sale.sale_id,
 		payment: {
-			amount: "200000000",
-			tokenPrecision: 8,
-			tokenSymbol: "WAX",
-			settlementSymbolToAssert: `8,WAX`,
+			amount: sale.price.amount,
+			tokenContract: sale.price.token_contract,
+			tokenPrecision: sale.price.token_precision,
+			tokenSymbol: sale.price.token_symbol,
+			settlementSymbolToAssert: `${sale.price.token_precision},${sale.price.token_symbol}`,
 		},
 	});
 

@@ -1,10 +1,10 @@
-import { NFTMarketplaceSale } from "../NFTMarketplaceTypes";
+import { AtomicHubSale } from "../AtomicHubTypes";
 
 export const getSalesFromCollection = async ({
 	collection,
 }: {
 	collection: string;
-}): Promise<NFTMarketplaceSale[]> => {
+}): Promise<AtomicHubSale[]> => {
 	const response = await fetch(
 		`https://test.wax.api.atomicassets.io/atomicmarket/v2/sales?state=1&collection_name=${collection}&page=1&limit=100&order=desc&sort=created`
 	);

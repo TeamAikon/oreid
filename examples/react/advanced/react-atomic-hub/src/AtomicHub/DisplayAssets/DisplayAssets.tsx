@@ -1,5 +1,5 @@
 import React from "react";
-import { NFTMarketplaceAssets } from "../NFTMarketplaceTypes";
+import { AtomicHubAssets } from "../AtomicHubTypes";
 import { Card } from "../Card";
 import { DisplayError } from "../ErrorProvider/DisplayError";
 import { ErrorProvider } from "../ErrorProvider/ErrorProvider";
@@ -7,7 +7,7 @@ import { ErrorProvider } from "../ErrorProvider/ErrorProvider";
 import style from "./DisplayAssets.module.scss";
 
 interface Props {
-	asset: NFTMarketplaceAssets;
+	asset: AtomicHubAssets;
 	footer: JSX.Element;
 }
 export const DisplayAssets: React.FC<Props> = ({ asset, footer }) => {

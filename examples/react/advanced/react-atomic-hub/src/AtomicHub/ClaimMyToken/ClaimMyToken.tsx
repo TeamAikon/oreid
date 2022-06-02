@@ -57,7 +57,7 @@ export const ClaimMyToken: React.FC<Props> = ({ loadMyAssets }) => {
 				{label}
 			</ButtonGradient>
 			{error && (
-				<div className="App-error-NFTMarketplace">Error: {error.message}</div>
+				<div className="App-error-AtomicHub">Error: {error.message}</div>
 			)}
 		</div>
 	);

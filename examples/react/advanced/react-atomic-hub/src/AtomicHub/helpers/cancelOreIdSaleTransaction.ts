@@ -1,5 +1,5 @@
 import { ChainNetwork, OreId, Transaction } from "oreid-js";
-import { NFTMarketplaceSale } from "../NFTMarketplaceTypes";
+import { AtomicHubSale } from "../AtomicHubTypes";
 import { cancelSaleTransaction } from "../createTransactions/cancelSaleTransaction";
 
 export const cancelOreIdSaleTransaction = async ({
@@ -7,7 +7,7 @@ export const cancelOreIdSaleTransaction = async ({
 	chainNetwork,
 	sale,
 }: {
-	sale: NFTMarketplaceSale;
+	sale: AtomicHubSale;
 	oreId: OreId;
 	chainNetwork: ChainNetwork;
 }): Promise<Transaction> => {

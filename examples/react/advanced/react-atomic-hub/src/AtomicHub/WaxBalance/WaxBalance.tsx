@@ -38,7 +38,7 @@ export const WaxBalance: React.FC = () => {
 					WAX
 				</span>
 				{error && (
-					<div className="App-error-NFTMarketplace">Error: {error.message}</div>
+					<div className="App-error-AtomicHub">Error: {error.message}</div>
 				)}
 			</div>
 		</Card>

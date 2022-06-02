@@ -19,8 +19,8 @@ export const Header: React.FC = () => {
 						//@ts-ignore
 						oreId={oreId}
 						style={{
-							backgroundColor: "#2A3566",
-							linkColor: "#3A9FFF",
+							backgroundColor: "#151F44",
+							linkColor: "#0AB7E7",
 							textColor: "#fff",
 						}}
 					/>

@@ -2,7 +2,7 @@ interface Format {
 	name: string;
 	type: string;
 }
-export interface NFTMarketplaceAssets {
+export interface AtomicHubAssets {
 	contract: string;
 	asset_id: string;
 	owner: string;
@@ -69,7 +69,7 @@ export interface NFTMarketplaceAssets {
 	name: string;
 }
 
-export interface NFTMarketplaceSale {
+export interface AtomicHubSale {
 	market_contract: string;
 	assets_contract: string;
 	sale_id: string;
@@ -85,7 +85,7 @@ export interface NFTMarketplaceSale {
 	};
 	listing_price: string;
 	listing_symbol: string;
-	assets: NFTMarketplaceAssets[];
+	assets: AtomicHubAssets[];
 	maker_marketplace: string;
 	taker_marketplace: any;
 	collection_name: string;

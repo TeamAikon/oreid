@@ -3,7 +3,7 @@ import { OreidProvider, useIsLoggedIn, useUser } from "oreid-react";
 import { WebPopup } from "oreid-webpopup";
 import React, { useEffect, useState } from "react";
 import "./App.css";
-import { NFTMarketplace } from "./NFTMarketplace";
+import { AtomicHub } from "./AtomicHub";
 import { Header } from "./Header";
 import { LoginPage } from "./LoginPage";
 
@@ -22,7 +22,7 @@ const oreId = new OreId({
 const LoggedInView: React.FC = () => {
 	const user = useUser();
 	if (!user) return null;
-	return <NFTMarketplace />;
+	return <AtomicHub />;
 };
 
 const AppWithProvider: React.FC = () => {

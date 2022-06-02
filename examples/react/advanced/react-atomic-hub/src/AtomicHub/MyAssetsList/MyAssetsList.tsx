@@ -1,5 +1,5 @@
 import React from "react";
-import { NFTMarketplaceAssets } from "../NFTMarketplaceTypes";
+import { AtomicHubAssets } from "../AtomicHubTypes";
 import { ClaimMyToken } from "../ClaimMyToken";
 import { DisplayAssets } from "../DisplayAssets";
 import { SellOrCancelButtom } from "../SellOrCancelButtom";
@@ -8,7 +8,7 @@ import styles from "./MyAssetsList.module.scss";
 
 interface Props {
 	account: string;
-	assets: NFTMarketplaceAssets[];
+	assets: AtomicHubAssets[];
 	loadMyAssets: () => void;
 }
 export const MyAssetsList: React.FC<Props> = ({
@@ -31,7 +31,7 @@ export const MyAssetsList: React.FC<Props> = ({
 					/>
 				))}
 			</div>
-			<div className={styles.SeeOnNFTMarketplace}>
+			<div className={styles.SeeOnAtomicHub}>
 				<a
 					href={`https://wax-test.atomichub.io/profile/${account}`}
 					target="_blank"
