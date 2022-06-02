@@ -1,5 +1,7 @@
+@import "../../constants.scss";
+
 .ButtonGradient {
-    background: linear-gradient(93.61deg, #08B6E7 0%, #7147EF 100%);
+    background: $gradient;
     /* Shadow/Button/Secondary */
     box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.15);
     border-radius: 10px;
@@ -18,7 +20,7 @@
     font-weight: 700;
     font-size: 14px;
     line-height: 17px;
-    color: #fff;
+    color: $textColor;
 
     @media (max-width: 960px) {
         min-width: 140px;

@@ -7,8 +7,6 @@
     font-size: 16px;
     line-height: 24px;
 
-
-
     svg {
         margin: 0px 10px;
     }
@@ -19,6 +17,9 @@
 }
 
 .card {
+    margin: 0 auto;
+    margin-bottom: 40px;
+
     @media (max-width: 960px) {
         width: calc(100% - 48px);
     }

@@ -1,5 +1,7 @@
+@import "../../constants.scss";
+
 .Card {
-    background: #2A3566;
+    background: $lightBackground;
     width: 392px;
     padding: 24px;
     border-radius: 16px;

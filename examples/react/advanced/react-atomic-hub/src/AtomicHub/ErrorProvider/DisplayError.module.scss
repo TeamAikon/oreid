@@ -1,5 +1,7 @@
+@import "../../constants.scss";
+
 .DisplayError {
     padding: 10px 0px;
-    color: #fff;
+    color: $textColor;
     word-wrap: break-word
 }
