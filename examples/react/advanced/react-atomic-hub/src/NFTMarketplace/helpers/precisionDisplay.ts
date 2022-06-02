@@ -7,7 +7,7 @@ export const precisionDisplay = ({
 }) => {
 	const numberValue = Number(value);
 	const factor = Math.pow(10, precision);
-	const roundValue =
-		Math.round((numberValue + Number.EPSILON) * factor) / factor;
+	const roundValue = Math.floor(numberValue * factor) / factor;
+	if (roundValue < numberValue) return `${roundValue}...`;
 	return roundValue;
 };

@@ -1,7 +1,10 @@
 import { ChainNetwork } from "oreid-js";
 import { useOreId } from "oreid-react";
 import React, { useCallback, useContext, useEffect, useState } from "react";
-import { AtomichubAssets, AtomichubSale } from "./AtomicHubTypes";
+import {
+	NFTMarketplaceAssets,
+	NFTMarketplaceSale,
+} from "./NFTMarketplaceTypes";
 import { ButtonGradient } from "./ButtonGradient";
 import { cancelOreIdSaleTransaction } from "./helpers/cancelOreIdSaleTransaction";
 import { createOreIdSaleTransaction } from "./helpers/createOreIdSaleTransaction";
@@ -11,13 +14,13 @@ import { aikonNftAuthor } from "../constants";
 import { ErrorContext } from "./ErrorProvider/ErrorContext";
 
 interface Props {
-	asset: AtomichubAssets;
+	asset: NFTMarketplaceAssets;
 }
 
 export const SellOrCancelButtom: React.FC<Props> = ({ asset }) => {
 	const { setError } = useContext(ErrorContext);
 	const [isLoading, setIsLoading] = useState(true);
-	const [sale, setSale] = useState<AtomichubSale | undefined>();
+	const [sale, setSale] = useState<NFTMarketplaceSale | undefined>();
 	const [transactionId, setTransactionId] = useState("");
 	const oreId = useOreId();
 

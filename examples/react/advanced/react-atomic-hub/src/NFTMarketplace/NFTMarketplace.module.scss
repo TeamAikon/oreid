@@ -1,4 +1,4 @@
-.AtomicHub {
+.NFTMarketplace {
     width: 960px;
     margin: 0 auto;
 
@@ -41,6 +41,10 @@
 
             @media (max-width: 960px) {
                 width: 90%;
+            }
+
+            @media (min-width: 961px) {
+                width: 440px;
             }
 
         }
