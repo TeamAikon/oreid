@@ -14,6 +14,22 @@ export const Instructions: React.FC<Props> = () => {
 
 	const instructions: Instruction[] = [
 		{
+			title: "Overview",
+			content: (
+				<ul className={styles.list}>
+					<li>This app demonstrates how you can use ORE ID in your app</li>
+					<li>
+						User log-in with existing identity (e.g. Google, Facebook, email,
+						etc.)
+					</li>
+					<li>Automatically create and setup blockchain account and wallet</li>
+					<li>
+						Easiy sign and send blockchain transaction (e.g. to send a token)
+					</li>
+				</ul>
+			),
+		},
+		{
 			title: "Step: Login and create blockchain account",
 			content: (
 				<ul className={styles.list}>
