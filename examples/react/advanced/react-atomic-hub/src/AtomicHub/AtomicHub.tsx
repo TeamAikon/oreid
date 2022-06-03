@@ -51,12 +51,10 @@ export const AtomicHub: React.FC = () => {
 
 	return (
 		<div className={styles.AtomicHub}>
-			<section className={styles.welcome}>
-				<div className={styles.welcomeTitle}>
-					<h2>Welcome to ORE ID!</h2>
-					<div className={styles.balance}>
-						<WaxBalance />
-					</div>
+			<h2 className={styles.welcome}>Welcome to ORE ID!</h2>
+			<section className={styles.firstBox}>
+				<div className={styles.balance}>
+					<WaxBalance />
 				</div>
 
 				<div className={styles.instructions}>

@@ -4,11 +4,27 @@
     width: 960px;
     margin: 0 auto;
 
+    .welcome {
+        font-family: 'Montserrat';
+        font-style: normal;
+        font-weight: 700;
+        font-size: 32px;
+        line-height: 38px;
+        /* identical to box height, or 120% */
+
+        text-align: center;
+        letter-spacing: 0.5px;
+
+        color: $textColor;
+        width: 100%;
+        margin-bottom: 40px;
+    }
+
     @media (max-width: 960px) {
         width: 100%;
     }
 
-    .welcome {
+    .firstBox {
         width: 100%;
         display: flex;
         flex-flow: row wrap;
@@ -20,49 +36,7 @@
             align-items: center;
         }
 
-
-        .welcomeTitle {
-            @media (max-width: 960px) {
-                width: 100%;
-            }
-
-            h2 {
-                margin-top: 0px;
-                font-family: 'Montserrat';
-                font-style: normal;
-                font-weight: 700;
-                font-size: 32px;
-                line-height: 38px;
-                /* identical to box height, or 120% */
-
-                text-align: center;
-                letter-spacing: 0.5px;
-
-                /* White */
-                color: $textColor;
-
-                @media (max-width: 960px) {
-                    width: 100%;
-                }
-
-                @media (min-width: 961px) {
-                    width: 440px;
-                }
-
-            }
-
-            .balance {
-                width: 440px;
-
-                @media (max-width: 960px) {
-                    width: 90%;
-                    margin: 0 auto;
-                }
-            }
-        }
-
-
-        .instructions {
+        .balance {
             width: 440px;
 
             @media (max-width: 960px) {
@@ -70,8 +44,14 @@
                 margin: 0 auto;
             }
         }
+    }
 
+    .instructions {
+        width: 440px;
 
-
+        @media (max-width: 960px) {
+            width: 90%;
+            margin: 0 auto;
+        }
     }
 }
