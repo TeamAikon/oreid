@@ -17,7 +17,7 @@
     "lodash": "^4.17.21",
     "oreid-js": "^4.0.5",
     "oreid-login-button": "^1.1.2",
-    "oreid-profile": "1.0.2",
+    "oreid-profile": "1.0.3",
     "oreid-react": "^2.0.0",
     "oreid-webpopup": "^2.0.0",
     "path": "^0.12.7",

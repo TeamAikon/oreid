@@ -1,5 +1,7 @@
+@import '../constants.scss';
+
 .Header {
-    background: #2A3566;
+    background: $lightBackground;
     width: calc(100% - 40px);
     padding: 20px 120px;
     position: fixed;
