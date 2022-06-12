@@ -18,38 +18,33 @@ export const Instructions: React.FC<Props> = () => {
 			content: (
 				<ul className={styles.list}>
 					<li>This app demonstrates how you can use ORE ID in your app</li>
-					<li>
-						User log-in with existing identity (e.g. Google, Facebook, email,
-						etc.)
-					</li>
+					<li>Users are able to create a wallet and authorize using familiar social logins like Google, Facebook, email, etc.</li>
 					<li>Automatically create and setup blockchain account and wallet</li>
-					<li>
-						Easiy sign and send blockchain transaction (e.g. to send a token)
-					</li>
+					<li>Easily sign and transmit blockchain transactions (e.g. to send a token)</li>
 				</ul>
 			),
 		},
 		{
-			title: "Step: Login and create blockchain account",
+			title: "Step: Create a blockchain wallet",
 			content: (
 				<ul className={styles.list}>
 					<li>
-						When a user logs-in for the first time, a new user is assigned a
+						When a user authenticates for the first time, they are assigned a
 						unique ORE ID for your app (e.g. ore1t2roxcbz)
 					</li>
 					<li>
 						A blockchain account can be automatically created for the user on
 						one or more blockchains. In this demo, an account is created on the
-						WAX test chain.
+						WAX test network
 					</li>
 					<li>
-						Blockchain accounts can be created on other chains at the same time
-						(e.g. Ethereum)
+					  Blockchain accounts can be created on other chains at the same time
+						(e.g. Algorand, Ethereum, and Polygon)
 					</li>
 					<li>
-						Blockchain account creation can be delayed until the user performs a
-						transaction of some value - this delays the cost of creating a new
-						account (important for some chains)
+					  Using our Deferred Account Creation, blockchain account creation 
+						can be delayed until the user performs a transaction of some value - 
+						this defers the cost of creating a new on-chain account (important for some chains)
 					</li>
 				</ul>
 			),
@@ -60,8 +55,7 @@ export const Instructions: React.FC<Props> = () => {
 				<>
 					You can configure your app to automatically airdrop some tokens to a
 					new account to get the user started. In this demo, we transfer 2 WAX
-					tokens to the new account to allow you to try buying an NFT in the
-					marketplace.
+					tokens to the new account to allow you to purchase an NFT in the marketplace.
 				</>
 			),
 		},
@@ -69,7 +63,7 @@ export const Instructions: React.FC<Props> = () => {
 			title: "Step: Minting an NFT",
 			content: (
 				<>
-					Clicking [Claim my NFT] just calls an API to mint a new NFT and
+					Clicking [Claim my NFT] calls an API to mint a new NFT and
 					transfer it to your WAX blockchain account. This gives you an NFT to
 					play with in this demo. It may take 20 seconds or so to complete the
 					mint and transfer action.
@@ -77,27 +71,41 @@ export const Instructions: React.FC<Props> = () => {
 			),
 		},
 		{
-			title: "Step: Sign a Transation - List NFT for sale",
+			title: "Step: Sign a transation - List NFT for sale",
 			content: (
-				<>
-					Put your new NFT up for sale on the NFT marketplace. To do this,
-					you’ll sign a blockchain transaction. When you click [List my NFT] a
+				<ul className={styles.list}>
+					<li>
+					Put your new NFT up for sale on the NFT marketplace.
+					</li>
+					<li>
+					To do this, you’ll sign a blockchain transaction. When you click [List my NFT] a
 					pop-up appears to enter your wallet password to sign the transaction
-					with your ORE ID account. ORE ID will automatically send the
+					with your ORE ID account.
+					</li>
+					<li>
+					ORE ID will automatically send the
 					transaction to the blockchain for you.
-				</>
+					</li>
+				</ul>
 			),
 		},
 		{
 			title: "Step: Transfer an NFT",
 			content: (
-				<>
-					To transfer your NFT, you need to sign a transfer transaction.
-					Clicking [Transfer Back] creates the transaction to send the NFT back
-					to the minter’s account. When you enter your password, the transaction
-					is signed and send to the chain. Click the [View on Blockchain] link
-					to see the transaction in a WAX block explorer.
-				</>
+				<ul className={styles.list}>
+					<li>
+						To transfer your NFT, you need to sign a transfer transaction.
+					</li>
+					<li>
+						Clicking [Transfer Back] creates a transaction to send the NFT back
+						to the minter’s account.
+					</li>
+					<li>
+						When you enter your password, the transaction
+						is signed and sent to the chain. Click the [View on Blockchain] link
+						to see the transaction in a WAX block explorer.
+					</li>
+				</ul>
 			),
 		},
 		{
