@@ -2,9 +2,10 @@ import { OreId } from "oreid-js";
 import { OreidProvider, useIsLoggedIn, useUser } from "oreid-react";
 import { WebPopup } from "oreid-webpopup";
 import React, { useEffect, useState } from "react";
-import "./App.css";
+import "./App.scss";
 import { AtomicHub } from "./AtomicHub";
 import { Header } from "./Header";
+import { Footer } from "./Footer";
 import { LoginPage } from "./LoginPage";
 
 const REACT_APP_OREID_APP_ID = "t_4683afc074ab444ebdf1bf08ed8d1757";
@@ -31,6 +32,7 @@ const AppWithProvider: React.FC = () => {
 		<div className="App">
 			<Header />
 			{isLoggedIn ? <LoggedInView /> : <LoginPage />}
+			<Footer />
 		</div>
 	);
 };
