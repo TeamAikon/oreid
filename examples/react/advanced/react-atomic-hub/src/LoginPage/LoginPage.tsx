@@ -1,13 +1,11 @@
+import { AuthProvider, UserData } from "oreid-js";
+import { useOreId } from "oreid-react";
 import React, { useState } from "react";
-import { ReactComponent as Logo } from "./logo.svg";
+import styles from "./LoginPage.module.scss";
+import LogoEmail from "./logo-email.svg";
 import LogoFb from "./logo-fb.svg";
 import LogoGoogle from "./logo-google.svg";
-import LogoEmail from "./logo-email.svg";
-import LogoFooter from "./logo-oreid.svg";
-
-import styles from "./LoginPage.module.scss";
-import { useOreId } from "oreid-react";
-import { AuthProvider, UserData } from "oreid-js";
+import { ReactComponent as Logo } from "./logo.svg";
 
 export const LoginPage: React.FC = () => {
 	const oreId = useOreId();
@@ -76,8 +74,6 @@ export const LoginPage: React.FC = () => {
 			</button>
 
 			{error && <div className="App-error">Error: {error.message}</div>}
-
-			<img className={styles.footer} src={LogoFooter} alt="" />
 		</section>
 	);
 };

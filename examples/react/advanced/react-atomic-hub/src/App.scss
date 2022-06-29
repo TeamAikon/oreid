@@ -6,6 +6,9 @@ html {
   color: #fff;
   font-size: 16px;
   overflow: hidden;
-  padding: 181px 0px;
+  padding: 181px 0px 0px;
 
+  @media (max-width: 960px) {
+    padding-top: 100px;
+  }
 }
