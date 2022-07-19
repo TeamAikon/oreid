@@ -12,6 +12,7 @@ import {
   getErc20Balance
 } from './eth';
 // import { encode as base64Encode } from 'base-64';
+// TRANSIT
 import algoSignerProvider from 'eos-transit-algosigner-provider';
 import scatterProvider from 'eos-transit-scatter-provider';
 import { WebPopup } from "oreid-webpopup";
@@ -23,6 +24,14 @@ import whalevaultProvider from 'eos-transit-whalevault-provider';
 import simpleosProvider from 'eos-transit-simpleos-provider';
 import web3Provider from 'eos-transit-web3-provider';
 import walletconnectProvider from 'eos-transit-walletconnect-provider';
+// UAL
+import { Anchor } from 'ual-anchor'
+import { Scatter } from 'ual-scatter'
+import { Wombat } from 'ual-wombat'
+// import { Lynx } from 'ual-lynx'
+// import { Ledger } from 'ual-ledger'
+// import { MeetOne } from 'ual-meetone'
+// import { TokenPocket } from 'ual-token-pocket'
 import {
   ERC20_FUNDING_AMOUNT,
   ERC20_TRANSFER_AMOUNT,
@@ -46,7 +55,7 @@ const {
 } = process.env;
 
 const eosTransitWalletProviders = [
-  scatterProvider(),
+  // scatterProvider(),
   lynxProvider(),
   meetoneProvider(),
   tokenpocketProvider(),
@@ -56,6 +65,16 @@ const eosTransitWalletProviders = [
   web3Provider(),
   walletconnectProvider()
 ];
+
+let ualAuthenticators = [
+  Anchor,
+  Scatter,
+  // Lynx,
+  // Ledger,
+  // MeetOne,
+  // TokenPocket,
+  Wombat
+]
 
 const loginButtonStyle = { width: 200, marginTop: '24px', cursor: 'pointer' };
 
@@ -84,6 +103,7 @@ class App extends Component {
         popup: WebPopup(),
       },
       backgroundColor,
+      ualAuthenticators,
       eosTransitWalletProviders,
       setBusyCallback: this.setBusyCallback
     });
@@ -97,7 +117,7 @@ class App extends Component {
 
   walletButtons = [
     { provider: ExternalWalletType.AlgoSigner, chainNetwork: ChainNetwork.AlgoTest },
-    { provider: ExternalWalletType.Keycat, chainNetwork: ChainNetwork.EosKylin },
+    { provider: ExternalWalletType.Anchor, chainNetwork: ChainNetwork.EosKylin },
     { provider: ExternalWalletType.Ledger, chainNetwork: ChainNetwork.EosKylin },
     { provider: ExternalWalletType.Lynx, chainNetwork: ChainNetwork.EosKylin },
     { provider: ExternalWalletType.Meetone, chainNetwork: ChainNetwork.EosKylin },
@@ -106,6 +126,7 @@ class App extends Component {
     { provider: ExternalWalletType.SimpleEos, chainNetwork: ChainNetwork.EosKylin },
     { provider: ExternalWalletType.TokenPocket, chainNetwork: ChainNetwork.EosKylin },
     { provider: ExternalWalletType.Web3, chainNetwork: ChainNetwork.EthRopsten },
+    { provider: ExternalWalletType.Wombat, chainNetwork: ChainNetwork.EosKylin },
     { provider: ExternalWalletType.WhaleVault, chainNetwork: ChainNetwork.EosKylin }
   ]
 
@@ -225,6 +246,16 @@ class App extends Component {
     try {
       this.clearErrors();
       await this.oreId.auth.loginWithToken({ oauthToken }); // sets auth.accessToken using response
+    } catch (error) {
+      this.setState({ errorMessage: error.message });
+    }
+  }
+
+  /** Trigger connection to a wallet app */
+  async handleLoginWithWalletApp(walletType, chainNetwork) {
+    try {
+      this.clearErrors();
+      const response = await this.oreId.auth.connectWithWallet({ walletType, chainNetwork }); // sets auth.accessToken using response
       await this.loadUserFromLocalStorage();
     } catch (error) {
       this.setState({ errorMessage: error.message });
@@ -810,44 +841,54 @@ class App extends Component {
         onClick={() => this.handleLoginWithPopup('phone')}
       />
       <LoginButton
+        provider="anchor"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLoginWithWalletApp('anchor', 'eos_main')}
+      />
+      <LoginButton
         provider="scatter"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLoginWithPopup('scatter')}
+        onClick={() => this.handleLoginWithWalletApp('scatter', 'eos_main')}
       />
       <LoginButton
         provider="ledger"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLoginWithPopup('ledger')}
+        onClick={() => this.handleLoginWithWalletApp('ledger')}
       />
       <LoginButton
         provider="meetone"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLoginWithPopup('meetone')}
+        onClick={() => this.handleLoginWithWalletApp('meetone')}
       />
       <LoginButton
         provider="lynx"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLoginWithPopup('lynx')}
+        onClick={() => this.handleLoginWithWalletApp('lynx')}
       />
       <LoginButton
         provider="portis"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLoginWithPopup('portis')}
+        onClick={() => this.handleLoginWithWalletApp('portis')}
       />
       <LoginButton
-        provider="whalevault"
+        provider="web3"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLoginWithPopup('whalevault')}
+        onClick={() => this.handleLoginWithWalletApp('web3', 'eth_ropsten')}
       />
       <LoginButton
-        provider="simpleos"
+        provider="walletconnect"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLoginWithPopup('simpleos')}
+        onClick={() => this.handleLoginWithWalletApp('walletconnect', 'eth_ropsten')}
       />
       <LoginButton
-        provider="keycat"
+        provider="wombat"
         buttonStyle={loginButtonStyle}
-        onClick={() => this.handleLoginWithPopup('keycat')}
+        onClick={() => this.handleLoginWithWalletApp('wombat', 'eos_main')}
+      />
+      <LoginButton
+        provider="algosigner"
+        buttonStyle={loginButtonStyle}
+        onClick={() => this.handleLoginWithWalletApp('algosigner', 'algo_test')}
       />
       <div style={{ flexBasis: '100%', display: 'flex', justifyContent: 'center' }}>
         <span style={{ display: 'flex', flexDirection: 'column' }}>
