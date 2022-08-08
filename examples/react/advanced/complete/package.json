@@ -28,7 +28,7 @@
     "ethereumjs-tx": "^2.1.2",
     "ethereumjs-util": "^6.2.0",
     "express": "^4.17.1",
-    "oreid-js": "^4.2.0",
+    "oreid-js": "^4.3.0",
     "oreid-login-button": "^1.1.6",
     "oreid-react": "^2.0.0",
     "oreid-webpopup": "^2.0.0",
@@ -43,6 +43,7 @@
     "ual-ledger": "^0.3.0",
     "ual-lynx": "^0.4.0",
     "ual-scatter": "^0.3.0",
+    "ual-token-pocket": "^0.3.0",
     "ual-wombat": "^0.3.3",
     "util": "^0.12.1",
     "web3": "^1.2.6"
