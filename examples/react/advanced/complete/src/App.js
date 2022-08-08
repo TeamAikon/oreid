@@ -26,18 +26,19 @@ import web3Provider from 'eos-transit-web3-provider';
 import walletconnectProvider from 'eos-transit-walletconnect-provider';
 // UAL
 import { Anchor } from 'ual-anchor'
+import { Ledger } from 'ual-ledger'
 import { Scatter } from 'ual-scatter'
+import { TokenPocket } from 'ual-token-pocket'
 import { Wombat } from 'ual-wombat'
 // import { Lynx } from 'ual-lynx'
-// import { Ledger } from 'ual-ledger'
 // import { MeetOne } from 'ual-meetone'
-// import { TokenPocket } from 'ual-token-pocket'
 import {
   ERC20_FUNDING_AMOUNT,
   ERC20_TRANSFER_AMOUNT,
   ETH_TRANSFER_AMOUNT
 } from './constants';
 import { composeAlgorandSampleTransaction } from './algorand';
+import SignEosTxWithWallet from './components/SignEosTxWithWallet'
 
 dotenv.config();
 
@@ -68,12 +69,12 @@ const eosTransitWalletProviders = [
 
 let ualAuthenticators = [
   Anchor,
+  Ledger,
   Scatter,
+  TokenPocket,
+  Wombat,
   // Lynx,
-  // Ledger,
   // MeetOne,
-  // TokenPocket,
-  Wombat
 ]
 
 const loginButtonStyle = { width: 200, marginTop: '24px', cursor: 'pointer' };
@@ -98,7 +99,7 @@ class App extends Component {
       appName: 'ORE ID Sample App',
       appId,
       apiKey,
-      oreIdUrl:'https://staging.service.oreid.io', // temporary  ... REACT_APP_OREID_URL
+      oreIdUrl,
       plugins: {
         popup: WebPopup(),
       },
@@ -190,10 +191,12 @@ class App extends Component {
       this.clearErrors();
       const { accountName } = this.state.userInfo;
 
-      if (!this.oreId.transitHelper.canDiscover(provider)) {
+      if (!this.oreId.walletHelper.canDiscover(provider)) {
         console.log(
           'Provider doesn\'t support discover, so discover function will call wallet provider\'s login instead.'
         );
+        this.setState({ errorMessage: 'Provider doesn\'t support discover' });
+        return
       }
       await this.oreId.transitHelper.discover({
         walletType: provider,
@@ -209,14 +212,15 @@ class App extends Component {
   handleSignStringWithWallet = async ({ provider, chainNetwork }) => {
     try {
       this.clearErrors();
-      const { signedString } = await this.oreId.signStringWithWallet({
+      const opts = {
         account: this.state.userInfo?.accountName,
         walletType: provider,
         provider,
         chainNetwork,
         string: 'Sign Arbitrary',
         message: 'Placeholder'
-      });
+      }
+      const { signedString } = await this.oreId.signStringWithWallet(opts);
       this.setState({ popupResponse: signedString });
       console.log(`Signed String: ${signedString}`);
     } catch (error) {
@@ -538,6 +542,7 @@ class App extends Component {
         </div>
         {isLoggedIn && this.renderDiscoverOptions()}
         {isLoggedIn && this.renderSignStringWithWallet()}
+        {isLoggedIn && this.renderSignEosTxWithWallet()}
       </div>
     );
   }
@@ -632,6 +637,10 @@ class App extends Component {
       </div>
     </div>
   );
+
+  renderSignEosTxWithWallet = () => {
+    return <SignEosTxWithWallet oreId={this.oreId} userInfo={this.state.userInfo} />
+  }
 
   async handleSignWithPopup({ chainAccount, chainNetwork, permission }) {
     this.clearErrors();
