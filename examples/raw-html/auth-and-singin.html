@@ -99,7 +99,7 @@
         function auth() {
             oreId.popup.auth({ provider: oreidJs.AuthProvider.Google }).then(onSuccess).catch(onError);
         }
-        function sing() {
+        function sign() {
             oreId.auth.user.getData().then(userData => {
                 composeSampleTransaction(userData, "eos_kylin").then(
                     (transaction) => {
@@ -124,7 +124,7 @@
 
 <body>
     <button onclick="auth()">Auth</button>
-    <button onclick="sing()">Sing</button>
+    <button onclick="sign()">Sign</button>
     <button onclick="logout()">Logout</button>
 </body>
 
