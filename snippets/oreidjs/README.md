@@ -15,3 +15,6 @@ yarn add oreid-js
 
 ## How to use these snippets
 
+Aikon recommends using the native sdk snippets for the creation of your transactions.
+
+
