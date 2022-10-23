@@ -1,6 +1,17 @@
 # AngularOreidJs
 
+Quickly get started with ORE ID and Angular.  This sample app is written in Typescript.  
+
+Get working with ORE ID by checking out ```src/app/oreid.provider.ts```.  To adapt this provider to your own project, replace the ```OREID_APP_ID``` with your App ID (found at https://oreid.io/developer).
+
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 14.2.5.
+
+## Sample App Functionality:
+* Simple Integration into Angular application.
+* Example ORE ID app runs on the EOS Kylin Testnet.
+* Sign-up and login user to ORE ID using the webpopup.
+* Perform a sample transaction.
+* View Transacion ID or error message.
 
 ## Development server
 
