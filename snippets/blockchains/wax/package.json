@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "@open-rights-exchange/chain-js": "^4.9.1",
+    "@open-rights-exchange/chain-js-plugin-eos": "^4.9.1",
     "@waxio/waxjs": "^1.1.0",
     "ts-node": "^10.9.1"
   },
