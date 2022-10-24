@@ -2,6 +2,7 @@
 
 # dependencies
 **/node_modules
+/snippets/blockchains/wax/node_modules
 /bower_components
 
 # testing

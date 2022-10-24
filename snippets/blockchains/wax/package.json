@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@waxio/waxjs": "^1.1.0",
+    "ts-node": "^10.9.1"
+  },
+  "devDependencies": {
+    "typescript": "^4.8.4"
+  }
+}
