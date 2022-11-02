@@ -69,6 +69,10 @@ export const ethTransaction: React.FC = () => {
             chainAccount: signingAccount.chainAccount,
             chainNetwork: signingAccount.chainNetwork,
             transaction: transaction,
+            signOptions: {
+                broadcast: true,
+                returnSignedTransaction: false
+            }
 
         })
         console.log(transactionToSign)
