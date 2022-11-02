@@ -34,3 +34,4 @@ yarn-error.log*
 
 */**/.env
 snippets/blockchains/ethereum/node_modules
+snippets/blockchains/node_modules

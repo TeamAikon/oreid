@@ -29,8 +29,8 @@ const contract: ModelsEthereum.EthereumActionContract = {
     abi: abi,
     method: "transferFrom",
     parameters: [
+        "0x5d40e837410170f912dd07db914e0534c539d8c6",
         "0x92B381515bd4851Faf3d33A161f7967FD87B1227",
-        "0xf4910c763ed4e47a585e2d34baa9a4b611ae448c",
         "728654"
     ]
 }
@@ -59,12 +59,18 @@ const chainSettings: Models.ChainSettings = {
 
     const transactionAction: ModelsEthereum.EthereumTransactionAction = {
         to: HelpersEthereum.toEthereumAddress("0xf4910c763ed4e47a585e2d34baa9a4b611ae448c"),
-        // from: HelpersEthereum.toEthereumAddress("0x92B381515bd4851Faf3d33A161f7967FD87B1227"),
+        from: HelpersEthereum.toEthereumAddress("0x5d40e837410170f912dd07db914e0534c539d8c6"),
         contract: contract
     }
 
+    // const composedAction = async () => {
+    //     await ethGeorli.composeAction(Models.ChainActionType.TokenTransferFrom)
+    // }
+
     transaction.actions = [transactionAction]
     console.log("actions" + JSON.stringify((transaction.actions)))
-
-    
+    await transaction.prepareToBeSigned()
+    await transaction.validate()
+    await transaction.getSuggestedFee(Models.TxExecutionPriority.Average)
+    console.log(transaction)
 })();
