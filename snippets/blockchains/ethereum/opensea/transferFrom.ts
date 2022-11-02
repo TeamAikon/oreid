@@ -51,13 +51,13 @@ export const ethTransaction: React.FC = () => {
             method: "transferFrom",
             parameters: [
                 "0x92B381515bd4851Faf3d33A161f7967FD87B1227",
-                "0xf4910c763ed4e47a585e2d34baa9a4b611ae448c",
+                signingAccount.chainAccount,
                 "728654"
             ]
         }
 
         const transactionAction = {
-            to: "0x92B381515bd4851Faf3d33A161f7967FD87B1227",
+            to: "0xf4910c763ed447a585e2d34baa9a4b611ae448c",
             from: signingAccount?.chainAccount,
             contract: contract
         }
