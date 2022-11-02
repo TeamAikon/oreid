@@ -1,4 +1,4 @@
-import { Chain, ChainType, Helpers, Models, PluginChainFactory, Transaction } from "@open-rights-exchange/chain-js"
+import { Chain, ChainType, Models, PluginChainFactory, Transaction } from "@open-rights-exchange/chain-js"
 import { Plugin as EthPlugin, ModelsEthereum, HelpersEthereum } from "@open-rights-exchange/chain-js-plugin-ethereum"
 
 const abi: ModelsEthereum.EthereumAbi = [
@@ -52,20 +52,20 @@ const chainSettings: Models.ChainSettings = {
     );
 
     await ethGeorli.connect()
+    const chainInfo = ethGeorli.chainInfo
+    console.log(contract)
 
     const transaction: Transaction = await ethGeorli.new.Transaction({
         MaxFeeIncreasePercentage: 200
     })
 
     const transactionAction: ModelsEthereum.EthereumTransactionAction = {
+        gasPrice: chainInfo.nativeInfo.currentGasPrice,
+        gasLimit: chainInfo.nativeInfo.gasLimit,
         to: HelpersEthereum.toEthereumAddress("0xf4910c763ed4e47a585e2d34baa9a4b611ae448c"),
         from: HelpersEthereum.toEthereumAddress("0x5d40e837410170f912dd07db914e0534c539d8c6"),
         contract: contract
     }
-
-    // const composedAction = async () => {
-    //     await ethGeorli.composeAction(Models.ChainActionType.TokenTransferFrom)
-    // }
 
     transaction.actions = [transactionAction]
     console.log("actions" + JSON.stringify((transaction.actions)))
