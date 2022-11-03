@@ -1,7 +1,7 @@
 /*
 ERC-1155 safeTransferFrom Transaction Data
 
-Note: This snippet is meant to be passed as <transactionData>
+Note: This snippet is to be passed as <transactionData>
       into the oreId.createTransaction() function as
       demonstrated below:
 
