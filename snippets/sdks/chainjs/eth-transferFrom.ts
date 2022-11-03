@@ -1,4 +1,4 @@
-import { Chain, ChainType, Helpers, Models, PluginChainFactory, Transaction } from "@open-rights-exchange/chain-js"
+import { Chain, ChainType, Models, PluginChainFactory, Transaction } from "@open-rights-exchange/chain-js"
 import { Plugin as EthPlugin, ModelsEthereum, HelpersEthereum } from "@open-rights-exchange/chain-js-plugin-ethereum"
 
 const abi: ModelsEthereum.EthereumAbi = [
@@ -31,7 +31,7 @@ const contract: ModelsEthereum.EthereumActionContract = {
     parameters: [
         "0x5d40e837410170f912dd07db914e0534c539d8c6",
         "0x92B381515bd4851Faf3d33A161f7967FD87B1227",
-        "728654"
+        "4379987862034297058192663948417605894473"
     ]
 }
 const endpoints: Models.ChainEndpoint = {
