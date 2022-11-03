@@ -58,14 +58,10 @@ const chainSettings: Models.ChainSettings = {
     })
 
     const transactionAction: ModelsEthereum.EthereumTransactionAction = {
-        to: HelpersEthereum.toEthereumAddress("0xf4910c763ed4e47a585e2d34baa9a4b611ae448c"),
-        from: HelpersEthereum.toEthereumAddress("0x5d40e837410170f912dd07db914e0534c539d8c6"),
+        to: HelpersEthereum.toEthereumAddress("0xE07C99e940FA19280368E80A612EEDBB0665B68C"), // ERC-721 Contract address
+        from: HelpersEthereum.toEthereumAddress("0x5d40e837410170f912dd07db914e0534c539d8c6"), // Signer's Public Key
         contract: contract
     }
-
-    // const composedAction = async () => {
-    //     await ethGeorli.composeAction(Models.ChainActionType.TokenTransferFrom)
-    // }
 
     transaction.actions = [transactionAction]
     console.log("actions" + JSON.stringify((transaction.actions)))

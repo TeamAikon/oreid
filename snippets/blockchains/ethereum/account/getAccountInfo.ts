@@ -1,7 +1,7 @@
 /*
-Web3 GetBalance() Snippet
+Web3 getBalance() Snippet
 
-Note: Add the ETH address for the account balance
+Note: Add the ETH <address> for the account balance
       to be checked.
 
 */
