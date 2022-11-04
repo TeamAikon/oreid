@@ -1,3 +1,8 @@
+/* 
+Web3 Ethereum Account Creation
+
+*/
+
 import { web3 } from "../helpers";
 
 function createAccount() {
