@@ -5,8 +5,6 @@ Note: Add the ETH <address> for the account balance
       to be checked.
 
 */
-
-
 import { web3 } from "./helpers";
 
 

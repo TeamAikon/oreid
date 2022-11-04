@@ -1,9 +1,8 @@
 /*
 ERC-1155 safeTransferFrom Transaction Data
 
-Note: This snippet is to be passed as <transactionData>
-      into the oreId.createTransaction() function as
-      demonstrated below:
+Note: This snippet is passed as <transactionData>
+      into the oreId.createTransaction() function.
 
       oreId.createTransaction({
         account: oreId.auth.user.data.accountName,
