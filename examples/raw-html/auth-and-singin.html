@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <!-- Add this to the <head> section of your page -->
+    <!-- OreId -->
+    <script src="https://service.oreid.io/dist/oreid-js/v4/index.js"></script>
+    <!-- OreId WebWidget -->
+    <script src="https://service.oreid.io/dist/oreid-webpopup/v2/index.js"></script>
+    <script>
+        // this is for oreid instance
+        var oreId;
+        window.addEventListener("load", function (event) {
+            // * Initialize OreId
+            const REACT_APP_OREID_APP_ID = "demo_0097ed83e0a54e679ca46d082ee0e33a";
+            oreId = new oreidJs.OreId({
+                appName: "ORE ID Sample App",
+                appId: REACT_APP_OREID_APP_ID,
+                plugins: {
+                    popup: oreidJsWebPopup.WebPopup(),
+                },
+            });
+            oreId.init();
+        });
+    </script>
+    <!--END!Add this to the <head> section of your page -->
+
+
+
+    <!-- Examples -->
+    <script>
+        // Helpers
+        // error handler
+        const onError = (error) => {
+            console.log("\n\n\n\n Error! \n\n");
+            console.log({ error });
+        };
+        // success handler
+        const onSuccess = (data) => {
+            console.log("\n\n\n\n Success! \n\n");
+            console.log({ data });
+        };
+        const createSampleTransactionEos = (actor, permission = "active") => {
+            const transaction = {
+                account: "demoapphello",
+                name: "hi",
+                authorization: [
+                    {
+                        actor,
+                        permission,
+                    },
+                ],
+                data: {
+                    user: actor,
+                },
+            };
+            return transaction;
+        };
+        async function composeSampleTransaction(
+            userData,
+            signWithChainNetwork
+        ) {
+            if (!userData) return null;
+            const signingAccount = userData.chainAccounts.find(
+                (ca) => ca.chainNetwork === signWithChainNetwork
+            );
+            if (!signingAccount) {
+                throw new Error(
+                    `User doesnt have a chain account for the ${signWithChainNetwork} network`
+                );
+            }
+            // Compose transaction contents
+            const transactionBody = createSampleTransactionEos(
+                signingAccount.chainAccount,
+                signingAccount.defaultPermission?.name
+            );
+            const transaction = await oreId.createTransaction({
+                chainAccount: signingAccount.chainAccount,
+                chainNetwork: signingAccount.chainNetwork,
+                transaction: transactionBody,
+                signOptions: {
+                    broadcast: true,
+                    returnSignedTransaction: false,
+                },
+            });
+            return transaction;
+        };
+
+
+
+        // Actions
+        function auth() {
+            oreId.popup.auth({ provider: oreidJs.AuthProvider.Google }).then(onSuccess).catch(onError);
+        }
+        function sign() {
+            oreId.auth.user.getData().then(userData => {
+                composeSampleTransaction(userData, "eos_kylin").then(
+                    (transaction) => {
+                        console.log("transaction to sign:", transaction.data);
+                        oreId.popup
+                            .sign({
+                                transaction,
+                            })
+                            .then(onSuccess)
+                            .catch(onError);
+                    }
+                );
+            })
+
+        }
+        function logout() {
+            oreId.auth.logout();
+        }
+    </script>
+    <!-- END!Examples -->
+</head>
+
+<body>
+    <button onclick="auth()">Auth</button>
+    <button onclick="sign()">Sign</button>
+    <button onclick="logout()">Logout</button>
+</body>
+
+</html>
