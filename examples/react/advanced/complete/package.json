@@ -36,7 +36,7 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-router": "^5.0.1",
-    "react-scripts": "3.4.1",
+    "react-scripts": "5.0.0",
     "serve": "^11.3.2",
     "text-encoding": "^0.7.0",
     "util": "^0.12.1",
