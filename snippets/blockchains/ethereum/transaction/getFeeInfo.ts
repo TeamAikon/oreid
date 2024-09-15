@@ -1,3 +1,11 @@
+/*
+Web3 Ethereum Transaction Gas Fee Estimation
+
+Note: Pass a transaction object into getFeeInfo()
+      function.
+
+      The fee info will be calculated and returned.
+*/
 import { TransactionConfig } from "../models";
 import { web3 } from "../helpers";
 

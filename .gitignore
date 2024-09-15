@@ -33,3 +33,6 @@ yarn-debug.log*
 yarn-error.log*
 
 */**/.env
+snippets/blockchains/ethereum/node_modules
+snippets/blockchains/node_modules
+oreid-python-api-example/src/__pycache__

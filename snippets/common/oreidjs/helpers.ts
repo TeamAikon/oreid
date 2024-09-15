@@ -1,10 +1,23 @@
+/*
+ORe ID Helper functions
+
+Note: Enable the snippets to be ran by passing in
+      your ORE ID applications <appId> and <apiKey>.
+
+*/
+
 import { ChainNetwork, OreId, Transaction } from "oreid-js";
 import { WebPopup } from "oreid-webpopup";
 
 const appId = "appid...";
 const apiKey = "apikey..";
 
-export const oreId = new OreId({ appName: "My App", appId, apiKey, plugins:{ popup: WebPopup() } });
+export const oreId = new OreId({
+    appName: "My App",
+    appId,
+    apiKey,
+    plugins:{ popup: WebPopup() }
+  });
 
 export function getOreIdChainInfo(chainNetwork: string) {
   const accountName = oreId.auth.user.data.accountName
@@ -26,8 +39,8 @@ export const createOreIdTransaction = async ({
   );
 	return oreId.createTransaction({
 		account: oreId.auth.user.data.accountName,
-		chainAccount: chainAccountData.chainAccount,
-		chainNetwork: chainAccountData.chainNetwork,
+		chainAccount: chainAccountData?.chainAccount,
+		chainNetwork: chainNetwork,
 		transaction: { actions: transactionData } as any,
 		signOptions: { broadcast: true },
 	});

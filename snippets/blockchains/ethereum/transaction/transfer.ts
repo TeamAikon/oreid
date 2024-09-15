@@ -1,4 +1,9 @@
-import { createOreIdTransaction, getOreIdChainInfo } from "../../oreid";
+/*
+Ethereum Native Token Transfer Transaction
+
+Date: Nov 2022
+*/
+import { createOreIdTransaction, getOreIdChainInfo } from "../../../common/oreidjs/helpers";
 import { ChainNetwork } from "oreid-js";
 
 function composeTransferTransaction(from: string, to: string, value: number) {
@@ -19,7 +24,7 @@ function composeTransferTransaction(from: string, to: string, value: number) {
     10 // wei
   );
   const transaction = await createOreIdTransaction({
-    chainNetwork: ChainNetwork.EthRopsten, // "eth_ropsten"
+    chainNetwork: ChainNetwork.EthGoerli,
     transactionData: transferTransactionData,
   });
 
