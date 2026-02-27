@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "eos-auth": "^2.2.2",
-    "expo": "32.0.6",
+    "expo": "34.0.1",
     "mobx": "^5.9.4",
     "mobx-react": "^5.4.4",
     "react": "16.14.0",
@@ -22,6 +22,6 @@
     "react-test-renderer": "^16.5.0"
   },
   "devDependencies": {
-    "babel-preset-expo": "^5.1.1"
+    "babel-preset-expo": "^9.5.0"
   }
 }
